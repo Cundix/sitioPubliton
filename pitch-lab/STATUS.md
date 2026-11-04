@@ -6,7 +6,7 @@ _Última actualización: 2026-11-04._
 
 | Ítem | Estado |
 |---|---|
-| Código en el repositorio (`main`) | **Subido** (3 commits, sin `--force`); Pages construyó `df6fd36` («built») |
+| Código en el repositorio (`main`) | **Subido** a `main` sin `--force`; Pages construyó los commits subidos («built»). La verificación se hizo sobre `df6fd36` y sobre el último commit (`6316c7f`) |
 | Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **publicado y verificado el 2026-11-04** (HTTP 200 en los recursos, 8/8 pruebas e2e contra el enlace real, sitio anterior intacto) |
 | Qué NO está verificado | Uso en un casco físico y voz real (ver «Falta») |
 
