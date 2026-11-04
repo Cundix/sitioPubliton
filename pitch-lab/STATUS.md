@@ -6,8 +6,9 @@ _Última actualización: 2026-11-04._
 
 | Ítem | Estado |
 |---|---|
-| Código en el repositorio (`main`) | *(se actualiza al terminar la publicación; ver más abajo)* |
-| Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **estado verificado: ver sección «Verificación de la publicación»** |
+| Código en el repositorio (`main`) | **Subido** (3 commits, sin `--force`); Pages construyó `df6fd36` («built») |
+| Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **publicado y verificado el 2026-11-04** (HTTP 200 en los recursos, 8/8 pruebas e2e contra el enlace real, sitio anterior intacto) |
+| Qué NO está verificado | Uso en un casco físico y voz real (ver «Falta») |
 
 ## Terminado (y cómo se comprobó)
 
@@ -20,7 +21,7 @@ _Última actualización: 2026-11-04._
 
 ## En curso
 
-Nada. El trabajo autónomo terminó con la publicación y su verificación (ver abajo).
+Nada. El trabajo autónomo terminó con la publicación y su verificación (detalle en `docs/pruebas.md`, «Verificación de la publicación»).
 
 ## Falta (no lo puede cerrar la herramienta)
 

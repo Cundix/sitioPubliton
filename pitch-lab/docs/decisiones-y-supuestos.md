@@ -17,7 +17,7 @@ cómo revertirla o ajustarla.
 | D8 | **Máquina de estados como tabla de datos** (`FLOW`) | Estados y transiciones explícitos, fáciles de leer y de probar; rechaza eventos fuera de lugar | `core/state-machine.js` |
 | D9 | **Tiempo por marcas de reloj, un único `setInterval`** | Exactitud con pausas y sin temporizadores duplicados | `core/session.js` |
 | D10 | **Preferencias en `localStorage`; transcripciones y audio nunca** | Requisito de privacidad | `core/settings.js` |
-| D11 | **Dependencias de desarrollo mínimas**: `playwright-core` (usa el Edge/Chrome instalado, no descarga navegadores) e `iwer` (emulador WebXR) | Pruebas reales sin sumar nada al producto | `package.json` |
+| D11 | **Dependencias de desarrollo mínimas** (nada de esto llega al producto): `playwright-core` (usa el Edge/Chrome instalado, no descarga navegadores), `iwer` (emulador WebXR) y, solo para el QR del informe, `qrcode`, `jsqr` y `pngjs` | Pruebas reales sin sumar nada al producto | `package.json` |
 | D12 | **Tipografías y favicon reutilizados de `../assets/`** (no se copian) | Reutilizar recursos reales del sitio; una sola copia | Si `pitch-lab/` se mueve a otro lado, copiar `assets/` y ajustar `css/pitch-lab.css` e `index.html` |
 | D13 | **No se modificó ningún archivo existente del sitio** (ni el `README.md` raíz ni `index.html`) | Evitar regresiones y no pisar cambios ajenos | Opcional: agregar un enlace desde el sitio principal (ver «Próximos pasos») |
 

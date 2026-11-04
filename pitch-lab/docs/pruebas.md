@@ -40,9 +40,24 @@ Leyenda: ✅ verificado con el nivel indicado · ⚠️ verificado parcialmente 
 | 11 | Silencio o transcripción vacía | ✅ B | Prueba 9: aviso «No se reconoció voz», se puede cargar texto de **DEMOSTRACIÓN** (rotulado, sin palabras por minuto ni indicador) o continuar vacío |
 | 12 | Devolución con y sin datos | ✅ A+B | Con datos (prueba larga): 54 palabras en 60 s → indicador calculado y fórmula visible; sin datos: «Sin datos suficientes». La captura con datos usa texto de un **simulador** |
 | 13 | Reintento y cambio de escenario | ✅ B | Prueba 10: reintentar vuelve a la preparación **sin arrastrar transcripción**; cambiar de escenario reconstruye otro espacio con su tiempo (120 s) |
-| 14 | Rutas y recursos desde la carpeta de GitHub Pages | ✅ B | Prueba 16 sirviendo bajo **`/sitioPubliton/pitch-lab/`**: todos los recursos salen de `/sitioPubliton/` (incluida `../assets/Anton-Regular.ttf`). **Verificación en el sitio publicado: ver `STATUS.md`** |
+| 14 | Rutas y recursos desde la carpeta de GitHub Pages | ✅ B + sitio publicado | Prueba 16 sirviendo bajo **`/sitioPubliton/pitch-lab/`**: todos los recursos salen de `/sitioPubliton/` (incluida `../assets/Anton-Regular.ttf`). **Verificado además en el sitio publicado** (sección siguiente) |
 | 15 | Controles espaciales preparados para VR | ⚠️ C (emulador) | Sesión inmersiva emulada: entra y sale; los controles tienen rayo y cursor; un control emulado **apunta al botón del atril y el gatillo lo activa**; teletransporte; modo sentado solo en VR. **Casco físico: pendiente** |
 | 16 | Acceso al sitio anterior sin regresiones | ✅ B | Prueba 17: carga el sitio original (título, h1 y diálogo de reserva funcionan); `git status` solo muestra `pitch-lab/` como contenido nuevo (ningún archivo existente modificado) |
+
+## Verificación de la publicación (2026-11-04)
+
+Se subió a `main` (commits sin `--force`) y GitHub Pages («legacy», raíz de `main`) construyó el commit `df6fd36`
+con estado **built**. Verificado después con consultas HTTP y con el navegador automatizado contra el enlace real:
+
+| Comprobación | Resultado |
+|---|---|
+| `https://cundix.github.io/sitioPubliton/pitch-lab/` y sus recursos (`js/main.js`, `vendor/aframe-1.8.0.min.js`, `css/pitch-lab.css`) | **200** con el tipo de contenido correcto |
+| Tipografías y favicon reutilizados (`/assets/Anton-Regular.ttf`, `Barlow-Bold.ttf`, `favicon.svg`) | **200** |
+| Informe PDF y capturas servidos desde `/pitch-lab/informe/` y `/pitch-lab/capturas/` | **200** |
+| Sitio anterior `https://cundix.github.io/sitioPubliton/` | **200**, mismo tamaño que antes (13 845 bytes) |
+| Pruebas e2e contra el **enlace publicado**: carga inicial, tres escenarios, tutorial y navegación, sesión sin voz, micrófono aceptado (simulado), teletransporte, panel de texto accesible y sitio anterior | **8 / 8** correctas (resultado en `tests/e2e/ultimo-resultado-publicado.json`) |
+
+Sigue pendiente verificar el enlace publicado **dentro de un casco físico** y con **voz real**.
 
 ## Otras verificaciones realizadas
 

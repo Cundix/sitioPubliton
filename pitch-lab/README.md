@@ -8,7 +8,7 @@ audiencia virtual. Al terminar obtiene una devolución comprensible y puede volv
 
 Complementa el evento **Publitón** (TP4 de Diseño: experiencia inmersiva VR). Integrantes: Fiscina, Fuentes, Diaz y Tana.
 
-- Enlace publicado: <https://cundix.github.io/sitioPubliton/pitch-lab/> *(ver el estado real de publicación en [`STATUS.md`](STATUS.md))*
+- Enlace publicado: <https://cundix.github.io/sitioPubliton/pitch-lab/> — publicado y verificado el 2026-11-04 (ver [`docs/pruebas.md`](docs/pruebas.md), «Verificación de la publicación»)
 - Sitio del evento (sin cambios): <https://cundix.github.io/sitioPubliton/>
 
 ## Qué se puede hacer
@@ -146,7 +146,7 @@ Guía paso a paso: [`docs/configuracion.md`](docs/configuracion.md).
 
 ```bash
 cd pitch-lab
-npm install            # solo la primera vez (playwright-core e iwer, para las pruebas)
+npm install            # solo la primera vez (dependencias de desarrollo: pruebas y QR; el producto no usa ninguna)
 npm test               # pruebas de unidad (no necesitan navegador)
 node tools/serve.mjs   # en otra terminal (y el de /sitioPubliton en el puerto 8081)
 npm run test:e2e       # recorrido completo con un navegador real

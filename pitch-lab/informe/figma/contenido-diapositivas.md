@@ -480,9 +480,12 @@ Archivo de referencia: `slides/slide-20.png`
 16 / ENLACE DE LA EXPERIENCIA
 
 PROBALA VOS.
-AÚN NO VERIFICADO
 
-El enlace y el QR se agregan solo cuando la publicación existe y fue verificada.
+PUBLICADO Y VERIFICADO
+
+https://cundix.github.io/sitioPubliton/pitch-lab/
+
+Verificado con una consulta HTTP y una carga en navegador el día de la publicación.
 
 CÓMO EJECUTARLA
 node tools/serve.mjs y abrir localhost:8080/pitch-lab/

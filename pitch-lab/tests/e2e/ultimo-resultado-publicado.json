@@ -1,0 +1,54 @@
+{
+  "fecha": "2026-11-04T04:40:43.487Z",
+  "navegador": "Microsoft Edge (Playwright), headless, WebGL por software (SwiftShader)",
+  "resultados": [
+    {
+      "name": "1. Carga inicial: sin errores, fuentes locales y recursos del mismo origen",
+      "status": "ok",
+      "detail": "",
+      "secs": 3.4
+    },
+    {
+      "name": "2. Acceso a los tres escenarios y sus espacios",
+      "status": "ok",
+      "detail": "",
+      "secs": 6.5
+    },
+    {
+      "name": "3. Tutorial con clics 3D reales y navegación con teclado dentro de los límites",
+      "status": "ok",
+      "detail": "",
+      "secs": 14.7
+    },
+    {
+      "name": "4. Sesión sin voz: inicio, pausa, continuación y finalización con tiempo exacto",
+      "status": "ok",
+      "detail": "",
+      "secs": 14.3
+    },
+    {
+      "name": "6. Micrófono aceptado: transcripción revisable, edición con origen y liberación",
+      "status": "ok",
+      "detail": "",
+      "secs": 11
+    },
+    {
+      "name": "11. Teletransporte, recentrado y límites en el auditorio",
+      "status": "ok",
+      "detail": "",
+      "secs": 15.6
+    },
+    {
+      "name": "13. Panel de texto accesible: botones reales, foco visible, anuncios y modo solo teclado",
+      "status": "ok",
+      "detail": "",
+      "secs": 3.7
+    },
+    {
+      "name": "17. Sitio anterior sin regresiones",
+      "status": "ok",
+      "detail": "",
+      "secs": 1.4
+    }
+  ]
+}
