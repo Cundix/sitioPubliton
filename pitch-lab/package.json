@@ -1,0 +1,17 @@
+{
+  "name": "publiton-pitch-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Publitón Pitch Lab: simulador WebXR para practicar la presentación de ideas publicitarias.",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.mjs"
+  },
+  "devDependencies": {
+    "iwer": "^2.7.0",
+    "playwright-core": "1.64.1"
+  },
+  "license": "UNLICENSED"
+}

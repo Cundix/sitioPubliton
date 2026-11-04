@@ -1,0 +1,32 @@
+{
+  "hub": {
+    "calls": 87,
+    "triangles": 10734,
+    "geometries": 84,
+    "textures": 18
+  },
+  "sala": {
+    "calls": 79,
+    "triangles": 1790,
+    "geometries": 61,
+    "textures": 16
+  },
+  "cliente": {
+    "calls": 98,
+    "triangles": 2884,
+    "geometries": 68,
+    "textures": 15
+  },
+  "auditorio": {
+    "calls": 96,
+    "triangles": 21798,
+    "geometries": 65,
+    "textures": 17
+  },
+  "hub-de-nuevo": {
+    "calls": 88,
+    "triangles": 10902,
+    "geometries": 85,
+    "textures": 18
+  }
+}

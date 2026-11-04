@@ -1,0 +1,5 @@
+node_modules/
+*.log
+.cache/
+tests/e2e/fallo-*.png
+probe.png

@@ -1,0 +1,38 @@
+{
+  "fecha": "2026-11-04T04:07:40.467Z",
+  "nota": "Emulación con IWER (Meta Quest 3 simulado). No reemplaza una prueba en casco físico.",
+  "resultados": [
+    {
+      "name": "X1. Se detecta el modo inmersivo y aparece el botón \"Entrar en VR\"",
+      "status": "ok"
+    },
+    {
+      "name": "X2. Entrar en VR desde el botón: sesión inmersiva activa y vista de casco",
+      "status": "ok"
+    },
+    {
+      "name": "X3. Los controles aparecen con raycaster y cursor sobre los elementos interactivos",
+      "status": "ok"
+    },
+    {
+      "name": "X4. Un control emulado apunta al botón del atril y el gatillo lo activa",
+      "status": "ok"
+    },
+    {
+      "name": "X5. Control emulado: \"Ver desde el público\" teletransporta a la grada y \"Recentrar\" vuelve",
+      "status": "ok"
+    },
+    {
+      "name": "X6. Modo sentado eleva la vista solo en VR",
+      "status": "ok"
+    },
+    {
+      "name": "X7. Salir de VR: la sesión termina y vuelve la interfaz de escritorio",
+      "status": "ok"
+    },
+    {
+      "name": "X8. Sin errores de consola durante la sesión inmersiva emulada",
+      "status": "ok"
+    }
+  ]
+}

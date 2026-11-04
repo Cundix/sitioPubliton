@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#181d16">
+  <meta name="description" content="Publitón Pitch Lab: un simulador de presentación de ideas publicitarias con experiencia inmersiva WebXR. Tu idea merece un buen pitch.">
+  <title>Publitón Pitch Lab — Tu idea merece un buen pitch</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/Anton-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="../assets/Barlow-Bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/pitch-lab.css">
+  <!-- A-Frame 1.8.0 incluido en vendor/ (sin CDN). Se carga antes que los módulos. -->
+  <script src="vendor/aframe-1.8.0.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#drawer-title">Ir al panel de texto</a>
+
+  <div id="stage" aria-hidden="false"></div>
+
+  <div id="overlay">
+    <header id="topbar" class="topbar">
+      <a class="brand" href="../" aria-label="Publitón, volver al sitio del evento">PUBLITÓN<span class="brand-dot">®</span></a>
+      <span class="product">PITCH LAB</span>
+      <p id="status-line" class="status-line" aria-hidden="true"></p>
+      <p id="timer-chip" class="timer-chip" aria-hidden="true" hidden></p>
+      <div class="topbar-actions">
+        <button id="btn-drawer" class="btn btn-secondary btn-small" type="button" aria-expanded="false" aria-controls="drawer">Panel de texto <kbd>T</kbd></button>
+        <button id="btn-vr" class="btn btn-primary btn-small" type="button" hidden>Entrar en VR</button>
+      </div>
+    </header>
+    <p id="xr-note" class="xr-note" hidden></p>
+
+    <aside id="drawer" class="drawer" aria-label="Panel de texto accesible" hidden>
+      <div class="drawer-head">
+        <p class="eyebrow">PANEL DE TEXTO</p>
+        <button id="drawer-close" class="btn btn-secondary btn-small" type="button">Cerrar</button>
+      </div>
+      <div id="fallback" class="notice notice-warn" role="alert" hidden>
+        <strong>Modo solo texto</strong>
+        <p id="fallback-text"></p>
+      </div>
+      <p class="drawer-note">Este panel muestra lo mismo que el espacio 3D. Sirve para teclado, lectores de pantalla y para editar la transcripción.</p>
+      <div id="drawer-body" class="drawer-body"></div>
+
+      <section id="transcript-box" class="transcript-box" hidden>
+        <label for="transcript-text">Transcripción (podés corregirla)</label>
+        <p id="transcript-source" class="transcript-source"></p>
+        <textarea id="transcript-text" rows="6" spellcheck="true" aria-describedby="transcript-source transcript-count"></textarea>
+        <p id="transcript-count" class="muted"></p>
+        <p class="muted">Si escribís o pegás texto, la devolución lo marca como «escrito» y no calcula medidas de voz.</p>
+      </section>
+
+      <details class="drawer-details" id="prefs">
+        <summary>Preferencias</summary>
+        <div class="pref">
+          <label for="pref-volume">Volumen de los avisos: <span id="pref-volume-text"></span></label>
+          <input id="pref-volume" type="range" min="0" max="100" step="5">
+        </div>
+        <label class="check"><input id="pref-motion" type="checkbox"> Reducir movimiento (público quieto, sin giros ni fundidos)</label>
+        <label class="check"><input id="pref-seated" type="checkbox"> Modo sentado (eleva la vista en VR)</label>
+        <button id="btn-reset" class="btn btn-secondary btn-small" type="button">Reiniciar la experiencia</button>
+      </details>
+
+      <details class="drawer-details" id="help">
+        <summary>Controles</summary>
+        <table class="keys">
+          <tbody>
+            <tr><th scope="row">Mirar</th><td>Arrastrá con el mouse</td></tr>
+            <tr><th scope="row">Caminar</th><td>W A S D o flechas</td></tr>
+            <tr><th scope="row">Girar</th><td>Q y E</td></tr>
+            <tr><th scope="row">Botones 3D</th><td>Apuntá y hacé clic</td></tr>
+            <tr><th scope="row">Acción principal</th><td>Enter</td></tr>
+            <tr><th scope="row">Pausar / continuar</th><td>P</td></tr>
+            <tr><th scope="row">Finalizar</th><td>F</td></tr>
+            <tr><th scope="row">Cancelar / volver</th><td>Esc</td></tr>
+            <tr><th scope="row">Recentrar</th><td>R</td></tr>
+            <tr><th scope="row">Panel de texto</th><td>T</td></tr>
+            <tr><th scope="row">En VR</th><td>Láser del control + gatillo; marcas del piso para teletransportarte</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </aside>
+
+    <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <p id="toast" class="toast" role="status" hidden></p>
+    <p class="keyhint" aria-hidden="true">Mouse: mirar · W A S D: caminar · Enter: acción principal · P: pausa · Esc: cancelar · T: panel de texto</p>
+
+    <div id="loading" class="loading" role="status">
+      <p class="brand">PUBLITÓN<span class="brand-dot">®</span></p>
+      <p class="loading-title">PITCH LAB</p>
+      <p>Cargando el espacio…</p>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript">
+      <p class="brand">PUBLITÓN®</p>
+      <h1>Pitch Lab necesita JavaScript</h1>
+      <p>Esta experiencia usa WebXR y JavaScript para funcionar. Activá JavaScript en tu navegador o volvé al <a href="../">sitio de Publitón</a>.</p>
+    </div>
+  </noscript>
+</body>
+</html>

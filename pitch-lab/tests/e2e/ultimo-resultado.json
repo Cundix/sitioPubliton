@@ -1,0 +1,132 @@
+{
+  "fecha": "2026-11-04T04:10:33.387Z",
+  "navegador": "Microsoft Edge (Playwright), headless, WebGL por software (SwiftShader)",
+  "resultados": [
+    {
+      "name": "1. Carga inicial: sin errores, fuentes locales y recursos del mismo origen",
+      "status": "ok",
+      "detail": "",
+      "secs": 2
+    },
+    {
+      "name": "2. Acceso a los tres escenarios y sus espacios",
+      "status": "ok",
+      "detail": "",
+      "secs": 4.6
+    },
+    {
+      "name": "3. Tutorial con clics 3D reales y navegación con teclado dentro de los límites",
+      "status": "ok",
+      "detail": "",
+      "secs": 22.4
+    },
+    {
+      "name": "3b. Elegir escenario tocando la maqueta 3D y la opción del panel",
+      "status": "ok",
+      "detail": "",
+      "secs": 9.7
+    },
+    {
+      "name": "4. Sesión sin voz: inicio, pausa, continuación y finalización con tiempo exacto",
+      "status": "FALLÓ",
+      "detail": "duración efectiva 6",
+      "secs": 17.9
+    },
+    {
+      "name": "Temporizador real: 60 s, avisos 20/10 s, cierre automático y devolución con datos",
+      "status": "ok",
+      "detail": "",
+      "secs": 65.3
+    },
+    {
+      "name": "5. Cancelación con confirmación y reinicio sin estado residual",
+      "status": "ok",
+      "detail": "",
+      "secs": 12.2
+    },
+    {
+      "name": "6. Micrófono aceptado: transcripción revisable, edición con origen y liberación",
+      "status": "ok",
+      "detail": "",
+      "secs": 9.1
+    },
+    {
+      "name": "7. Micrófono rechazado: recuperación sin reintentos automáticos",
+      "status": "ok",
+      "detail": "",
+      "secs": 6.8
+    },
+    {
+      "name": "8. Reconocimiento de voz no disponible: la opción se deshabilita y se practica con temporizador",
+      "status": "ok",
+      "detail": "",
+      "secs": 3.7
+    },
+    {
+      "name": "9. Silencio o transcripción vacía, y texto de demostración rotulado",
+      "status": "ok",
+      "detail": "",
+      "secs": 9.2
+    },
+    {
+      "name": "10. Reintento y cambio de escenario desde la devolución",
+      "status": "ok",
+      "detail": "",
+      "secs": 7.8
+    },
+    {
+      "name": "11. Teletransporte, recentrado y límites en el auditorio",
+      "status": "ok",
+      "detail": "",
+      "secs": 16.1
+    },
+    {
+      "name": "12. Modo sentado, movimiento reducido, volumen y persistencia de preferencias",
+      "status": "ok",
+      "detail": "",
+      "secs": 6.6
+    },
+    {
+      "name": "13. Panel de texto accesible: botones reales, foco visible, anuncios y modo solo teclado",
+      "status": "ok",
+      "detail": "",
+      "secs": 3.5
+    },
+    {
+      "name": "13b. Atajos de teclado: Enter (acción principal), P (pausa), F (finalizar), Esc (cancelar)",
+      "status": "ok",
+      "detail": "",
+      "secs": 3.1
+    },
+    {
+      "name": "13c. Medición opcional de nivel de audio: permiso aparte, medición real y liberación de la pista",
+      "status": "ok",
+      "detail": "",
+      "secs": 7.4
+    },
+    {
+      "name": "14. Pausa automática si la pestaña pasa a segundo plano",
+      "status": "ok",
+      "detail": "",
+      "secs": 2.7
+    },
+    {
+      "name": "15. Medición de recursos 3D por escenario (informativa, SwiftShader)",
+      "status": "ok",
+      "detail": "",
+      "secs": 5.2
+    },
+    {
+      "name": "16. Rutas bajo /sitioPubliton/pitch-lab/ (simulación de GitHub Pages)",
+      "status": "ok",
+      "detail": "",
+      "secs": 1.5
+    },
+    {
+      "name": "17. Sitio anterior sin regresiones",
+      "status": "ok",
+      "detail": "",
+      "secs": 0.5
+    }
+  ]
+}
