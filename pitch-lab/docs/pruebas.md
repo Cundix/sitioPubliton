@@ -1,0 +1,84 @@
+# Pruebas: resultados observados y pendientes
+
+Se separan **tres niveles** que no deben confundirse:
+
+| Nivel | Qué es | Dónde |
+|---|---|---|
+| **A. Revisión de código y pruebas de unidad** | Lógica sin navegador (Node) | `npm test` |
+| **B. Navegador real automatizado** | Microsoft Edge 156 controlado con Playwright, **mouse y teclado reales**, WebGL por software (SwiftShader), voz con **simulaciones** | `tests/e2e/run.mjs` |
+| **C. Emulación de WebXR** | Emulador IWER (Meta Quest 3 simulado). **No es un casco físico** | `tests/e2e/xr.mjs` |
+| **D. Casco físico / voz real / personas usuarias** | **No realizado** | — |
+
+Última ejecución: **2026-11-04**. Salidas guardadas en `tests/e2e/ultimo-resultado.json` y
+`tests/e2e/ultimo-resultado-xr.json`; mediciones de recursos 3D en `tests/e2e/recursos-3d.json`.
+
+## Resumen
+
+| Nivel | Resultado |
+|---|---|
+| A. Pruebas de unidad | **77 / 77** correctas |
+| B. Navegador real | **21 / 21** correctas (incluye una sesión real de 60 s) |
+| C. Emulador WebXR | **8 / 8** correctas |
+| D. Casco físico | **PENDIENTE** (sin casco disponible) |
+
+## Checklist del encargo (16 puntos)
+
+Leyenda: ✅ verificado con el nivel indicado · ⚠️ verificado parcialmente · ⏳ pendiente
+
+| # | Punto | Estado | Cómo se verificó (y qué se observó) |
+|---|---|---|---|
+| 1 | Carga inicial | ✅ B | Prueba 1: la página llega a «inicio» sin errores de consola ni de red; Anton y Barlow cargan; **ningún recurso sale del origen propio** |
+| 2 | Acceso a los tres escenarios | ✅ B | Prueba 2: se construye cada espacio, con 3, 5 y 64 personas; prueba 3b: elegir por **clic en la maqueta 3D** y por la opción del panel |
+| 3 | Tutorial y navegación | ✅ B | Prueba 3: tutorial con clics 3D reales (3 pasos); W A S D avanzan, el atril **bloquea el paso**, no se sale de la zona, Q gira y R recentra |
+| 4 | Inicio, pausa, continuación y finalización | ✅ B | Prueba 4 (clics 3D): en pausa el tiempo **no corre**; finalizar lleva a la devolución |
+| 5 | Cancelación y reinicio sin estado residual | ✅ A+B | Pruebas 5 y de unidad: confirmación con tiempo detenido, `Esc` para cancelar/seguir, sin temporizador activo, transcripción vacía y tiempo en 0, **ninguna sesión continúa** |
+| 6 | Temporizador correcto | ✅ A+B | Unidad: tiempo por marcas de reloj, sin pausas, un solo temporizador. e2e largo: **60 s reales**, avisos con 20 y 10 s restantes, cierre automático a los 60 s (59–64 s medidos) |
+| 7 | Micrófono aceptado | ⚠️ B (simulado) | Prueba 6 con un **reconocedor simulado**: el permiso se pide solo al comenzar, hay aviso previo de servicio externo, la transcripción llega y es revisable/editable con origen. **Voz real: pendiente** |
+| 8 | Micrófono rechazado | ⚠️ B (simulado) | Prueba 7: «Sin acceso al micrófono», **no vuelve a pedir** solo, se continúa con temporizador. Además, durante las capturas se observó con el navegador **real** (permiso de micrófono sin conceder) que la API de permisos informó `denied` y la app mostró «Sin acceso al micrófono» con la alternativa sin voz |
+| 9 | Reconocimiento no disponible | ✅ B | Prueba 8 simulando su ausencia: la opción se deshabilita («Micrófono: no disponible»), el panel lo marca `aria-disabled`, se practica con temporizador |
+| 10 | Sesión sin voz | ✅ B | Prueba 4: devolución con duración, «SIN VOZ», autoevaluación y «Sin datos suficientes» |
+| 11 | Silencio o transcripción vacía | ✅ B | Prueba 9: aviso «No se reconoció voz», se puede cargar texto de **DEMOSTRACIÓN** (rotulado, sin palabras por minuto ni indicador) o continuar vacío |
+| 12 | Devolución con y sin datos | ✅ A+B | Con datos (prueba larga): 54 palabras en 60 s → indicador calculado y fórmula visible; sin datos: «Sin datos suficientes». La captura con datos usa texto de un **simulador** |
+| 13 | Reintento y cambio de escenario | ✅ B | Prueba 10: reintentar vuelve a la preparación **sin arrastrar transcripción**; cambiar de escenario reconstruye otro espacio con su tiempo (120 s) |
+| 14 | Rutas y recursos desde la carpeta de GitHub Pages | ✅ B | Prueba 16 sirviendo bajo **`/sitioPubliton/pitch-lab/`**: todos los recursos salen de `/sitioPubliton/` (incluida `../assets/Anton-Regular.ttf`). **Verificación en el sitio publicado: ver `STATUS.md`** |
+| 15 | Controles espaciales preparados para VR | ⚠️ C (emulador) | Sesión inmersiva emulada: entra y sale; los controles tienen rayo y cursor; un control emulado **apunta al botón del atril y el gatillo lo activa**; teletransporte; modo sentado solo en VR. **Casco físico: pendiente** |
+| 16 | Acceso al sitio anterior sin regresiones | ✅ B | Prueba 17: carga el sitio original (título, h1 y diálogo de reserva funcionan); `git status` solo muestra `pitch-lab/` como contenido nuevo (ningún archivo existente modificado) |
+
+## Otras verificaciones realizadas
+
+| Tema | Resultado |
+|---|---|
+| Accesibilidad básica del panel de texto | Todos los botones tienen nombre accesible; recorrido **solo con teclado** hasta completar una sesión; foco visible (`outline` ≠ none); anuncios por `aria-live`; el recorrido completo funciona **solo con el panel HTML** |
+| Atajos de teclado | Enter, P, F y Esc recorren toda una sesión (prueba 13b) |
+| Preferencias | Volumen, movimiento reducido y modo sentado se aplican y **persisten** al recargar; solo se guardan preferencias (se comprueba que no hay transcripciones ni audio en el almacenamiento) |
+| Medición de nivel de audio (opcional) | Con un micrófono falso del navegador: permiso aparte, medición real de segundos activos/sonido y **todas las pistas liberadas** al terminar (prueba 13c) |
+| Pausa automática por pestaña oculta | Verificada (prueba 14) |
+| Liberación de recursos 3D | Al volver al hub, geometrías 84 → 85 y texturas 18 → 18 (antes del arreglo crecían 12 por ciclo; ver `problemas-resueltos.md`) |
+| Recursos por escenario (informativo) | Llamadas de dibujo: hub 87, sala 79, cliente 98, auditorio 96 (<400). Triángulos: 10,7 mil / 1,8 mil / 2,9 mil / 21,8 mil. **Medido en software de escritorio; no es un dato de rendimiento en casco** |
+
+## Pendiente (explícito)
+
+| Pendiente | Por qué | Qué hacer |
+|---|---|---|
+| **Prueba en un casco físico** (Quest u otro) | No hay casco disponible en este entorno | Abrir el enlace publicado en el navegador del casco, entrar en VR y recorrer una sesión; revisar comodidad, legibilidad del texto, alcance de los botones y altura (modo sentado) |
+| **Rendimiento y tasa de cuadros** | No se midió en casco; las cifras de arriba son de un navegador con WebGL por software | Medir con herramientas del casco; **no afirmar cuadros por segundo** hasta entonces |
+| **Reconocimiento de voz real** | La voz se verificó con simulaciones; el reconocimiento real depende del navegador y de un servicio externo | Probar con micrófono real en Chrome/Edge y anotar errores de transcripción y de permisos |
+| **Navegadores y dispositivos** | Solo se probó Edge 156 de escritorio | Probar Firefox, Safari, Chrome en celular |
+| **Validación con personas usuarias** | El público es una hipótesis de diseño | Ver `usuarios-hipotesis.md` |
+| **Intervención manual del equipo** | Debe hacerla el equipo | Ver `intervencion-manual.md` |
+| **Contraste automático (herramienta tipo axe)** | No se ejecutó un auditor automático | Correr una auditoría de accesibilidad sobre el panel de texto y revisar el contraste del espacio 3D |
+
+## Cómo repetir las pruebas
+
+```bash
+cd pitch-lab
+npm install
+npm test                                              # nivel A
+node tools/serve.mjs                                  # terminal 1 (http://localhost:8080)
+MSYS_NO_PATHCONV=1 node tools/serve.mjs 8081 /sitioPubliton    # terminal 2 (ruta de GitHub Pages)
+npm run test:e2e                                      # nivel B (≈ 2 minutos)
+node tests/e2e/xr.mjs                                 # nivel C
+node tools/qa-shots.mjs capturas 1600 900             # capturas
+```
+
+Requisitos: Node 20+ y Microsoft Edge o Chrome instalado (`PITCHLAB_BROWSER=chrome` para usar Chrome).

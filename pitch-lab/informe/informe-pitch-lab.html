@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<title>Publitón Pitch Lab — Informe TP4 (16:9)</title>
+<meta name="viewport" content="width=1920">
+<style>
+@font-face{font-family:Anton;src:url('../../assets/Anton-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:Barlow;src:url('../../assets/Barlow-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:Barlow;src:url('../../assets/Barlow-Bold.ttf') format('truetype');font-weight:700}
+:root{--bg:#181D16;--surface:#20261C;--surface2:#2A3225;--border:#596151;--blue:#0047FF;--yellow:#FFC94A;--pink:#FF006E;--muted:#C5CABF;--white:#fff}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#0d100b;color:var(--white);font-family:Barlow,Arial,sans-serif;font-size:30px;line-height:1.35}
+body{counter-reset:slide}
+.slide{counter-increment:slide;width:1920px;height:1080px;position:relative;overflow:hidden;background:var(--bg);padding:84px 110px 124px;break-after:page;page-break-after:always;display:flex;flex-direction:column}
+.slide:last-child{break-after:auto;page-break-after:auto}
+.slide::after{content:'PUBLITÓN® · PITCH LAB · TP4';position:absolute;left:110px;bottom:34px;font-size:20px;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.slide::before{content:counter(slide);position:absolute;right:110px;bottom:26px;font-family:Anton;font-size:34px;color:var(--yellow)}
+.eyebrow{font-size:24px;letter-spacing:.16em;font-weight:700;color:var(--muted);text-transform:uppercase;margin:0 0 14px}
+h1,h2,h3{font-family:Anton,'Arial Narrow',sans-serif;font-weight:400;margin:0;text-transform:uppercase;letter-spacing:-.01em;line-height:1.02}
+h2{font-size:92px;margin-bottom:34px}
+h2 span,h1 span{color:var(--yellow)}
+h3{font-size:44px;margin-bottom:12px;letter-spacing:0}
+p{margin:0 0 14px}
+.lead{font-size:38px;line-height:1.3;max-width:1500px}
+.muted{color:var(--muted)}
+.small{font-size:23px;color:var(--muted)}
+.cols{display:grid;gap:36px;flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.c-shot{grid-template-columns:.8fr 1.6fr}
+.card{background:var(--surface);border:2px solid var(--border);border-radius:18px;padding:30px 34px;min-height:0}
+.card.accent{border-color:var(--yellow)}
+.dense p,.dense li{font-size:25px}.dense h3{font-size:40px}
+.card.pink{border-color:var(--pink)}
+.pending{border:3px dashed var(--pink);background:#2a1722;border-radius:18px;padding:26px 32px}
+.pending strong,.tag-pending{color:var(--pink);letter-spacing:.12em;text-transform:uppercase;font-size:23px;font-weight:700}
+.ok-tag{color:var(--yellow);letter-spacing:.12em;text-transform:uppercase;font-size:23px;font-weight:700}
+ul{margin:0;padding:0;list-style:none}
+li{position:relative;padding-left:34px;margin-bottom:10px}
+li::before{content:'';position:absolute;left:4px;top:.55em;width:13px;height:13px;background:var(--yellow);transform:rotate(45deg)}
+.shot{margin:0;border:2px solid var(--border);border-radius:16px;overflow:hidden;background:#000;display:flex;flex-direction:column;min-height:0}
+.shot img{display:block;width:100%;height:0;flex:1 1 0;min-height:0;object-fit:contain;object-position:center;background:#0b0e09}
+.shot figcaption{font-size:20px;color:var(--muted);padding:10px 16px;background:var(--surface)}
+.cover{background:var(--blue);padding:84px 110px 120px}
+.cover::after{display:none}.cover::before{color:var(--white)}
+.cover h1{font-size:250px;color:var(--yellow);line-height:.9;margin:30px 0 24px}
+.cover .badge{display:inline-block;background:var(--pink);padding:16px 30px;font-weight:700;font-size:30px;transform:rotate(-3deg);box-shadow:0 6px 0 #11170e66}
+.cover p{font-size:40px;max-width:1200px}
+.pill{display:inline-block;border:2px solid var(--border);border-radius:999px;padding:4px 18px;font-size:23px;font-weight:700;margin:0 8px 8px 0;background:var(--surface)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:12px 16px;border-bottom:2px solid var(--border);vertical-align:top;font-size:26px}
+th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:uppercase}
+.flow{display:flex;align-items:stretch;gap:0;margin:18px 0 26px}
+.step{flex:1;background:var(--surface);border:2px solid var(--border);padding:22px 20px;position:relative;margin-right:30px;border-radius:14px}
+.step:last-child{margin-right:0}
+.step::after{content:'';position:absolute;right:-26px;top:50%;margin-top:-14px;border:14px solid transparent;border-left:20px solid var(--yellow);border-right:0}
+.step:last-child::after{display:none}
+.step b{display:block;font-family:Anton;font-size:44px;color:var(--yellow);font-weight:400}
+.step span{font-size:25px}
+.chip{display:inline-flex;align-items:center;gap:14px;margin:0 22px 14px 0;font-size:24px}
+.chip i{display:block;width:62px;height:62px;border-radius:12px;border:2px solid var(--border)}
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.box{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:20px 24px}
+.box b{display:block;color:var(--yellow);font-size:24px;letter-spacing:.1em;text-transform:uppercase}
+.box code,code{font-family:Consolas,monospace;font-size:21px;color:var(--yellow)}
+.bar{display:flex;align-items:center;gap:20px;margin:10px 0}
+.bar .lbl{width:300px;font-size:25px}
+.bar .b{height:42px;border-radius:8px;display:flex;align-items:center;padding-left:14px;font-weight:700;color:var(--bg);background:var(--yellow);font-size:24px}
+.bar .b.pink{background:var(--pink);color:#fff}
+.qr{width:420px;height:420px;background:#fff;border-radius:14px;padding:20px;display:grid;place-items:center;color:var(--bg);font-weight:700}
+.big{font-family:Anton;font-size:140px;line-height:1;color:var(--yellow)}
+.url{font-size:44px;font-weight:700;color:var(--yellow);word-break:break-all}
+</style>
+</head>
+<body>
+
+<!-- 1. PORTADA -->
+<section class="slide cover" id="s1">
+  <p class="eyebrow" style="color:#fff">TP4 · DISEÑO · EXPERIENCIA INMERSIVA VR (WebXR)</p>
+  <h1>PUBLITÓN<br>PITCH LAB</h1>
+  <p class="badge">Tu idea merece un buen pitch.</p>
+  <p style="margin-top:40px">Simulador de presentación de ideas publicitarias.<br>Complemento inmersivo del evento <b>Publitón — Hackeando el mensaje</b>.</p>
+  <p style="margin-top:auto;font-size:30px">Fiscina · Fuentes · Diaz · Tana &nbsp;|&nbsp; 2026</p>
+</section>
+
+<!-- 2. PROBLEMA Y OPORTUNIDAD -->
+<section class="slide" id="s2">
+  <p class="eyebrow">01 / Problema y oportunidad</p>
+  <h2>Presentar una idea<br><span>también se ensaya.</span></h2>
+  <div class="cols c2">
+    <div>
+      <p class="lead">Publitón lleva a las personas <b>del brief al pitch</b>. Pero el momento de defender la idea en voz alta es el que menos se puede practicar antes del evento.</p>
+      <div class="card" style="margin-top:26px">
+        <h3>Oportunidad</h3>
+        <p>Un espacio donde ensayar la defensa de una campaña <b>sin que nadie juzgue</b>, con control del tiempo y una devolución concreta para repetir.</p>
+      </div>
+    </div>
+    <div class="pending">
+      <strong>Observación de diseño, no investigación</strong>
+      <p style="margin-top:12px">Esta formulación del problema es una <b>hipótesis del equipo</b> a partir del concepto del evento. No se hicieron entrevistas ni pruebas con personas usuarias: la validación está <b>pendiente</b> (ver diapositiva 3).</p>
+      <ul style="margin-top:14px"><li>Ensayar a solas, sin público real</li><li>Saber si se pasan de tiempo</li><li>Practicar en espacios de distinta escala</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3. RELACIÓN CON PUBLITÓN Y PÚBLICO -->
+<section class="slide" id="s3">
+  <p class="eyebrow">02 / Relación con Publitón y el público</p>
+  <h2>Del brief<br><span>al pitch.</span></h2>
+  <div class="cols c2">
+    <div class="card">
+      <h3>Cómo complementa al evento</h3>
+      <ul>
+        <li>Mantiene la identidad: Anton + Barlow, fondo #181D16, azul #0047FF, amarillo #FFC94A y rosa #FF006E</li>
+        <li>Retoma el paso «Compartir la propuesta / Pitch» del programa del sitio</li>
+        <li>Usa el nombre tipográfico <b>PUBLITÓN®</b>; no se inventó un logo</li>
+        <li>Briefs con <b>marcas ficticias</b> rotuladas</li>
+      </ul>
+    </div>
+    <div class="card pink">
+      <span class="tag-pending">Hipótesis de diseño · validación pendiente</span>
+      <h3 style="margin-top:10px">Público</h3>
+      <p>Participantes de Publitón que necesitan <b>presentar y defender ideas creativas</b>, solos o en equipo de 4–5 personas.</p>
+      <p class="small">En el repositorio no hay User Personas documentados. No se inventaron entrevistas. Siguiente paso: alinear con las personas de los TPs anteriores o hacer 3–5 pruebas de uso. Detalle: <code>docs/usuarios-hipotesis.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CONCEPTO -->
+<section class="slide" id="s4">
+  <p class="eyebrow">03 / Idea y alcance</p>
+  <h2>Elegís, te preparás,<br><span>presentás y mejorás.</span></h2>
+  <div class="cols c2">
+    <div class="card accent">
+      <h3>Qué es</h3>
+      <ul>
+        <li>Tres espacios: <b>Sala de ensayo</b> (60 s), <b>Reunión con cliente</b> (90 s) y <b>Auditorio</b> (120 s)</li>
+        <li>Tres briefs ficticios editables</li>
+        <li>Voz opcional en español, con alternativa <b>sin micrófono</b></li>
+        <li>Devolución transparente: qué se midió, de dónde sale y qué requiere revisión humana</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Qué no es</h3>
+      <ul>
+        <li>No evalúa contenido, confianza, emociones ni persuasión</li>
+        <li>No usa IA (hay una interfaz vacía para el futuro)</li>
+        <li>El público no reacciona al discurso</li>
+        <li>No guarda audio ni transcripciones; sin cuentas, pagos ni multijugador</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5. REFERENTES (1) -->
+<section class="slide dense" id="s5">
+  <p class="eyebrow">04 / Referentes (1 de 2) · consultados el 2026-11-04</p>
+  <h2>Qué miramos<br><span>y qué tomamos.</span></h2>
+  <div class="cols c3">
+    <div class="card">
+      <h3>VirtualSpeech</h3>
+      <p class="small">virtualspeech.com/about</p>
+      <p>Entrenamiento ante una <b>audiencia virtual</b>: del pitch 1 a 1 a un escenario de conferencias. Práctica en navegador, tablet o casco. Puntajes y debrief con un coach de IA.</p>
+      <p><b>Tomamos:</b> ensayar ante una audiencia simulada y que funcione también en pantalla.<br><b>Distinto:</b> sin IA ni puntajes de calidad; solo lo medido.</p>
+    </div>
+    <div class="card">
+      <h3>Ovation</h3>
+      <p class="small">Reseña: roadtovr.com/ovation-vr-public-speaking-training-simulator</p>
+      <p>Escenas desde una sala de reuniones hasta un salón de conferencias; herramientas dentro del espacio (puntero láser, control de presentación); devolución sobre muletillas, mirada y manos. Menús con láser «poco pulidos» según la reseña.</p>
+      <p><b>Tomamos:</b> escala distinta + herramientas en el espacio.<br><b>Distinto:</b> no medimos mirada ni manos; botones grandes.</p>
+    </div>
+    <div class="card">
+      <h3>PowerPoint Speaker Coach</h3>
+      <p class="small">support.microsoft.com (Rehearse with Coach)</p>
+      <p>Devolución sobre ritmo, muletillas y más; informe de ensayo con estadísticas y sugerencias. Es una función en la nube: <b>las emisiones de voz se envían a Microsoft</b>; pide micrófono, conexión y cuenta.</p>
+      <p><b>Tomamos:</b> informe con medidas concretas y <b>declarar qué se envía</b> antes de activar el micrófono.<br><b>Distinto:</b> sin cuenta, sin guardar nada.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6. REFERENTES (2) -->
+<section class="slide dense" id="s6">
+  <p class="eyebrow">04 / Referentes (2 de 2)</p>
+  <h2>Hallazgos<br><span>y base técnica.</span></h2>
+  <div class="cols c2">
+    <div class="card accent">
+      <h3>Hallazgos que guiaron el diseño</h3>
+      <ul>
+        <li>La presentación sucede <b>dentro de un espacio</b> con público y herramientas</li>
+        <li>La devolución muestra <b>medidas y requisitos de privacidad</b></li>
+        <li>Ninguno separa claro <b>medición</b> de <b>interpretación</b>: Pitch Lab separa «qué se midió», «consejos» y «revisión humana»</li>
+        <li>Los menús con puntero piden <b>botones grandes y separados</b></li>
+      </ul>
+      <h3 style="margin-top:20px">Referencias técnicas</h3>
+      <p class="small">MDN · Web Speech API (el audio puede enviarse a un servicio web en algunos navegadores)<br>A-Frame 1.8.0 (three.js r184) · WebXR Samples (immersive-web.github.io)</p>
+    </div>
+    <div class="pending">
+      <strong>Imágenes: pendiente del equipo</strong>
+      <p style="margin-top:12px">No se reutilizaron imágenes de terceros. Para llevar el informe a Figma, el equipo debe sumar <b>una captura por referente, con cita y enlace</b>:</p>
+      <ul>
+        <li>VirtualSpeech: sección «Public speaking» de la página</li>
+        <li>Ovation: imagen de la ficha oficial en la tienda del casco (la ficha oficial no se pudo verificar)</li>
+        <li>Speaker Coach: pantalla del informe de ensayo (página de soporte de Microsoft)</li>
+      </ul>
+      <p class="small">Detalle y análisis completo: <code>docs/referentes.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- 7. JUSTIFICACIÓN VR -->
+<section class="slide" id="s7">
+  <p class="eyebrow">05 / Por qué VR</p>
+  <h2>Lo que cambia<br><span>es el espacio.</span></h2>
+  <div class="cols c2">
+    <div class="card">
+      <ul>
+        <li><b>Escala y profundidad</b>: del cuarto de 5,6 m al auditorio de 30 m</li>
+        <li><b>Presencia del público alrededor</b>: 3, 5 o 64 personas repartidas</li>
+        <li><b>Distancia respecto del público</b>: 2,4 m · 2,1–5,1 m · 8,5–20 m</li>
+        <li><b>Reunión chica vs. auditorio</b>: se siente, no solo se lee</li>
+        <li><b>Objetos y controles situados</b>: atril, reloj, pantalla del brief, marcas de teletransporte</li>
+      </ul>
+      <p class="small" style="margin-top:14px">Funciona igual con mouse y teclado: la VR es un complemento, no un requisito.</p>
+    </div>
+    <figure class="shot"><img src="../capturas/31-auditorio-desde-el-publico.png" alt="Vista del auditorio desde el público"><figcaption>Auditorio visto desde un asiento del público (captura real, navegador de escritorio)</figcaption></figure>
+  </div>
+</section>
+
+<!-- 8. RECORRIDO -->
+<section class="slide" id="s8">
+  <p class="eyebrow">06 / Recorrido</p>
+  <h2>Un camino <span>con salidas claras.</span></h2>
+  <div class="flow">
+    <div class="step"><b>1</b><span>Inicio y tutorial salteable</span></div>
+    <div class="step"><b>2</b><span>Elegir escenario (maquetas)</span></div>
+    <div class="step"><b>3</b><span>Brief ficticio</span></div>
+    <div class="step"><b>4</b><span>Preparación (tiempo ajustable)</span></div>
+    <div class="step"><b>5</b><span>Presentación con reloj</span></div>
+    <div class="step"><b>6</b><span>Devolución</span></div>
+  </div>
+  <div class="cols c3">
+    <div class="card"><h3>Control</h3><ul><li>Pausa y continuación</li><li>Finalizar antes de tiempo</li><li>Cancelar <b>con confirmación</b></li><li>Reinicio limpio</li></ul></div>
+    <div class="card"><h3>Recuperación</h3><ul><li>Micrófono rechazado → sin voz</li><li>Reconocimiento no disponible → sin voz</li><li>Silencio → reintentar, texto o continuar</li></ul></div>
+    <div class="card"><h3>Después</h3><ul><li>Reintentar el mismo escenario</li><li>Cambiar de escenario</li><li>Revisar la transcripción</li></ul></div>
+  </div>
+</section>
+
+<!-- 9. SALA -->
+<section class="slide" id="s9">
+  <p class="eyebrow">07 / Diseño espacial · 1 de 3</p>
+  <h2>Sala <span>de ensayo</span></h2>
+  <div class="cols c-shot">
+    <div class="card"><ul><li><b>60 s</b> · espacio chico</li><li><b>3 oyentes</b> a 2,4–2,6 m</li><li>Atril, pantalla del brief (pared azul de marca) y reloj enfrentado</li><li>Alfombra, ventana, puerta y estantes: ambiente tranquilo</li></ul><p class="small">Para aprender la mecánica sin presión.</p></div>
+    <figure class="shot"><img src="../capturas/09-sala-presentando.png" alt="Sala de ensayo durante la presentación"><figcaption>Presentando: reloj en la pared, atril con botones, tres oyentes (captura real)</figcaption></figure>
+  </div>
+</section>
+
+<!-- 10. CLIENTE -->
+<section class="slide" id="s10">
+  <p class="eyebrow">07 / Diseño espacial · 2 de 3</p>
+  <h2>Reunión <span>con cliente</span></h2>
+  <div class="cols c-shot">
+    <div class="card"><ul><li><b>90 s</b> · sala mediana</li><li>Mesa larga y <b>5 personas</b> a 2,1–5,1 m: se nota cada mirada</li><li>Pantalla ancha del brief y ventanal con ciudad</li><li>Quien presenta está de pie en la cabecera</li></ul><p class="small">Cercanía: foco en problema, propuesta y beneficio.</p></div>
+    <figure class="shot"><img src="../capturas/20-cliente-presentando.png" alt="Reunión con cliente durante la presentación"><figcaption>Reunión con cliente (captura real)</figcaption></figure>
+  </div>
+</section>
+
+<!-- 11. AUDITORIO -->
+<section class="slide" id="s11">
+  <p class="eyebrow">07 / Diseño espacial · 3 de 3</p>
+  <h2><span>Auditorio</span></h2>
+  <div class="cols c-shot">
+    <div class="card"><ul><li><b>120 s</b> · gran escala</li><li>Escenario elevado, platea con rake, <b>dos alas y un balcón</b></li><li><b>64 personas</b> en 4 zonas, a 8,5–20 m</li><li>Reloj colgante sobre la platea y pantalla gigante</li><li>Marca «Ver desde el público» para mirar el escenario</li></ul><p class="small">Animaciones discretas; sin abucheos ni reacciones humillantes.</p></div>
+    <figure class="shot"><img src="../capturas/30-auditorio-presentando.png" alt="Auditorio visto desde el escenario"><figcaption>Auditorio visto desde el escenario (captura real)</figcaption></figure>
+  </div>
+</section>
+
+<!-- 12. MECÁNICA -->
+<section class="slide" id="s12">
+  <p class="eyebrow">08 / Mecánica central</p>
+  <h2>El atril <span>es el control.</span></h2>
+  <div class="cols c-shot">
+    <div>
+      <div class="card accent"><ul><li><b>Una acción principal</b> grande por estado; secundarias con menos énfasis</li><li>Reloj visible con aviso <b>visual (borde, ícono, texto) y sonoro</b></li><li>Preparación que <b>no empieza sola</b></li><li>Cancelar pide confirmación y <b>detiene el tiempo</b></li></ul></div>
+      <div class="card" style="margin-top:22px"><p class="small" style="margin:0"><b>Computadora</b>: mouse + W A S D, Enter, P, F, Esc, R, T.<br><b>VR</b>: rayo del control + gatillo, marcas de teletransporte, «Recentrar», «Sentado», «Salir de VR». Sin desplazamiento continuo.</p></div>
+    </div>
+    <figure class="shot"><img src="../capturas/08-sala-preparacion.png" alt="Pantalla de preparación"><figcaption>Preparación: opciones en el panel, acción principal en el atril (captura real)</figcaption></figure>
+  </div>
+</section>
+
+<!-- 13. DEVOLUCIÓN -->
+<section class="slide" id="s13">
+  <p class="eyebrow">09 / Devolución transparente</p>
+  <h2>Qué se <span>midió.</span></h2>
+  <div class="cols c-shot">
+    <div>
+      <div class="card"><ul><li>Duración <b>sin pausas</b> · palabras · palabras por minuto · muletillas (lista configurable)</li><li><b>Indicador técnico orientativo</b> = 40 % ritmo + 30 % muletillas + 30 % uso del tiempo; solo con ≥ 40 palabras y ≥ 20 s de reconocimiento</li><li>Sin datos: <b>«Sin datos suficientes»</b> y autoevaluación</li><li>Texto escrito o de <b>demostración</b>: rotulado y sin medidas de voz</li></ul></div>
+      <div class="pending" style="margin-top:20px;padding:18px 26px"><strong>No se mide</strong><p class="small" style="margin:6px 0 0">Confianza, ansiedad, emociones, contacto visual, persuasión ni calidad del discurso.</p></div>
+    </div>
+    <figure class="shot"><img src="../capturas/40-devolucion-con-datos-medidas.png" alt="Devolución con datos"><figcaption>Devolución con datos. Texto generado por un <b>simulador de reconocimiento de pruebas</b>, no es voz real.</figcaption></figure>
+  </div>
+</section>
+
+<!-- 14. IDENTIDAD Y ACCESIBILIDAD -->
+<section class="slide" id="s14">
+  <p class="eyebrow">10 / Identidad y accesibilidad</p>
+  <h2>Gráfica, <span>pero legible.</span></h2>
+  <div class="cols c2">
+    <div class="card">
+      <h3>Identidad</h3>
+      <div><span class="chip"><i style="background:#181D16"></i>#181D16 fondo</span><span class="chip"><i style="background:#20261C"></i>#20261C superficies</span><span class="chip"><i style="background:#0047FF"></i>#0047FF acción</span><span class="chip"><i style="background:#FFC94A"></i>#FFC94A énfasis</span><span class="chip"><i style="background:#FF006E"></i>#FF006E acento</span></div>
+      <p style="margin-top:8px"><b style="font-family:Anton;font-weight:400;font-size:40px">ANTON</b> para títulos y Barlow para texto: archivos locales del sitio, sin fuentes remotas. Señalética integrada al espacio (cartel de sala, «Salida», «Atril»).</p>
+    </div>
+    <div class="card accent">
+      <h3>Accesibilidad</h3>
+      <ul>
+        <li>Modo <b>sin voz</b> completo y tiempo de preparación ajustable</li>
+        <li><b>Sin límite de tiempo</b>, volumen regulable y movimiento reducido</li>
+        <li>Nada se comunica <b>solo con color</b> (íconos, texto, trazos)</li>
+        <li>Panel de texto con foco visible y lector de pantalla; recorrido completo solo con teclado</li>
+        <li>Modo sentado y recentrado; salida de VR siempre disponible</li>
+      </ul>
+      <p class="small">Falta una auditoría automática de contraste (pendiente).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 15. ARQUITECTURA -->
+<section class="slide" id="s15">
+  <p class="eyebrow">11 / Arquitectura</p>
+  <h2>La lógica no sabe<br><span>nada de 3D.</span></h2>
+  <div class="arch">
+    <div class="box"><b>Sesión</b>Tabla de estados, un solo temporizador, pausa, cancelación, voz<br><code>core/state-machine.js · session.js</code></div>
+    <div class="box"><b>Evaluación</b>Métricas, indicador, consejos, rúbrica: funciones puras<br><code>core/metrics.js · feedback.js</code></div>
+    <div class="box"><b>Voz</b>Capacidades reales, Web Speech, medidor de nivel opcional<br><code>voice/*</code></div>
+    <div class="box"><b>Modelo de pantalla</b>Qué se muestra y qué acciones hay en cada estado (dos renderizadores)<br><code>core/screens.js</code></div>
+    <div class="box"><b>Escenas</b>Hub, sala, cliente y auditorio; público instanciado<br><code>scenes/* · components/stage-controller.js</code></div>
+    <div class="box"><b>Interfaz</b>Panel, atril, reloj y botones 3D + panel de texto accesible<br><code>ui/* · components/xr-support.js (xr-ray)</code></div>
+  </div>
+  <p class="small" style="margin-top:22px">A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 77 pruebas de unidad, 21 de navegador real y 8 con emulador WebXR. Detalle: <code>docs/arquitectura.md</code></p>
+</section>
+
+<!-- 16. BITÁCORA -->
+<section class="slide" id="s16">
+  <p class="eyebrow">12 / Bitácora de prompts</p>
+  <h2>Lo que <span>realmente se pidió.</span></h2>
+  <div class="cols c2">
+    <div class="card accent">
+      <h3>Prompt 1 · 2026-11-04</h3>
+      <p>Encargo inicial completo a Claude Code (modelo Sonnet 5.5): construir, probar, documentar y publicar la experiencia de forma autónoma, sin inventar evidencia.</p>
+      <p class="small">Texto íntegro en <code>docs/prompts/01-encargo-inicial.md</code>. Fue el <b>único</b> prompt de esa sesión: no hubo preguntas intermedias.</p>
+    </div>
+    <div class="pending">
+      <strong>Pendiente del equipo</strong>
+      <ul style="margin-top:12px"><li>Prompts de los TPs 1 a 3 (no están en el repositorio)</li><li>Prompts que el equipo use para la intervención manual</li><li>Aclarar qué hizo la herramienta y qué hizo el equipo</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 17. PROBLEMA REAL -->
+<section class="slide" id="s17">
+  <p class="eyebrow">13 / Problema real resuelto</p>
+  <h2>Una fuga que<br><span>una prueba encontró.</span></h2>
+  <div class="cols c2">
+    <div>
+      <p class="lead" style="font-size:32px">Al ir del hub a una sala y volver, las geometrías en la GPU crecían <b>12 por cada ida y vuelta</b>.</p>
+      <div class="card" style="margin-top:20px"><p><b>Causa:</b> los pedestales de las maquetas (4 geometrías × 3) no se registraban para liberarse.</p><p><b>Solución:</b> registrarlos con <code>kit.track()</code> en <code>scenes/maquette.js</code>.</p><p style="margin:0"><b>Comprobación:</b> la prueba «recursos 3D» pasa: 84 → 85 al volver.</p></div>
+    </div>
+    <div class="card">
+      <h3>Geometrías al volver al hub</h3>
+      <p class="small">Antes del arreglo</p>
+      <div class="bar"><span class="lbl">Inicio</span><span class="b pink" style="width:84px">84</span></div>
+      <div class="bar"><span class="lbl">1.ª vuelta</span><span class="b pink" style="width:97px">97</span></div>
+      <div class="bar"><span class="lbl">2.ª vuelta</span><span class="b pink" style="width:109px">109</span></div>
+      <div class="bar"><span class="lbl">3.ª vuelta</span><span class="b pink" style="width:121px">121</span></div>
+      <p class="small" style="margin-top:14px">Después del arreglo</p>
+      <div class="bar"><span class="lbl">Inicio → vuelta</span><span class="b" style="width:84px">84</span><span class="b" style="width:85px">85</span></div>
+      <p class="small" style="margin-top:10px">Otros problemas reales (8) en <code>docs/problemas-resueltos.md</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 18. INTERVENCIÓN MANUAL -->
+<section class="slide" id="s18">
+  <p class="eyebrow">14 / Intervención manual del equipo</p>
+  <h2><span>Pendiente.</span></h2>
+  <div class="cols c2">
+    <div class="pending">
+      <strong>No realizada todavía</strong>
+      <p style="margin-top:12px">La modificación a mano <b>la hace el equipo</b>. La herramienta solo dejó una guía; <b>no aplicó ningún cambio</b> ni lo presenta como hecho por estudiantes.</p>
+      <p><b>Propuesta A:</b> aviso de tiempo proporcional a la duración del escenario (<code>js/core/time-warnings.js</code>). Alternativas: una regla de devolución o una mejora de accesibilidad.</p>
+      <p class="small">Guía: <code>docs/intervencion-manual.md</code></p>
+    </div>
+    <div class="cols" style="grid-template-rows:1fr 1fr;gap:20px">
+      <div class="card" style="border-style:dashed"><span class="tag-pending">Antes (código real)</span><p class="muted" style="margin-top:10px">— completar con el fragmento original, archivo y líneas —</p></div>
+      <div class="card" style="border-style:dashed"><span class="tag-pending">Después (código real)</span><p class="muted" style="margin-top:10px">— completar con el cambio hecho por el equipo, motivo y cómo lo comprobaron —</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 19. PRUEBAS Y LIMITACIONES -->
+<section class="slide" id="s19">
+  <p class="eyebrow">15 / Pruebas y limitaciones</p>
+  <h2>Lo probado,<br><span>lo pendiente.</span></h2>
+  <div class="cols c2">
+    <div class="card accent">
+      <span class="ok-tag">Verificado</span>
+      <table>
+        <tr><th>Nivel</th><th>Resultado</th></tr>
+        <tr><td>Pruebas de unidad</td><td><b>77 / 77</b></td></tr>
+        <tr><td>Navegador real (Edge 156, mouse y teclado, 60 s reales)</td><td><b>21 / 21</b></td></tr>
+        <tr><td>Modo inmersivo con <b>emulador</b> WebXR</td><td><b>8 / 8</b></td></tr>
+        <tr><td>Rutas bajo <code>/sitioPubliton/pitch-lab/</code> y sitio anterior</td><td><b>OK</b></td></tr>
+      </table>
+    </div>
+    <div class="pending">
+      <strong>Pendiente / no verificado</strong>
+      <ul style="margin-top:12px">
+        <li><b>Casco físico</b> y comodidad en VR</li>
+        <li><b>Rendimiento y cuadros por segundo</b> (no medidos)</li>
+        <li><b>Voz real</b>: se probó con simulaciones; el servicio es del navegador</li>
+        <li>Firefox, Safari y celulares</li>
+        <li>Validación con personas usuarias</li>
+        <li>Auditoría automática de contraste</li>
+      </ul>
+      <p class="small">Detalle: <code>docs/pruebas.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- 20. ENLACE Y QR -->
+<section class="slide" id="s20">
+  <p class="eyebrow">16 / Enlace de la experiencia</p>
+  <h2>Probala <span>vos.</span></h2>
+  <div class="cols c2" id="enlace">
+    <div>
+      <!--PUBLICACION-->
+      <div class="pending"><strong>Aún no verificado</strong><p style="margin-top:10px">El enlace y el QR se agregan solo cuando la publicación existe y fue verificada.</p></div>
+      <!--/PUBLICACION-->
+    </div>
+    <div class="card"><h3>Cómo ejecutarla</h3><ul><li><code>node tools/serve.mjs</code> y abrir <code>localhost:8080/pitch-lab/</code></li><li>Sin micrófono también funciona</li><li>Casco: abrir el enlace en su navegador (<b>no probado</b>)</li></ul></div>
+  </div>
+</section>
+
+<!-- 21. PRÓXIMOS PASOS -->
+<section class="slide" id="s21">
+  <p class="eyebrow">17 / Próximos pasos</p>
+  <h2>Lo que <span>sigue.</span></h2>
+  <div class="cols c3">
+    <div class="card"><h3>Validar</h3><ul><li>Probar en un casco real</li><li>Entrevistas y pruebas de uso con el público objetivo</li><li>Medir rendimiento en el casco</li></ul></div>
+    <div class="card"><h3>Mejorar</h3><ul><li>Intervención manual del equipo</li><li>Más briefs y un cuarto escenario</li><li>Auditoría de accesibilidad automática</li></ul></div>
+    <div class="card"><h3>Explorar</h3><ul><li>Evaluación semántica con IA, <b>con consentimiento y backend propio</b> (hoy no existe)</li><li>Enlace desde el sitio de Publitón</li></ul></div>
+  </div>
+</section>
+
+</body>
+</html>

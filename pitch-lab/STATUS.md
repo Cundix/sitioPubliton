@@ -1,29 +1,67 @@
 # STATUS — Publitón Pitch Lab
 
-_Última actualización: 2026-11-04 (trabajo autónomo en curso)_
+_Última actualización: 2026-11-04._
 
-## Terminado
-- Estructura `pitch-lab/` creada dentro de la copia local del repo (`Design5to/sitioPubliton`), rama `main`, sin tocar archivos existentes.
-- A-Frame 1.8.0 vendorizado en `vendor/` (sin CDN).
-- Configuración editable: `js/config/` (app-config, briefs, scenarios).
-- Lógica pura con tests: máquina de estados, sesión (reloj, pausa, cancelación, voz), métricas, indicador, devolución, rúbrica, layouts. **64 tests de unidad pasan** (`npm test`).
+## Publicación
+
+| Ítem | Estado |
+|---|---|
+| Código en el repositorio (`main`) | *(se actualiza al terminar la publicación; ver más abajo)* |
+| Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **estado verificado: ver sección «Verificación de la publicación»** |
+
+## Terminado (y cómo se comprobó)
+
+- **Experiencia completa** en `pitch-lab/`: hub con maquetas, tres escenarios (Sala de ensayo 60 s, Reunión con cliente 90 s, Auditorio 120 s), tres briefs ficticios, tutorial salteable, preparación ajustable, presentación con reloj, pausa, finalizar, cancelar con confirmación, devolución y reintento. → pruebas de navegador real (21/21).
+- **Voz opcional** con alternativas (sin micrófono, permiso rechazado, reconocimiento no disponible, silencio), transcripción revisable con origen, medición de nivel de audio opcional. → pruebas con **simulaciones** de voz (voz real: pendiente).
+- **Devolución transparente**: medidas con su origen, «Indicador técnico orientativo» con fórmula visible y «Sin datos suficientes», rúbrica de autoevaluación, consejos basados en datos, revisión humana. → 77 pruebas de unidad.
+- **WebXR**: botón «Entrar en VR», rayo de controles y manos (target ray), teletransporte, recentrado, modo sentado, salida de VR. → **emulador** (8/8). **Casco físico: pendiente.**
+- **Accesibilidad**: panel de texto espejo, teclado completo, foco visible, `aria-live`, movimiento reducido, volumen.
+- **Documentación** (`docs/`), **informe 16:9** (`informe/informe-pitch-lab.pdf`, 21 páginas), **material para Figma** (`informe/figma/`), **guion de 5 minutos**, **guía de intervención manual**, **capturas** (`capturas/`).
 
 ## En curso
-- Componentes A-Frame (escenas, interfaz espacial, controles, audio) y HTML accesible.
 
-## Falta
-- Voz (envoltorio de Web Speech) y medidor de audio.
-- Los tres escenarios 3D + hall de selección.
-- Pruebas end-to-end con navegador, emulación WebXR y capturas.
-- Documentación, informe 16:9 + PDF, guía de intervención manual, guion.
-- Publicación y verificación en GitHub Pages.
+Nada. El trabajo autónomo terminó con la publicación y su verificación (ver abajo).
+
+## Falta (no lo puede cerrar la herramienta)
+
+1. **Probar en un casco físico** y anotar comodidad, legibilidad y altura (modo sentado). No se afirma rendimiento ni cuadros por segundo.
+2. **Intervención manual del equipo** (antes/después reales): guía en `docs/intervencion-manual.md`.
+3. **Informe interactivo en Figma**: armarlo con `informe/figma/` (no hubo acceso a Figma).
+4. **Imágenes de los referentes** para el informe (una captura por referente, con cita).
+5. **Validar el público** (hoy es una hipótesis de diseño) con entrevistas o pruebas de uso.
+6. **Voz real** en Chrome/Edge y pruebas en Firefox, Safari y celulares.
+7. Bitácora de prompts: sumar los de los TPs anteriores y los que el equipo use.
+8. Opcional: enlace desde el sitio principal hacia `/pitch-lab/` (no se modificó ningún archivo existente).
 
 ## Bloqueos
-- Ninguno por ahora. (Casco físico: no disponible; quedará como pendiente explícito.)
 
-## Retomar
+- **Casco físico**: no disponible en este entorno (bloqueo externo; queda pendiente explícito).
+- **Figma**: sin acceso desde este entorno.
+- Ningún bloqueo técnico abierto.
+
+## Próximos pasos concretos
+
+1. Abrir el enlace publicado en un casco y recorrer una sesión completa; registrar lo observado en `docs/pruebas.md`.
+2. Hacer la intervención manual (elegir A, B o C) y completar la plantilla de `docs/intervencion-manual.md`.
+3. Armar el informe en Figma desde `informe/figma/` y completar las diapositivas marcadas «pendiente».
+4. Ensayar la exposición con `docs/guion-exposicion.md` (plan B incluido).
+
+## Comandos para retomar
+
 ```bash
 cd sitioPubliton/pitch-lab
-npm test                 # tests de unidad
-node tools/serve.mjs     # servidor estático en http://localhost:8080/pitch-lab/ (ver README)
+npm install                                           # solo la primera vez
+npm test                                              # 77 pruebas de unidad
+node tools/serve.mjs                                  # http://localhost:8080/pitch-lab/
+MSYS_NO_PATHCONV=1 node tools/serve.mjs 8081 /sitioPubliton   # ruta de GitHub Pages (otra terminal)
+npm run test:e2e                                      # 21 pruebas con navegador real (~2 min)
+node tests/e2e/xr.mjs                                 # 8 pruebas con emulador WebXR
+node tools/qa-shots.mjs capturas 1600 900             # capturas
+node tools/build-informe.mjs                          # PDF + PNG del informe
 ```
+
+## Mapa rápido
+
+- Configuración editable: `js/config/` (briefs, escenarios, tiempos, muletillas).
+- Lógica: `js/core/` · Voz: `js/voice/` · Espacios: `js/scenes/` · Interfaz: `js/ui/` · Componentes A-Frame: `js/components/`.
+- Documentos: `docs/` (arquitectura, métricas, decisiones, pruebas, problemas, prompts, intervención, guion, referentes).
