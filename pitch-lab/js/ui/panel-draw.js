@@ -51,7 +51,7 @@ export function drawPanel(ctx, W, H, panel, { hasOptions, k = 1, draw = true }) 
   y += panel.title.length * titleSize * 0.98 + 34 * k;
 
   const bottom = H - 64;
-  for (const block of panel.blocks) {
+  for (const block of panel.blocks.filter((b) => !b.htmlOnly)) {
     y = drawBlock(ctx, block, m, y, contentW, bottom, k, draw) + 26 * k;
   }
   return y;
@@ -85,7 +85,7 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
         if (draw) drawSpaced(ctx, block.heading.toUpperCase(), x, cy + sz(30), 3);
         cy += sz(58);
       }
-      for (const item of block.items) {
+      for (const item of (block.max3D ? block.items.slice(0, block.max3D) : block.items)) {
         if (draw) drawIcon(ctx, 'diamond', x + sz(16), cy + sz(32), sz(30), COLORS.yellow);
         cy = para(item, x + sz(56), cy, w - sz(56), { size: sz(58), lineHeight: 1.18 }) + sz(14);
       }

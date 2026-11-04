@@ -108,10 +108,10 @@ export function buildAuditorio(kit, sc, { onPress }) {
   if (view) {
     const back = new FloatingButton({
       action: { id: 'back-to-stage', label: 'Volver al atril', kind: 'primary', ui: 'recenter' },
-      pos: [view.x, view.y + 1.25, view.z + 1.1],
+      pos: [view.x, view.y + 1.0, view.z + 1.3],
       rotY: 180,
-      w: 0.9,
-      h: 0.24,
+      w: 0.66,
+      h: 0.18,
       onPress,
     });
     entities.push(back.el);

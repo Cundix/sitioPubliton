@@ -430,8 +430,9 @@ export function buildScreen(session, settings, env = {}) {
         panel.title = ['CONSEJOS Y', 'REVISIÓN HUMANA'];
         panel.blocks = [
           { t: 'tips', items: fb.tips },
-          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview.slice(0, 3) },
+          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, max3D: 3 },
           { t: 'notice', kind: 'info', label: 'SIN IA', text: 'La evaluación semántica con IA no está disponible en esta versión. Pedí una opinión a una persona del equipo.' },
+          { t: 'bullets', heading: 'Preguntas de práctica (predefinidas; no responden a lo que dijiste)', items: fb.questions, htmlOnly: true },
         ];
       }
       lectern.status = 'DEVOLUCIÓN';
