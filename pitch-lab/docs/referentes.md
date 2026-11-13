@@ -26,8 +26,8 @@ cita de la fuente) al llevar el informe a Figma.
   (ritmo, muletillas).
 - **Qué tomamos**: la idea central de **ensayar ante una audiencia simulada** y que la experiencia **funcione también
   en pantalla**, no solo en casco.
-- **En qué nos diferenciamos**: no usamos IA ni «puntajes» de calidad; mostramos solo lo medido, con su origen, y
-  separamos lo que requiere revisión humana. Sin cuentas ni pagos.
+- **En qué nos diferenciamos**: la IA es **opcional** (con la clave de cada persona) y se rotula como interpretación;
+  no damos «puntajes» de calidad; separamos lo medido, lo interpretado y lo que requiere revisión humana. Sin cuentas ni pagos.
 - **Captura sugerida para el informe**: la sección «Public speaking» de la página (con cita y enlace).
 
 ## 2. Ovation
@@ -55,8 +55,8 @@ cita de la fuente) al llevar el informe a Figma.
   envían a Microsoft**; requiere micrófono, conexión y cuenta; solo en inglés.
 - **Qué tomamos**: el **informe de ensayo con medidas concretas** y, sobre todo, **declarar de entrada qué se envía y
   qué se requiere** (privacidad y requisitos explícitos antes de activar el micrófono).
-- **En qué nos diferenciamos**: español, sin cuenta, sin guardar nada; transparencia sobre la fórmula y sobre qué
-  no se puede medir; alternativa sin voz completa.
+- **En qué nos diferenciamos**: español, sin cuenta, sin guardar audio ni texto; transparencia sobre la fórmula y sobre qué
+  no se puede medir (la IA opcional avisa antes qué se envía); alternativa sin voz completa.
 - **Captura sugerida**: pantalla del informe de «Rehearse with Coach» (cita de la página de soporte).
 
 ## 4. Web Speech API (MDN)

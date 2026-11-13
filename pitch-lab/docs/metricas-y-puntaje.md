@@ -71,11 +71,28 @@ beneficio es creíble, si el cierre propone un siguiente paso y si la transcripc
 **rúbrica de autoevaluación** (¿Presenté el problema? ¿Expliqué la idea? ¿Justifiqué el beneficio? ¿Cerré con una
 propuesta clara?) la completa la persona; no entra en el indicador.
 
+## Gestos (cámara) y análisis con IA: fuera del indicador
+
+Son dos fuentes **opcionales** que se muestran aparte y **no entran en el «Indicador técnico orientativo»**:
+
+| Dato | Naturaleza | Cómo se obtiene | Límite principal |
+|---|---|---|---|
+| Manos a la vista (%), dos manos (%) | **Medición** en el dispositivo | Detector de manos MediaPipe a 8 cuadros/s; cuenta cuadros con ≥ 1 mano | Depende de la luz, el encuadre y el ángulo |
+| Movimiento de manos (poco / moderado / mucho) | **Medición** aproximada | Velocidad media del centro de la mano, en anchos de imagen por segundo | Umbrales **provisorios, sin calibrar**; más movimiento no es «mejor» |
+| Rúbrica de contenido (claro / parcial / falta) con cita | **Interpretación** de la IA | Gemini analiza el audio frente al brief | Puede equivocarse; revisar con una persona |
+| Ritmo, claridad, entonación y volumen, pausas, muletillas «percibidos» | **Interpretación** de la IA | Gemini, a partir del audio | No es medición; no hay números ni puntajes |
+| Transcripción de la IA | **Interpretación** | Solo si el navegador no ofrece reconocimiento de voz | Puede tener errores; se rotula «Transcripción de la IA» |
+
+Las palabras por minuto y las muletillas de la IA **no** se mezclan con las del reconocimiento del navegador: si
+hay reconocimiento, manda ese texto; la IA se usa solo como respaldo cuando no lo hay.
+
 ## Qué NO se mide (y por qué)
 
 No se miden **confianza, ansiedad, emociones, contacto visual, persuasión ni calidad integral del discurso**: no hay
-datos para hacerlo de forma honesta. La orientación del casco **no es seguimiento ocular** y no se usa como tal. La
-audiencia virtual no reacciona al discurso.
+datos para hacerlo de forma honesta. La IA tiene **prohibido** inferirlos (instrucción del sistema) y su esquema de
+respuesta no tiene campos para eso; las observaciones de tono se limitan a la entrega («se percibe un ritmo
+pausado»). La orientación del casco **no es seguimiento ocular** y no se usa como tal. La audiencia virtual no
+reacciona al discurso.
 
 ## Limitaciones y errores de reconocimiento
 

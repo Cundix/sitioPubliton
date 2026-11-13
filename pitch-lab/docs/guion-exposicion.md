@@ -52,7 +52,7 @@ Guion de la demo (dejar el navegador ya abierto en el enlace publicado; **plan B
    orientativo muestra su fórmula y solo aparece con datos suficientes; si no, dice “Sin datos suficientes”.»*
 7. Mostrar la **autoevaluación** y **Reintentar**.
 
-> «Todo se puede hacer **sin micrófono**: practicás con temporizador y autoevaluás. Y el audio **no se guarda**.»
+> «Todo se puede hacer **sin micrófono**: practicás con temporizador y autoevaluás. El audio **no se guarda**. Y si activás la **IA opcional** con tu propia clave, el audio viaja a Google para el análisis, y te avisamos antes.»
 
 ## Tana — 1:05 · «Cómo está hecho y qué falta»
 
@@ -71,8 +71,8 @@ Guion de la demo (dejar el navegador ya abierto en el enlace publicado; **plan B
 
 ## Cierre (todos) — 0:20
 
-> **Fiscina**: «Próximos pasos: probar en un casco real, validar el público con entrevistas y, más adelante,
-> evaluación asistida por IA —que hoy **no existe**—.»
+> **Fiscina**: «Próximos pasos: probar en un casco real, validar el público con entrevistas y **validar la IA opcional con
+> voz real y con personas expertas** —hoy la probamos con voz sintética y manos de prueba—.»
 > **Todos**: «Pueden probarlo con este enlace.» *(mostrar el QR cuando esté publicado y verificado)*
 
 ---
@@ -90,6 +90,9 @@ Guion de la demo (dejar el navegador ya abierto en el enlace publicado; **plan B
 
 - «Está probado en VR/en casco» (no lo está).
 - «Evalúa la calidad del discurso / la confianza / la persuasión» (no lo hace).
-- «Usa IA» (no la usa).
+- «Usa IA» sin aclarar que es **opcional**, con la clave de cada persona, y que es una **interpretación** (puede equivocarse), no una medición ni una nota.
+- «La IA evalúa las emociones / los nervios / la confianza» (lo tiene prohibido y se filtra).
+- «La cámara analiza tu expresividad» (solo mide cuánto se mueven y se ven las manos, sin video).
+- «La IA está probada con voz real y con manos reales» (se probó con voz sintética y con una cámara de prueba sin manos).
 - «Las personas del público reaccionan a lo que decís» (no reaccionan).
 - «Hicimos entrevistas» (no se hicieron).

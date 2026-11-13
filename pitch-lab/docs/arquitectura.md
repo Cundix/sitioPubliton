@@ -35,7 +35,7 @@ Pensada para poder explicarse en clase: **la lógica no sabe nada de 3D** y la p
 | **Voz** | `js/voice/*` | Detección de capacidades, `SpeechController` (Web Speech API), `AudioMeter` (nivel de audio, opcional). |
 | **Evaluación** | `js/core/metrics.js`, `feedback.js`, `rubric.js` | Métricas, indicador técnico orientativo, consejos y rúbrica. Funciones puras. |
 | **Interfaz** | `js/core/screens.js`, `js/ui/*` | Un *modelo de pantalla* único que dibujan dos renderizadores: espacio 3D y panel de texto HTML. |
-| **IA futura** | `js/ai/semantic-evaluator.js` | Interfaz vacía (`available === false`). No se simula. |
+| **IA y cámara** | `js/ai/*` | Opcional. Graba el audio, lo analiza con la API de Gemini (clave de cada persona) y mide gestos de manos en el dispositivo con MediaPipe. Ver [`analisis-con-ia.md`](analisis-con-ia.md). |
 
 ## Diagrama de estados
 
@@ -56,7 +56,10 @@ stateDiagram-v2
   brief --> prep: PREPARE
   brief --> select: CHANGE_SCENARIO
   prep --> prep: SET_INPUT_MODE / TOGGLE_UNLIMITED / TOGGLE_METER / ADJUST_PREP
-  prep --> starting: BEGIN con micrófono
+  prep --> ai_setup: OPEN_AI (IA y cámara, opcional)
+  ai_setup --> ai_setup: TOGGLE_AI / TOGGLE_GESTURES
+  ai_setup --> prep: CLOSE (la cuenta de preparación sigue donde quedó)
+  prep --> starting: BEGIN con micrófono o cámara
   prep --> presenting: BEGIN solo temporizador
   prep --> brief: BACK
   starting --> presenting: MIC_READY
@@ -78,7 +81,7 @@ stateDiagram-v2
   review --> review: SET_TRANSCRIPT / LOAD_DEMO
   review --> feedback: CONTINUE
   review --> prep: RETRY
-  feedback --> feedback: SET_PAGE / RUBRIC_CYCLE
+  feedback --> feedback: SET_PAGE / RUBRIC_CYCLE / AI_RETRY
   feedback --> review: EDIT_TRANSCRIPT
   feedback --> prep: RETRY
   feedback --> select: CHANGE_SCENARIO
@@ -115,6 +118,24 @@ acción explícita.
 - `Session._teardownMedia()` libera voz y medidor al **cancelar, reintentar, reiniciar o salir** (`pagehide`). Solo
   libera lo que realmente se inició.
 
+## Análisis con IA y cámara (opcional)
+
+```text
+Session ──► AnalysisService ──┬─► AudioCapture   MediaRecorder → WAV 16 kHz mono (solo en memoria)
+                              ├─► GestureTracker MediaPipe (CPU) → GestureAccumulator → resumen de cifras
+                              └─► GeminiClient   generateContent (JSON con esquema) → normalizeAnalysis → feedback.ai
+```
+
+- La Sesión solo conoce una interfaz pequeña (`startAudio`, `startCamera`, `beginTracking`, `pause`, `resume`,
+  `finishCapture`, `analyze`, `abort`); en las pruebas se reemplaza por un falso controlable.
+- Los permisos se piden de forma **síncrona dentro del gesto**, y un contador de generación suelta cualquier
+  micrófono, cámara o modelo que llegue **después de cancelar** (ver `problemas-resueltos.md`, problema 10).
+- El análisis corre **en segundo plano**: la devolución se muestra enseguida y la pestaña de IA pasa de «analizando» a
+  «lista» o «error»; un resultado tardío de una sesión anterior se ignora (`_aiAttempt`).
+- La grabación se conserva en memoria solo mientras el análisis falle y se pueda **reintentar**; se descarta al
+  terminar, reintentar la práctica, cancelar o reiniciar.
+- Ver [`analisis-con-ia.md`](analisis-con-ia.md) para privacidad, cuota, clave y limitaciones.
+
 ## Espacio 3D
 
 - **Coordenadas**: el origen es el atril; la persona empieza 1,4 m detrás, mirando hacia -z, donde está el público.
@@ -147,4 +168,5 @@ acción explícita.
 - **Un escenario nuevo**: agregar su configuración en `config/scenarios.js` y una función `build…` en `scenes/` que
   devuelva `{ spawn, zones, obstacles, pads, anchors, entities, update }` (ver `sala.js`).
 - **Una regla de devolución**: `core/feedback.js` (`buildTips`) y su test en `tests/unit/metrics.test.js`.
-- **Evaluación semántica**: implementar la interfaz de `ai/semantic-evaluator.js` detrás de un backend propio.
+- **Otro modelo o proveedor de IA**: `js/ai/gemini-client.js` (misma forma: `analyze` y `testKey`) y la lista `ai.models` de `config/app-config.js`.
+- **Más criterios de análisis**: `js/ai/analysis-prompt.js` (esquema + instrucciones + validación) y `buildAiSection` en `core/feedback.js`.

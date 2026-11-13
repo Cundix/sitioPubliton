@@ -6,19 +6,22 @@ sumar acá esos prompts con su fecha y su resultado.
 
 ## Alcance de este registro
 
-- Corresponde a **una sola sesión de trabajo** de Claude Code (aplicación de escritorio, modelo Sonnet 5.5), el
-  **2026-11-04**, que trabajó de forma autónoma.
+- Corresponde a **una sola sesión de trabajo** de Claude Code (aplicación de escritorio, modelo Sonnet 5.5), que
+  empezó el **2026-11-04** de forma autónoma y continuó el **2026-11-13** con nuevos pedidos de la persona usuaria.
 - Los prompts de los TPs anteriores (1 a 3) **no están en esta carpeta ni en el repositorio**; si el equipo los
   guardó, conviene adjuntarlos al informe.
-- En esta sesión **no hubo preguntas ni respuestas intermedias** de la persona usuaria: recibió un solo encargo y
-  después trabajó sin interacción (la persona estaba de viaje, según el propio encargo).
+- El 2026-11-04 **no hubo preguntas ni respuestas intermedias**: un solo encargo y trabajo sin interacción (la
+  persona estaba de viaje, según el propio encargo). Los pedidos del 2026-11-13 sí fueron una conversación.
 
 ## Entradas
 
 | # | Fecha | Autoría | Prompt | Resultado |
 |---|---|---|---|---|
 | 1 | 2026-11-04 | Persona usuaria de la sesión | **Encargo inicial** completo: [`prompts/01-encargo-inicial.md`](prompts/01-encargo-inicial.md) | Se inspeccionó el repositorio (sin archivos de instrucciones; solo `README.md`), se verificó que Pages publica la raíz de `main` y se construyó, probó y documentó la experiencia en `pitch-lab/` |
-| 2 | *(pendiente)* | *(equipo)* | *(agregar los prompts que el equipo use para la intervención manual u otras tareas)* | — |
+| 2 | 2026-11-13 | Persona usuaria de la sesión | «armá el informe ahí y completá todo lo que haya que completar, usá la skill/plugin de Figma» (con el enlace del archivo de Figma del equipo) | El plugin oficial de Figma no estaba habilitado en la cuenta; se preparó `informe/figma/slides-spec.json` y se dejó **pendiente** el armado en Figma |
+| 3 | 2026-11-13 | Persona usuaria de la sesión | «me podés mostrar cómo está el juego sin los cositos VR» · «dónde está el link? Tipo quiero jugarlo» | Se mostró el recorrido en escritorio; se dio el enlace publicado |
+| 4 | 2026-11-13 | Persona usuaria de la sesión | **Análisis real del audio con IA y cámara**, con 50 jugadas por día y sin tope de 5 minutos: [`prompts/02-analisis-con-ia.md`](prompts/02-analisis-con-ia.md) (la clave pegada en el chat se omite) | Función opcional con Gemini (`gemini-3.5-flash-lite`), gestos con MediaPipe, pruebas y documentación: [`analisis-con-ia.md`](analisis-con-ia.md) |
+| 5 | *(pendiente)* | *(equipo)* | *(agregar los prompts que el equipo use para la intervención manual u otras tareas)* | — |
 
 ## Resumen del prompt 1
 

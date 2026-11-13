@@ -138,16 +138,17 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
         <li>Tres espacios: <b>Sala de ensayo</b> (60 s), <b>Reunión con cliente</b> (90 s) y <b>Auditorio</b> (120 s)</li>
         <li>Tres briefs ficticios editables</li>
         <li>Voz opcional en español, con alternativa <b>sin micrófono</b></li>
+        <li><b>Opcional</b>: la IA (Gemini, con tu clave) interpreta el audio y la cámara mide las manos en el dispositivo</li>
         <li>Devolución transparente: qué se midió, de dónde sale y qué requiere revisión humana</li>
       </ul>
     </div>
     <div class="card">
       <h3>Qué no es</h3>
       <ul>
-        <li>No evalúa contenido, confianza, emociones ni persuasión</li>
-        <li>No usa IA (hay una interfaz vacía para el futuro)</li>
+        <li>No mide confianza, emociones ni persuasión; el contenido solo lo <b>interpreta</b> la IA opcional</li>
+        <li>La IA es <b>opcional</b> y con clave propia: sin clave, no hay IA</li>
         <li>El público no reacciona al discurso</li>
-        <li>No guarda audio ni transcripciones; sin cuentas, pagos ni multijugador</li>
+        <li>No guarda audio ni transcripciones (con IA, el audio viaja a Google y se avisa antes); sin cuentas, pagos ni multijugador</li>
       </ul>
     </div>
   </div>
@@ -162,7 +163,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
       <h3>VirtualSpeech</h3>
       <p class="small">virtualspeech.com/about</p>
       <p>Entrenamiento ante una <b>audiencia virtual</b>: del pitch 1 a 1 a un escenario de conferencias. Práctica en navegador, tablet o casco. Puntajes y debrief con un coach de IA.</p>
-      <p><b>Tomamos:</b> ensayar ante una audiencia simulada y que funcione también en pantalla.<br><b>Distinto:</b> sin IA ni puntajes de calidad; solo lo medido.</p>
+      <p><b>Tomamos:</b> ensayar ante una audiencia simulada y que funcione también en pantalla.<br><b>Distinto:</b> la IA es opcional y se rotula como <b>interpretación</b>; sin puntajes de calidad; lo medido va separado de lo interpretado.</p>
     </div>
     <div class="card">
       <h3>Ovation</h3>
@@ -193,7 +194,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
         <li>Los menús con puntero piden <b>botones grandes y separados</b></li>
       </ul>
       <h3 style="margin-top:20px">Referencias técnicas</h3>
-      <p class="small">MDN · Web Speech API (el audio puede enviarse a un servicio web en algunos navegadores)<br>A-Frame 1.8.0 (three.js r184) · WebXR Samples (immersive-web.github.io)</p>
+      <p class="small">MDN · Web Speech API (el audio puede enviarse a un servicio web en algunos navegadores)<br>API de Gemini (documentación oficial, aistudio.google.com/docs) · MediaPipe Hand Landmarker (Google)<br>A-Frame 1.8.0 (three.js r184) · WebXR Samples (immersive-web.github.io)</p>
     </div>
     <div class="pending">
       <strong>Imágenes: pendiente del equipo</strong>
@@ -298,7 +299,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
       <div class="card"><ul><li>Duración <b>sin pausas</b> · palabras · palabras por minuto · muletillas (lista configurable)</li><li><b>Indicador técnico orientativo</b> = 40 % ritmo + 30 % muletillas + 30 % uso del tiempo; solo con ≥ 40 palabras y ≥ 20 s de reconocimiento</li><li>Sin datos: <b>«Sin datos suficientes»</b> y autoevaluación</li><li>Texto escrito o de <b>demostración</b>: rotulado y sin medidas de voz</li></ul></div>
       <div class="pending" style="margin-top:20px;padding:18px 26px"><strong>No se mide</strong><p class="small" style="margin:6px 0 0">Confianza, ansiedad, emociones, contacto visual, persuasión ni calidad del discurso.</p></div>
     </div>
-    <figure class="shot"><img src="../capturas/40-devolucion-con-datos-medidas.png" alt="Devolución con datos"><figcaption>Devolución con datos. Texto generado por un <b>simulador de reconocimiento de pruebas</b>, no es voz real.</figcaption></figure>
+    <figure class="shot"><img src="../capturas/40-devolucion-con-datos-medidas.png" alt="Devolución con datos"><figcaption>Devolución con datos. Texto generado por un <b>simulador de reconocimiento de pruebas</b>, no es voz real. Con la IA opcional se suman las pestañas 4 y 5: <b>interpretación</b> rotulada, sin puntajes.</figcaption></figure>
   </div>
 </section>
 
@@ -333,12 +334,12 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
   <div class="arch">
     <div class="box"><b>Sesión</b>Tabla de estados, un solo temporizador, pausa, cancelación, voz<br><code>core/state-machine.js · session.js</code></div>
     <div class="box"><b>Evaluación</b>Métricas, indicador, consejos, rúbrica: funciones puras<br><code>core/metrics.js · feedback.js</code></div>
-    <div class="box"><b>Voz</b>Capacidades reales, Web Speech, medidor de nivel opcional<br><code>voice/*</code></div>
+    <div class="box"><b>Voz, IA y cámara</b>Web Speech y medidor; opcional: Gemini (clave propia) y manos con MediaPipe en el dispositivo<br><code>voice/* · ai/*</code></div>
     <div class="box"><b>Modelo de pantalla</b>Qué se muestra y qué acciones hay en cada estado (dos renderizadores)<br><code>core/screens.js</code></div>
     <div class="box"><b>Escenas</b>Hub, sala, cliente y auditorio; público instanciado<br><code>scenes/* · components/stage-controller.js</code></div>
     <div class="box"><b>Interfaz</b>Panel, atril, reloj y botones 3D + panel de texto accesible<br><code>ui/* · components/xr-support.js (xr-ray)</code></div>
   </div>
-  <p class="small" style="margin-top:22px">A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 77 pruebas de unidad, 21 de navegador real y 8 con emulador WebXR. Detalle: <code>docs/arquitectura.md</code></p>
+  <p class="small" style="margin-top:22px">A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 150 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: <code>docs/arquitectura.md</code></p>
 </section>
 
 <!-- 16. BITÁCORA -->
@@ -350,6 +351,8 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
       <h3>Prompt 1 · 2026-11-04</h3>
       <p>Encargo inicial completo a Claude Code (modelo Sonnet 5.5): construir, probar, documentar y publicar la experiencia de forma autónoma, sin inventar evidencia.</p>
       <p class="small">Texto íntegro en <code>docs/prompts/01-encargo-inicial.md</code>. Fue el <b>único</b> prompt de esa sesión: no hubo preguntas intermedias.</p>
+      <h3 style="margin-top:18px">Pedidos del 2026-11-13</h3>
+      <p class="small" style="margin:6px 0 0">Informe en Figma (pendiente), ver el juego sin VR y el <b>análisis real del audio con IA y cámara</b>: <code>docs/prompts/02-analisis-con-ia.md</code> (la clave pegada en el chat se omite).</p>
     </div>
     <div class="pending">
       <strong>Pendiente del equipo</strong>
@@ -408,8 +411,9 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
       <span class="ok-tag">Verificado</span>
       <table>
         <tr><th>Nivel</th><th>Resultado</th></tr>
-        <tr><td>Pruebas de unidad</td><td><b>77 / 77</b></td></tr>
+        <tr><td>Pruebas de unidad</td><td><b>150 / 150</b></td></tr>
         <tr><td>Navegador real (Edge 156, mouse y teclado, 60 s reales)</td><td><b>21 / 21</b></td></tr>
+        <tr><td>IA y cámara en navegador real (Gemini <b>simulado</b>, micrófono y cámara falsos)</td><td><b>10 / 10</b></td></tr>
         <tr><td>Modo inmersivo con <b>emulador</b> WebXR</td><td><b>8 / 8</b></td></tr>
         <tr><td>Rutas bajo <code>/sitioPubliton/pitch-lab/</code> y sitio anterior</td><td><b>OK</b></td></tr>
       </table>
@@ -420,6 +424,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
         <li><b>Casco físico</b> y comodidad en VR</li>
         <li><b>Rendimiento y cuadros por segundo</b> (no medidos)</li>
         <li><b>Voz real</b>: se probó con simulaciones; el servicio es del navegador</li>
+        <li><b>IA con voz humana real</b> y <b>manos reales</b> ante la cámara; límite diario de la clave</li>
         <li>Firefox, Safari y celulares</li>
         <li>Validación con personas usuarias</li>
         <li>Auditoría automática de contraste</li>
@@ -450,7 +455,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
   <div class="cols c3">
     <div class="card"><h3>Validar</h3><ul><li>Probar en un casco real</li><li>Entrevistas y pruebas de uso con el público objetivo</li><li>Medir rendimiento en el casco</li></ul></div>
     <div class="card"><h3>Mejorar</h3><ul><li>Intervención manual del equipo</li><li>Más briefs y un cuarto escenario</li><li>Auditoría de accesibilidad automática</li></ul></div>
-    <div class="card"><h3>Explorar</h3><ul><li>Evaluación semántica con IA, <b>con consentimiento y backend propio</b> (hoy no existe)</li><li>Enlace desde el sitio de Publitón</li></ul></div>
+    <div class="card"><h3>Explorar</h3><ul><li>Validar la IA con voz real y con personas expertas; <b>backend propio</b> para la clave</li><li>Enlace desde el sitio de Publitón</li></ul></div>
   </div>
 </section>
 

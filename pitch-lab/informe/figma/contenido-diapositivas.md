@@ -80,12 +80,13 @@ QUÉ ES
 Tres espacios: Sala de ensayo (60 s), Reunión con cliente (90 s) y Auditorio (120 s)
 Tres briefs ficticios editables
 Voz opcional en español, con alternativa sin micrófono
+Opcional: la IA (Gemini, con tu clave) interpreta el audio y la cámara mide las manos en el dispositivo
 Devolución transparente: qué se midió, de dónde sale y qué requiere revisión humana
 QUÉ NO ES
-No evalúa contenido, confianza, emociones ni persuasión
-No usa IA (hay una interfaz vacía para el futuro)
+No mide confianza, emociones ni persuasión; el contenido solo lo interpreta la IA opcional
+La IA es opcional y con clave propia: sin clave, no hay IA
 El público no reacciona al discurso
-No guarda audio ni transcripciones; sin cuentas, pagos ni multijugador
+No guarda audio ni transcripciones (con IA, el audio viaja a Google y se avisa antes); sin cuentas, pagos ni multijugador
 ```
 
 ## Diapositiva 5
@@ -104,7 +105,7 @@ virtualspeech.com/about
 Entrenamiento ante una audiencia virtual: del pitch 1 a 1 a un escenario de conferencias. Práctica en navegador, tablet o casco. Puntajes y debrief con un coach de IA.
 
 Tomamos: ensayar ante una audiencia simulada y que funcione también en pantalla.
-Distinto: sin IA ni puntajes de calidad; solo lo medido.
+Distinto: la IA es opcional y se rotula como interpretación; sin puntajes de calidad; lo medido va separado de lo interpretado.
 
 OVATION
 
@@ -142,6 +143,7 @@ Los menús con puntero piden botones grandes y separados
 REFERENCIAS TÉCNICAS
 
 MDN · Web Speech API (el audio puede enviarse a un servicio web en algunos navegadores)
+API de Gemini (documentación oficial, aistudio.google.com/docs) · MediaPipe Hand Landmarker (Google)
 A-Frame 1.8.0 (three.js r184) · WebXR Samples (immersive-web.github.io)
 
 IMÁGENES: PENDIENTE DEL EQUIPO
@@ -300,7 +302,7 @@ NO SE MIDE
 
 Confianza, ansiedad, emociones, contacto visual, persuasión ni calidad del discurso.
 
-Devolución con datos. Texto generado por un simulador de reconocimiento de pruebas, no es voz real.
+Devolución con datos. Texto generado por un simulador de reconocimiento de pruebas, no es voz real. Con la IA opcional se suman las pestañas 4 y 5: interpretación rotulada, sin puntajes.
 ```
 
 ## Diapositiva 14
@@ -345,9 +347,9 @@ core/state-machine.js · session.js
 EVALUACIÓN
 Métricas, indicador, consejos, rúbrica: funciones puras
 core/metrics.js · feedback.js
-VOZ
-Capacidades reales, Web Speech, medidor de nivel opcional
-voice/*
+VOZ, IA Y CÁMARA
+Web Speech y medidor; opcional: Gemini (clave propia) y manos con MediaPipe en el dispositivo
+voice/* · ai/*
 MODELO DE PANTALLA
 Qué se muestra y qué acciones hay en cada estado (dos renderizadores)
 core/screens.js
@@ -358,7 +360,7 @@ INTERFAZ
 Panel, atril, reloj y botones 3D + panel de texto accesible
 ui/* · components/xr-support.js (xr-ray)
 
-A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 77 pruebas de unidad, 21 de navegador real y 8 con emulador WebXR. Detalle: docs/arquitectura.md
+A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 150 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: docs/arquitectura.md
 ```
 
 ## Diapositiva 16
@@ -374,6 +376,10 @@ PROMPT 1 · 2026-11-04
 Encargo inicial completo a Claude Code (modelo Sonnet 5.5): construir, probar, documentar y publicar la experiencia de forma autónoma, sin inventar evidencia.
 
 Texto íntegro en docs/prompts/01-encargo-inicial.md. Fue el único prompt de esa sesión: no hubo preguntas intermedias.
+
+PEDIDOS DEL 2026-11-13
+
+Informe en Figma (pendiente), ver el juego sin VR y el análisis real del audio con IA y cámara: docs/prompts/02-analisis-con-ia.md (la clave pegada en el chat se omite).
 
 PENDIENTE DEL EQUIPO
 Prompts de los TPs 1 a 3 (no están en el repositorio)
@@ -457,14 +463,16 @@ LO PROBADO,
 LO PENDIENTE.
 VERIFICADO
 NIVEL	RESULTADO
-Pruebas de unidad	77 / 77
+Pruebas de unidad	150 / 150
 Navegador real (Edge 156, mouse y teclado, 60 s reales)	21 / 21
+IA y cámara en navegador real (Gemini simulado, micrófono y cámara falsos)	10 / 10
 Modo inmersivo con emulador WebXR	8 / 8
 Rutas bajo /sitioPubliton/pitch-lab/ y sitio anterior	OK
 PENDIENTE / NO VERIFICADO
 Casco físico y comodidad en VR
 Rendimiento y cuadros por segundo (no medidos)
 Voz real: se probó con simulaciones; el servicio es del navegador
+IA con voz humana real y manos reales ante la cámara; límite diario de la clave
 Firefox, Safari y celulares
 Validación con personas usuarias
 Auditoría automática de contraste
@@ -510,6 +518,6 @@ Intervención manual del equipo
 Más briefs y un cuarto escenario
 Auditoría de accesibilidad automática
 EXPLORAR
-Evaluación semántica con IA, con consentimiento y backend propio (hoy no existe)
+Validar la IA con voz real y con personas expertas; backend propio para la clave
 Enlace desde el sitio de Publitón
 ```

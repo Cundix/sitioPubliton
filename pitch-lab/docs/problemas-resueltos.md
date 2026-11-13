@@ -76,7 +76,82 @@ error de consola**. Cada uno tiene causa, solución y comprobación. No hay prob
 - **Solución**: tipografías más grandes con ajuste automático al contenido (`fitPanel`), panel opaco y menos texto por página.
 - **Comprobación**: capturas en `capturas/`.
 
+## Problemas de la función de IA y cámara (2026-11-13)
+
+### 9. MediaPipe enviaba telemetría a un servidor de Google
+- **Síntoma**: la prueba de red «IA 7» (cámara) falló: además del propio sitio, la página contactó a
+  `odml.pa.googleapis.com`. Contradecía lo que se promete en pantalla («de la cámara solo salen números»).
+- **Cómo se detectó**: la prueba compara todos los *hosts* que pide la página; luego se capturó el pedido con un
+  script aparte: `POST https://odml.pa.googleapis.com/v1/log`, protobuf de 141 bytes con la versión del paquete y
+  contadores, sin imágenes. Ocurre al **cerrar** el modelo (vacía el registro de uso).
+- **Causa**: `@mediapipe/tasks-vision` 1.2.3 incluye un registrador de uso que no se puede apagar por opciones.
+- **Solución**: se desactivó el envío en el `vision_bundle.mjs` incluido en el sitio (único cambio, con aviso en el
+  archivo y en `vendor/mediapipe/README-mediapipe.md`, como pide Apache-2.0) y se sumó una política CSP
+  `connect-src` en `index.html` como segunda barrera.
+- **Comprobación**: «IA 7» ahora exige que **ningún host externo** sea contactado, y «IA 10» comprueba que el
+  navegador bloquee `odml.pa.googleapis.com` y cualquier otro sitio, y permita el propio y la API de Gemini.
+
+### 10. El micrófono y la cámara podían quedar abiertos al cancelar mientras se esperaba el permiso
+- **Síntoma**: la prueba «IA 9» (cancelar mientras se esperan los permisos) falló: 2,5 s después de cancelar seguían
+  vivas las pistas de **audio y video**.
+- **Causa**: `getUserMedia` es asíncrono; si la persona cancelaba justo antes de que el navegador concediera el
+  permiso, `dispose()` no encontraba nada que soltar y el flujo llegaba **después**, quedando abierto (y la
+  grabación arrancaba sola).
+- **Solución**: un contador de generación en `AudioCapture` y `GestureTracker`. Al cancelar sube; si un permiso o un
+  modelo llega con una generación vieja, se suelta de inmediato y se rechaza con `aborted`.
+- **Comprobación**: pruebas de unidad con un navegador simulado (permiso que llega tarde, modelo que termina de
+  cargar después de cerrar) y la prueba de navegador real «IA 9».
+
+### 11. La duración medida de los gestos se reiniciaba al pausar
+- **Síntoma**: no se vio en pantalla; apareció al revisar el código mientras se escribían las pruebas del seguimiento.
+- **Causa**: al retomar, el seguimiento reiniciaba su reloj interno en 0: una presentación de 8 s con una pausa
+  figuraba como 4 s y podía no alcanzar el mínimo de 3 s para considerarse medida.
+- **Solución**: la línea de tiempo continúa donde quedó (las pausas no cuentan).
+- **Comprobación**: la prueba «pausar y retomar NO reinicia la línea de tiempo» **falla con el código anterior**
+  (duración 4 en lugar de ≈8; se comprobó revirtiendo el cambio) y pasa con la corrección.
+
+### 12. El endpoint nuevo de Gemini no se puede usar desde el navegador
+- **Síntoma**: con el endpoint nuevo (`/v1beta/interactions`) el navegador bloqueaba el pedido en la verificación
+  previa de CORS (*preflight*).
+- **Causa**: ese endpoint exige la cabecera `Api-Revision`, y el servidor solo autoriza `content-type` y
+  `x-goog-api-key` desde el navegador.
+- **Solución**: usar `generateContent`, que sigue soportado y acepta CORS desde `https://cundix.github.io`.
+- **Comprobación**: llamadas reales (preflight y pedido) con la clave del equipo, 2026-11-13.
+
+### 13. El modelo principal a veces responde 503 y la devolución no lo decía
+- **Síntoma**: en la primera llamada real el resultado vino del modelo de respaldo sin explicación visible. En una
+  corrida posterior de la prueba manual con la API real se **observó directamente**: el modelo principal
+  (`gemini-3.5-flash-lite`) respondió **HTTP 503** y la app usó `gemini-3.1-flash-lite`, que respondió bien. De las
+  ejecuciones reales de la interfaz completa, **1 de 3** terminó en el respaldo por un 503 del principal (muestra
+  chica: es un dato observado, no una tasa).
+- **Causa**: indisponibilidad momentánea del modelo principal (503). La cuota agotada (429) es otra causa posible.
+- **Solución**: el cliente registra qué modelo falló y por qué (`attempts`) y la devolución lo informa («Antes se
+  intentó con … (error del servicio)»), en vez de ocultarlo. El respaldo ya estaba previsto; esto lo confirma en la
+  práctica.
+- **Comprobación**: pruebas de unidad del cliente y de la pantalla, la prueba de navegador «IA 5» y la corrida real.
+
+### 14. La IA describía un estado emocional («tono entusiasta»)
+- **Síntoma**: en la primera respuesta real de la IA, la observación de entonación decía «se percibe un tono
+  entusiasta». Eso es una inferencia emocional, que las instrucciones prohíben y que la herramienta no evalúa.
+- **Causa**: el campo se llamaba «energía», lo que invita a hablar de ánimo, y la instrucción no daba ejemplos de qué
+  vocabulario evitar.
+- **Solución** (tres capas): (1) la instrucción pide describir solo rasgos que se oyen (velocidad, volumen, variación
+  de entonación, claridad, pausas) y prohíbe palabras de emociones o actitudes «ni siquiera como elogio»; (2) el campo
+  se muestra como «Entonación y volumen» y su descripción en el esquema lo aclara; (3) la validación
+  (`EMOTION_PATTERN`) **reemplaza por un aviso** cualquier observación de la entrega que nombre una emoción o actitud.
+  El filtro no se aplica al contenido (por ejemplo «genera confianza» puede ser parte del mensaje de la marca).
+- **Comprobación**: pruebas de unidad (la observación emocional se reemplaza; el contenido no se toca; el esquema
+  no tiene campos emocionales). Con el prompt reforzado, **dos respuestas reales** describieron solo rasgos audibles
+  (0 de 5 observaciones omitidas). Es una muestra de 2: la capa 3 es la que garantiza el resultado.
+
 ## Registro de herramientas (no son defectos del producto)
+
+- El puerto 8080 de esta computadora estaba ocupado por otra aplicación (un servidor ajeno respondía 403): las
+  pruebas de IA se corrieron sobre los puertos 8090 y 8091 (`PITCHLAB_URL`).
+- MediaPipe escribe un aviso **informativo** («Created TensorFlow Lite XNNPACK delegate for CPU») por
+  `console.error`; las pruebas lo permiten explícitamente.
+- Con dos navegadores en paralelo y render por software, la carga de la página superó los 30 s en una corrida:
+  se amplió el margen de `page.goto` a 60 s en `tools/browser.mjs`.
 
 - El emulador de WebXR (IWER) no se instala sobre el `navigator.xr` nativo de Edge sin `forceInstall: true`.
 - En Git Bash de Windows, un argumento que empieza con `/` se convierte en una ruta de Windows; para el servidor con
