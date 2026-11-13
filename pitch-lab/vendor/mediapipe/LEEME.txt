@@ -1,0 +1,9 @@
+MediaPipe Tasks Vision 1.2.3 (Apache-2.0) + modelo hand_landmarker (float16, v1) de Google.
+Se incluyen en el repositorio para NO depender de un CDN. Se descargan SOLO si la persona activa
+"Gestos con la cámara" (carga diferida). El análisis corre en el dispositivo: no sale video.
+Archivos:
+  vision_bundle.mjs                 paquete npm @mediapipe/tasks-vision@1.2.3 — MODIFICADO: se desactivó el envío de registros
+                                    de uso a odml.pa.googleapis.com (método flush del registrador). Es el único cambio.
+  wasm/vision_wasm_internal.*       runtime WebAssembly del mismo paquete
+  hand_landmarker.task              https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+Licencia: Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0). Aviso de privacidad del paquete: https://goo.gle/mediapipe-privacy

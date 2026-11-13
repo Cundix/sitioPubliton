@@ -17,6 +17,9 @@ import { AudioCues } from './ui/audio-cues.js';
 import { detectCapabilities } from './voice/capabilities.js';
 import { SpeechController } from './voice/speech-recognizer.js';
 import { AudioMeter } from './voice/audio-meter.js';
+import { AiKeyStore } from './ai/key-store.js';
+import { AnalysisService } from './ai/analysis-service.js';
+import { AiSettingsUI } from './ui/ai-settings.js';
 import { isTypingTarget } from './components/walk-rig.js';
 import './components/stage-controller.js';
 import './components/xr-support.js';
@@ -43,6 +46,9 @@ const SCENE_HTML = `
 const safeStorage = () => {
   try { return window.localStorage; } catch { return null; }
 };
+const safeSessionStorage = () => {
+  try { return window.sessionStorage; } catch { return null; }
+};
 
 function waitForFonts() {
   const loads = ['400 48px Anton', '400 24px Barlow', '700 24px Barlow'].map((f) => document.fonts.load(f).catch(() => []));
@@ -68,7 +74,10 @@ async function main() {
   const voice = caps.speech ? new SpeechController() : null;
   const meterCandidate = new AudioMeter();
   const meter = meterCandidate.available ? meterCandidate : null;
-  const session = new Session({ voice, meter, capabilities: { speech: caps.speech }, tutorialSeen: settings.get('tutorialSeen') });
+  // Análisis con IA (opcional): la clave es de cada persona y solo vive en su navegador.
+  const keyStore = new AiKeyStore({ session: safeSessionStorage(), local: safeStorage() });
+  const ai = new AnalysisService({ keyStore, getVideoEl: () => document.getElementById('cam-preview') });
+  const session = new Session({ voice, meter, ai, capabilities: { speech: caps.speech, ai: false, camera: false }, tutorialSeen: settings.get('tutorialSeen') });
   voice?.setHandlers({
     final: (text) => session.pushFinal(text),
     interim: (text) => session.pushInterim(text),
@@ -77,7 +86,7 @@ async function main() {
 
   const hub = new UIHub({ session, settings, env: { speech: caps.speech, meter: !!meter, vr: false } });
   const cues = new AudioCues(settings);
-  Object.assign(app, { session, settings, hub, caps, cues });
+  Object.assign(app, { session, settings, hub, caps, cues, ai, keyStore });
 
   // ----- Acciones (las usan los botones 3D, el panel de texto y el teclado) -----
   const runUi = (name) => {
@@ -97,6 +106,11 @@ async function main() {
       case 'exit-vr': exitVR(app.scene); break;
       case 'toggle-drawer': app.overlay.toggleDrawer(); break;
       case 'open-text-panel': app.overlay.openDrawer({ focus: true }); break;
+      case 'open-ai-key':
+        if (app.overlay.xr.active) app.overlay.toast('Dentro del casco no se puede escribir la clave. Salí de VR, cargala en el panel de texto y volvé a entrar.', 'warn');
+        else app.aiSettings.open();
+        break;
+      case 'test-ai-key': app.aiSettings.testKey(); break;
       default: break;
     }
   };
@@ -164,6 +178,7 @@ async function main() {
     onExitVR: () => exitVR(app.scene),
   });
   app.overlay = overlay;
+  app.aiSettings = new AiSettingsUI({ keyStore, service: ai, session, overlay, onNotice: (text, kind) => overlay.toast(text, kind) });
 
   // ----- Escena -----
   const hasGL = webglAvailable();
@@ -195,6 +210,7 @@ async function main() {
 
   window.addEventListener('pagehide', () => {
     session.dispose();
+    ai.dispose();
     cues.dispose();
     hub.dispose();
   });

@@ -52,6 +52,27 @@ export const APP_CONFIG = {
     sampleMs: 100,
   },
 
+  // Análisis con IA (Gemini), OPCIONAL. Usa la clave PROPIA de cada persona (nunca va en el código).
+  ai: {
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta',
+    // Modelo principal y de respaldo. Cada modelo tiene su propia cuota: si uno se agota se prueba el siguiente.
+    models: ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'],
+    temperature: 0.3,
+    timeoutMs: 90000,        // espera máxima por intento
+    maxRecordSec: 300,       // tope de grabación (5 min): evita archivos enormes
+    sampleRate: 16000,       // audio que se envía: WAV mono 16 kHz
+    maxRequestMB: 18,        // el límite de la API es 20 MB por pedido
+    keyHelpUrl: 'https://aistudio.google.com/apikey',
+  },
+
+  // Cámara en el dispositivo (manos). Nada de video sale del dispositivo.
+  gestures: {
+    sampleFps: 8,            // cuadros analizados por segundo
+    moveLowMax: 0.12,        // velocidad media de las manos (anchos de imagen por segundo)
+    moveHighMin: 0.45,
+    maxGapSec: 1.0,          // a partir de acá un hueco sin manos no cuenta como movimiento continuo
+  },
+
   // Movimiento en computadora.
   movement: {
     walkSpeed: 1.6,         // metros por segundo

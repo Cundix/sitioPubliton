@@ -13,7 +13,7 @@ export function formatClock(totalSeconds) {
 }
 
 /** Filas "qué se pudo medir" y "qué no se pudo medir". */
-export function buildMeasurements(metrics, targetSec) {
+export function buildMeasurements(metrics, targetSec, gestures = null) {
   const rows = [];
 
   rows.push({
@@ -75,6 +75,29 @@ export function buildMeasurements(metrics, targetSec) {
     });
   } else {
     rows.push({ id: 'audio', label: 'Silencios y nivel de audio', available: false, display: 'No medido', note: metrics.audio.reason });
+  }
+
+  if (gestures) {
+    if (gestures.measured) {
+      rows.push({
+        id: 'hands',
+        label: 'Manos a la vista',
+        available: true,
+        display: `${Math.round(gestures.handsVisibleShare * 100)} %`,
+        note: 'Medido en tu dispositivo con la cámara. No se guardó video.',
+        source: 'Cámara (seguimiento de manos en el dispositivo)',
+      });
+      rows.push({
+        id: 'handMove',
+        label: 'Movimiento de manos',
+        available: true,
+        display: gestures.movementLabel.toUpperCase(),
+        note: 'Referencia relativa; más movimiento no es mejor ni peor.',
+        source: 'Cámara (seguimiento de manos en el dispositivo)',
+      });
+    } else {
+      rows.push({ id: 'hands', label: 'Gestos (cámara)', available: false, display: 'Sin datos suficientes', note: 'La cámara casi no tuvo datos (sesión muy corta o sin manos en cuadro).' });
+    }
   }
 
   return rows;
@@ -145,6 +168,56 @@ export function buildTips(metrics, config = APP_CONFIG) {
   return tips;
 }
 
+// ---------- Análisis con IA (interpretación, no medición) ----------
+
+export const RUBRIC_LEVEL_LABELS = { yes: 'CLARO', partial: 'PARCIAL', no: 'FALTA' };
+export const RESTRICTION_LABELS = { yes: 'SÍ', partial: 'PARCIAL', no: 'NO', unclear: 'NO SE SABE' };
+export const AI_RUBRIC_QUESTIONS = [
+  { id: 'problem', label: 'Problema' },
+  { id: 'idea', label: 'Idea' },
+  { id: 'benefit', label: 'Beneficio' },
+  { id: 'close', label: 'Cierre' },
+];
+
+const ATTEMPT_LABELS = { quota: 'cuota agotada', 'model-unavailable': 'no disponible', server: 'error del servicio', timeout: 'tardó demasiado' };
+
+export const AI_DISCLAIMER =
+  'Es una interpretación automática del audio. Puede equivocarse: no es una medición ni una calificación. Revisala con una persona.';
+
+/** Primera oración (acotada) de un texto, para mostrar en espacios chicos. */
+export function firstSentence(text, max = 120) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  const cut = clean.search(/[.!?](\s|$)/);
+  const sentence = cut > 0 ? clean.slice(0, cut + 1) : clean;
+  return sentence.length > max ? `${sentence.slice(0, max - 1).trimEnd()}…` : sentence;
+}
+
+/** Sección «IA» de la devolución según el estado del análisis. */
+export function buildAiSection(ai) {
+  if (!ai || ai.status === 'off' || !ai.status) return { status: 'off' };
+  if (ai.status === 'analyzing') return { status: 'analyzing' };
+  if (ai.status === 'error') return { status: 'error', error: ai.error };
+  const analysis = ai.result?.analysis;
+  if (!analysis) return { status: 'error', error: { code: 'bad-response', message: 'No hay resultado del análisis.' } };
+  return {
+    status: 'done',
+    model: ai.result.model,
+    failedBefore: (ai.result.attempts || []).map((a) => `${a.model} (${ATTEMPT_LABELS[a.code] || 'falló'})`),
+    analysis,
+    rubricRows: AI_RUBRIC_QUESTIONS.map((q) => ({
+      id: q.id,
+      label: q.label,
+      display: RUBRIC_LEVEL_LABELS[analysis.rubric[q.id].level],
+      level: analysis.rubric[q.id].level,
+      note: analysis.rubric[q.id].note,
+      quote: analysis.rubric[q.id].quote,
+      available: true,
+    })),
+    restriction: { display: RESTRICTION_LABELS[analysis.briefFit.restriction], note: analysis.briefFit.note },
+    disclaimer: AI_DISCLAIMER,
+  };
+}
+
 /** Lo que una herramienta automática no puede juzgar. */
 export const HUMAN_REVIEW_ITEMS = [
   'Si el problema se entiende para alguien que no conoce el brief.',
@@ -168,6 +241,12 @@ export function buildBanners(metrics) {
       kind: 'typed',
       label: 'TEXTO ESCRITO',
       text: 'La transcripción fue escrita o pegada por vos. No se calculan palabras por minuto ni medidas de voz.',
+    });
+  } else if (metrics.source === SOURCES.AI) {
+    banners.push({
+      kind: 'edited',
+      label: 'TRANSCRIPCIÓN DE LA IA',
+      text: 'No hubo reconocimiento del navegador: el texto lo transcribió la IA a partir del audio. Puede tener errores.',
     });
   } else if (metrics.source === SOURCES.SPEECH_EDITED) {
     banners.push({
@@ -202,7 +281,9 @@ export function buildFeedback(capture, context, config = APP_CONFIG) {
   return {
     metrics,
     indicator,
-    measurements: buildMeasurements(metrics, context.targetSec),
+    measurements: buildMeasurements(metrics, context.targetSec, capture.gestures ?? null),
+    gestures: capture.gestures ?? null,
+    ai: buildAiSection(capture.ai),
     tips: buildTips(metrics, config),
     banners: buildBanners(metrics),
     humanReview: HUMAN_REVIEW_ITEMS,

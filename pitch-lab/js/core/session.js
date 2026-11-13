@@ -6,13 +6,14 @@
 //  - El tiempo se calcula con marcas de reloj (now), no sumando ticks: es exacto aunque el
 //    navegador demore los intervalos.
 //  - Los resultados asíncronos de la voz se ignoran si la sesión ya cambió de estado.
-//  - Cancelar o salir libera voz y audio.
+//  - Cancelar o salir libera voz, audio, cámara y descarta lo grabado.
+//  - El análisis con IA es OPCIONAL y corre en segundo plano: no bloquea el recorrido ni puede romperlo.
 
 import { Emitter } from './emitter.js';
 import { APP_CONFIG, DEMO_TRANSCRIPT } from '../config/app-config.js';
 import { getScenario } from '../config/scenarios.js';
 import { BRIEFS } from '../config/briefs.js';
-import { FLOW, S, ACTIVE_STATES, createInitialData } from './state-machine.js';
+import { FLOW, S, ACTIVE_STATES, createInitialData, usesSpeech } from './state-machine.js';
 import { SOURCES } from './metrics.js';
 import { getTimeWarning } from './time-warnings.js';
 import { buildFeedback } from './feedback.js';
@@ -33,6 +34,8 @@ function freshCapture() {
     overrideSource: null, // origen del texto reemplazado
     voiceLost: false,     // el reconocimiento se cortó durante la sesión
     audio: null,          // resultado de la medición de audio (si se activó)
+    gestures: null,       // resumen de gestos medido en el dispositivo (si se activó la cámara)
+    aiResult: null,       // { analysis, model, usage } cuando la IA terminó
     closed: false,        // ya no acepta frases nuevas del reconocimiento
   };
 }
@@ -43,14 +46,17 @@ export class Session extends Emitter {
    * @param {object} deps.clock      { now, setInterval, clearInterval }
    * @param {object} deps.voice      reconocimiento de voz (opcional): start, pause, resume, stop, abort
    * @param {object} deps.meter      medidor de audio (opcional): start, setActive, stop, dispose
+   * @param {object} deps.ai         análisis con IA (opcional): startAudio, startCamera, beginTracking, pause, resume,
+   *                                 finishCapture, analyze, abort
    * @param {object} deps.capabilities { speech: boolean }
    * @param {boolean} deps.tutorialSeen
    */
-  constructor({ clock = realClock, voice = null, meter = null, capabilities = {}, tutorialSeen = false, config = APP_CONFIG } = {}) {
+  constructor({ clock = realClock, voice = null, meter = null, ai = null, capabilities = {}, tutorialSeen = false, config = APP_CONFIG } = {}) {
     super();
     this.clock = clock;
     this.voice = voice;
     this.meter = meter;
+    this.ai = ai;
     this.config = config;
     this.state = S.LOADING;
     this.data = createInitialData({ capabilities, tutorialSeen });
@@ -62,6 +68,12 @@ export class Session extends Emitter {
     this._feedbackCache = null;
     this._voiceTouched = false;   // ¿se inició el reconocimiento? (para liberar solo lo necesario)
     this._meterTouched = false;   // ¿se inició el medidor de audio?
+    this._aiAudioActive = false;  // ¿se está grabando audio para la IA?
+    this._aiCameraActive = false; // ¿está activa la cámara?
+    this._aiAttempt = 0;          // invalida resultados tardíos de la IA
+    this._aiAbort = null;
+    this._aiPayload = null;       // grabación en memoria para poder reintentar el análisis
+    this._prepSavedMs = null;
     this._disposed = false;
   }
 
@@ -70,6 +82,12 @@ export class Session extends Emitter {
   get scenario() { return getScenario(this.data.scenarioId); }
   get brief() { return BRIEFS[this.data.briefIndex % BRIEFS.length]; }
   get isActive() { return ACTIVE_STATES.includes(this.state); }
+  /** ¿Se está grabando audio para la IA ahora? */
+  get aiRecording() { return this._aiAudioActive; }
+  /** ¿Está activa la cámara ahora? */
+  get cameraOn() { return this._aiCameraActive; }
+  /** ¿Se puede reintentar el análisis con la grabación que sigue en memoria? */
+  get canRetryAi() { return this.data.ai.status === 'error' && !!this._aiPayload?.audio; }
 
   /** Tiempo total del escenario en segundos, o null si la práctica es libre. */
   get totalSec() {
@@ -113,16 +131,25 @@ export class Session extends Emitter {
       const text = c.override.trim();
       return { text, source: text ? c.overrideSource : SOURCES.NONE, recognized, interim: '' };
     }
+    // Sin reconocimiento del navegador (por ejemplo, en un casco), la transcripción puede venir de la IA.
+    const ai = c.aiResult?.analysis;
+    if (!recognized && ai && ai.audible && ai.transcript && !usesSpeech(this.data)) {
+      return { text: ai.transcript, source: SOURCES.AI, recognized: '', interim: '' };
+    }
     return { text: recognized, source: recognized ? SOURCES.SPEECH : SOURCES.NONE, recognized, interim: c.interim };
   }
 
   /** Devolución calculada con los datos reales de la captura. */
   getFeedback() {
     const t = this.getTranscript();
-    const key = JSON.stringify([t.text, t.source, this.capture.activeMs, this.capture.audio, this.data.rubric, this.totalSec]);
+    const key = JSON.stringify([t.text, t.source, this.capture.activeMs, this.capture.audio, this.data.rubric, this.totalSec, this.data.ai, this.capture.gestures, this.capture.aiResult?.model]);
     if (this._feedbackCache?.key === key) return this._feedbackCache.value;
     const value = buildFeedback(
-      { text: t.text, source: t.source, activeMs: this.capture.activeMs, audio: this.capture.audio },
+      {
+        text: t.text, source: t.source, activeMs: this.capture.activeMs, audio: this.capture.audio,
+        gestures: this.capture.gestures,
+        ai: { status: this.data.ai.status, error: this.data.ai.error, result: this.capture.aiResult },
+      },
       { targetSec: this.totalSec, rubric: this.data.rubric },
       this.config,
     );
@@ -154,6 +181,9 @@ export class Session extends Emitter {
     // Casos con efecto sobre la captura que no son solo "datos".
     if (this.state === S.REVIEW && (type === 'SET_TRANSCRIPT' || type === 'LOAD_DEMO')) {
       return this._applyTranscriptEvent(type, payload);
+    }
+    if (type === 'AI_RETRY' && (this.state === S.REVIEW || this.state === S.FEEDBACK)) {
+      return this._applyAiRetry();
     }
 
     const rule = FLOW[this.state]?.[type];
@@ -227,25 +257,39 @@ export class Session extends Emitter {
   // ---------- Entradas y salidas de estado (efectos) ----------
 
   _onExit(state, next) {
-    if (state === S.PREP) this._stopPrepCountdown();
+    if (state === S.PREP) {
+      // Al abrir «IA y cámara» se conserva el tiempo de preparación que quedaba.
+      this._prepSavedMs = next === S.AI_SETUP && this._prepEndsAt != null ? Math.max(0, this._prepEndsAt - this.clock.now()) : null;
+      this._stopPrepCountdown();
+    }
     if (state === S.STARTING && next !== S.PRESENTING) {
       this._voiceAttempt += 1; // invalida resultados pendientes
       if (this._voiceTouched) {
         this.voice?.abort?.();
         this._voiceTouched = false;
       }
+      this._abortAiCapture();
     }
   }
 
   _onEnter(state, prev) {
     switch (state) {
       case S.PREP:
-        this._resetCapture();
-        this._startPrepCountdown();
+        if (prev === S.AI_SETUP) {
+          // Volvió de «IA y cámara»: no se reinicia nada, sigue la cuenta donde quedó.
+          if (this._prepSavedMs != null && this._prepSavedMs > 0) {
+            this._prepEndsAt = this.clock.now() + this._prepSavedMs;
+            this._ensureTicker();
+          }
+          this._prepSavedMs = null;
+        } else {
+          this._resetCapture();
+          this._startPrepCountdown();
+        }
         break;
 
       case S.STARTING:
-        this._startVoice();
+        this._startCapture();
         break;
 
       case S.PRESENTING:
@@ -305,15 +349,17 @@ export class Session extends Emitter {
         () => this.emit('notice', { kind: 'warn', text: 'No se pudo medir el nivel de audio. La práctica sigue sin esa medición.' }),
       );
     }
+    if (this._aiAudioActive || this._aiCameraActive) this.ai?.beginTracking?.();
   }
 
   _resumeActive() {
     this.capture.segmentStart = this.clock.now();
     this._ensureTicker();
     this.meter?.setActive?.(true);
-    if (this.data.options.inputMode === 'voice' && this.voice && !this.capture.voiceLost) {
+    if (usesSpeech(this.data) && this.voice && this._voiceTouched && !this.capture.voiceLost) {
       Promise.resolve(this.voice.resume()).catch(() => this._markVoiceLost('No se pudo retomar el reconocimiento.'));
     }
+    if (this._aiAudioActive || this._aiCameraActive) this.ai?.resume?.();
   }
 
   _pauseActive() {
@@ -323,15 +369,17 @@ export class Session extends Emitter {
       c.segmentStart = null;
     }
     this.meter?.setActive?.(false);
-    if (this.data.options.inputMode === 'voice') this.voice?.pause?.();
+    if (usesSpeech(this.data) && this._voiceTouched) this.voice?.pause?.();
+    if (this._aiAudioActive || this._aiCameraActive) this.ai?.pause?.();
     this._stopTickerIfIdle();
   }
 
   _finishCapture() {
     this._pauseActive();
-    if (this.data.options.inputMode === 'voice') {
+    if (usesSpeech(this.data) && this._voiceTouched) {
       Promise.resolve(this.voice?.stop?.()).catch(() => {});
     }
+    this._finishAi();
     if (this.meter && this._meterTouched) {
       const result = this.meter.stop?.();
       this.capture.audio = result && result.measured ? result : null;
@@ -360,13 +408,41 @@ export class Session extends Emitter {
       try { this.meter?.dispose?.(); } catch { /* ya liberado */ }
       this._meterTouched = false;
     }
+    this._abortAiCapture();
+    this._aiAttempt += 1;               // descarta cualquier análisis en curso
+    try { this._aiAbort?.abort(); } catch { /* sin efecto */ }
+    this._aiAbort = null;
+    this._aiPayload = null;             // la grabación se borra de la memoria
+    if (this.data.ai.status !== 'off') this.data.ai = { status: 'off', error: null, model: null };
   }
 
-  // ---------- Voz ----------
+  // ---------- Voz y captura para la IA ----------
 
-  _startVoice() {
+  _usesRecording() {
+    const d = this.data;
+    return d.options.inputMode === 'voice' && d.options.aiAnalysis && d.capabilities.ai && !!this.ai;
+  }
+
+  _usesCamera() {
+    const d = this.data;
+    return d.options.gestures && d.capabilities.camera && !!this.ai;
+  }
+
+  /**
+   * Pide los permisos que hagan falta (micrófono para el reconocimiento y/o la grabación, cámara) y arranca.
+   * Todo se inicia de forma SÍNCRONA dentro del gesto de la persona (necesario para los permisos) y los
+   * resultados tardíos se ignoran si la sesión ya cambió de estado.
+   *  - Falla el micrófono (todas las vías) -> pantalla de recuperación.
+   *  - Falla solo la cámara o solo la grabación para la IA -> se sigue sin eso y se avisa.
+   */
+  _startCapture() {
     const attempt = ++this._voiceAttempt;
-    if (!this.voice || !this.data.capabilities.speech) {
+    const d = this.data;
+    const wantsSpeech = usesSpeech(d) && !!this.voice;
+    const wantsRecording = this._usesRecording();
+    const wantsCamera = this._usesCamera();
+
+    if (d.options.inputMode === 'voice' && !wantsSpeech && !wantsRecording) {
       queueMicrotask(() => {
         if (attempt === this._voiceAttempt && this.state === S.STARTING) {
           this.dispatch('MIC_FAILED', { code: 'unsupported', message: 'Este navegador no ofrece reconocimiento de voz.' });
@@ -374,26 +450,144 @@ export class Session extends Emitter {
       });
       return;
     }
-    // Se llama de forma síncrona: conserva el gesto de la persona (necesario para el permiso)
-    // y evita que una cancelación posterior deje una escucha iniciada.
-    let pending;
-    try {
-      this._voiceTouched = true;
-      pending = Promise.resolve(this.voice.start());
-    } catch (error) {
-      pending = Promise.reject(error);
+
+    const run = (fn) => {
+      try { return Promise.resolve(fn()); } catch (error) { return Promise.reject(error); }
+    };
+    const micTasks = [];
+    if (wantsSpeech) { this._voiceTouched = true; micTasks.push({ kind: 'speech', promise: run(() => this.voice.start()) }); }
+    if (wantsRecording) { this._aiAudioActive = true; micTasks.push({ kind: 'audio', promise: run(() => this.ai.startAudio()) }); }
+    let camera = null;
+    if (wantsCamera) { this._aiCameraActive = true; camera = run(() => this.ai.startCamera()); }
+
+    const settle = (promise) => promise.then(() => ({ ok: true }), (error) => ({ ok: false, error }));
+    Promise.all([Promise.all(micTasks.map((t) => settle(t.promise))), camera ? settle(camera) : Promise.resolve({ ok: true, skipped: true })]).then(([mic, cam]) => {
+      if (attempt !== this._voiceAttempt || this.state !== S.STARTING) return;
+
+      if (micTasks.length > 0 && mic.every((r) => !r.ok)) {
+        const error = mic[0].error;
+        this.dispatch('MIC_FAILED', { code: error?.code || 'unknown', message: error?.message || '' });
+        return;
+      }
+      const notes = [];
+      micTasks.forEach((task, i) => {
+        if (mic[i].ok) return;
+        if (task.kind === 'audio') {
+          this._aiAudioActive = false;
+          this.data.options.aiAnalysis = false;
+          notes.push('No se pudo grabar el audio para la IA: seguís sin análisis con IA.');
+        } else {
+          this._voiceTouched = false;
+          notes.push('No se pudo usar el reconocimiento de voz del navegador: la IA analiza el audio igual.');
+        }
+      });
+      if (!cam.ok) {
+        this._aiCameraActive = false;
+        this.data.options.gestures = false;
+        notes.push('No se pudo usar la cámara: seguís sin análisis de gestos.');
+      }
+      if (notes.length) this.emit('notice', { kind: 'warn', text: notes.join(' ') });
+      this.dispatch('MIC_READY');
+    });
+  }
+
+  /** Libera lo que se hubiera iniciado de la IA (grabación y cámara) sin analizar nada. */
+  _abortAiCapture() {
+    if (this._aiAudioActive || this._aiCameraActive) {
+      try { this.ai?.abort?.(); } catch { /* ya liberado */ }
     }
-    pending
-      .then(
-        () => {
-          if (attempt !== this._voiceAttempt || this.state !== S.STARTING) return;
-          this.dispatch('MIC_READY');
-        },
-        (error) => {
-          if (attempt !== this._voiceAttempt || this.state !== S.STARTING) return;
-          this.dispatch('MIC_FAILED', { code: error?.code || 'unknown', message: error?.message || '' });
-        },
-      );
+    this._aiAudioActive = false;
+    this._aiCameraActive = false;
+  }
+
+  /** Al terminar la presentación: cierra la captura y lanza el análisis en segundo plano. */
+  _finishAi() {
+    const wantsAudio = this._aiAudioActive;
+    const wantsCamera = this._aiCameraActive;
+    if (!wantsAudio && !wantsCamera) return;
+    this._aiAudioActive = false;
+    this._aiCameraActive = false;
+    const attempt = ++this._aiAttempt;
+    const durationSec = this.capture.activeMs / 1000;
+    if (wantsAudio) this.data.ai = { status: 'analyzing', error: null, model: null };
+
+    Promise.resolve(this.ai.finishCapture())
+      .then((cap) => {
+        if (attempt !== this._aiAttempt) return undefined;
+        this.capture.gestures = cap?.gestures || null;
+        this._feedbackCache = null;
+        if (!wantsAudio) { this._emitAi(); return undefined; }
+        if (!cap?.audio) throw Object.assign(new Error('No quedó audio grabado.'), { code: 'no-audio' });
+        this._aiPayload = { audio: cap.audio, gestures: this.capture.gestures, durationSec };
+        return this._runAnalysis(attempt);
+      })
+      .catch((error) => {
+        if (attempt !== this._aiAttempt) return;
+        this._setAiError(error);
+      });
+  }
+
+  _runAnalysis(attempt) {
+    const payload = this._aiPayload;
+    if (!payload) return Promise.resolve();
+    this.data.ai = { status: 'analyzing', error: null, model: null };
+    this._emitAi();
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    this._aiAbort = controller;
+    return Promise.resolve(this.ai.analyze({
+      audio: payload.audio,
+      signal: controller?.signal,
+      context: {
+        brief: this.brief,
+        scenario: this.scenario,
+        durationSec: payload.durationSec,
+        targetSec: this.totalSec,
+        gestures: payload.gestures,
+      },
+    })).then(
+      (result) => {
+        if (attempt !== this._aiAttempt) return;
+        this.capture.aiResult = result;
+        this._aiPayload = null; // ya no hace falta conservar la grabación
+        this.data.ai = { status: 'done', error: null, model: result.model || null };
+        this._feedbackCache = null;
+        this._emitAi();
+      },
+      (error) => {
+        if (attempt !== this._aiAttempt || error?.code === 'aborted') return;
+        this._setAiError(error);
+      },
+    );
+  }
+
+  _setAiError(error) {
+    this.data.ai = { status: 'error', error: { code: error?.code || 'unknown', message: error?.message || 'No se pudo completar el análisis con IA.' }, model: null };
+    this._feedbackCache = null;
+    this._emitAi();
+  }
+
+  _emitAi() {
+    this.emit('change', { state: this.state, prev: this.state, event: 'AI_UPDATE', changed: false });
+  }
+
+  _applyAiRetry() {
+    if (this.data.ai.status !== 'error' || !this._aiPayload?.audio) {
+      this.emit('rejected', { event: 'AI_RETRY', state: this.state, reason: 'nothing-to-retry' });
+      return false;
+    }
+    this._runAnalysis(this._aiAttempt);
+    return true;
+  }
+
+  /** Actualiza capacidades que cambian con el tiempo (por ejemplo, cuando la persona carga su clave). */
+  setCapabilities(patch) {
+    Object.assign(this.data.capabilities, patch);
+    if (!this.data.capabilities.ai && this.data.options.aiAnalysis) {
+      this.data.options.aiAnalysis = false;
+      if (!this.data.capabilities.speech) this.data.options.inputMode = 'timer';
+    }
+    if (!this.data.capabilities.camera) this.data.options.gestures = false;
+    this.emit('change', { state: this.state, prev: this.state, event: 'CAPABILITIES', changed: false });
   }
 
   /** Frase final del reconocimiento. Se acepta mientras se presenta o enseguida después (cierre). */

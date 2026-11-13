@@ -9,11 +9,11 @@
 //   event/payload -> se envía a session.dispatch(event, payload)
 //   ui            -> acción de interfaz (volumen, recentrar, etc.), la resuelve main.js
 
-import { S, TUTORIAL_STEPS } from './state-machine.js';
+import { S, TUTORIAL_STEPS, usesSpeech } from './state-machine.js';
 import { SCENARIOS } from '../config/scenarios.js';
 import { APP_CONFIG } from '../config/app-config.js';
 import { RUBRIC_QUESTIONS, answerInfo } from './rubric.js';
-import { formatClock } from './feedback.js';
+import { formatClock, firstSentence, AI_DISCLAIMER } from './feedback.js';
 import { SOURCES, SOURCE_LABELS } from './metrics.js';
 import { WARNING_LABELS } from './time-warnings.js';
 
@@ -84,14 +84,50 @@ const VOICE_PROBLEM_TEXT = {
 const MIC_DISCLOSURE =
   'Al comenzar, el navegador te pedirá permiso para usar el micrófono. En algunos navegadores (por ejemplo Chrome) el audio se envía a un servicio externo del navegador para reconocerlo. Esta experiencia no graba ni guarda audio ni texto.';
 
-/** Texto corto del estado del reconocimiento durante la presentación. */
+const AI_DISCLOSURE =
+  'Se graba tu voz en la memoria del navegador y, al terminar, se envía a Google (API de Gemini) con tu propia clave, junto con el brief. De la cámara solo salen números, nunca video. Con una clave gratuita, Google puede usar lo enviado para mejorar sus productos. Este sitio no guarda audio ni texto.';
+
+/** Texto corto del estado de la captura durante la presentación. */
 function liveHint(session) {
   const { options } = session.data;
-  if (options.inputMode !== 'voice') return 'Práctica con temporizador. No se usa el micrófono.';
-  if (session.capture.voiceLost) return 'Se perdió el reconocimiento. Seguís con el temporizador.';
+  const extras = [session.aiRecording ? 'grabando para la IA' : '', session.cameraOn ? 'cámara activa' : ''].filter(Boolean).join(' · ');
+  const suffix = extras ? ` · ${extras}` : '';
+  if (options.inputMode !== 'voice') return `Práctica con temporizador. No se usa el micrófono${suffix}.`;
+  if (!usesSpeech(session.data)) return `Micrófono activo${suffix}.`;
+  if (session.capture.voiceLost) return `Se perdió el reconocimiento. Seguís con el temporizador${suffix}.`;
   const interim = session.capture.interim;
-  if (interim) return `Escuchando · «…${interim.slice(-48)}»`;
-  return 'Micrófono activo · reconociendo en español.';
+  if (interim) return `Escuchando · «…${interim.slice(-40)}»${suffix}`;
+  return `Micrófono activo · reconociendo en español${suffix}.`;
+}
+
+/** Bloques de estado del análisis con IA cuando todavía no hay resultado (o falló). */
+function aiStatusPage(session, ai, panel) {
+  if (ai.status === 'off') {
+    panel.title = ['IA NO', 'ACTIVADA'];
+    panel.blocks = [
+      { t: 'p', text: 'Activala en la preparación, en «IA y cámara», para recibir un análisis del audio: contenido frente al brief, entrega y consejos.' },
+      { t: 'notice', kind: 'info', label: 'OPCIONAL', text: 'Hace falta tu propia clave de Gemini. Sin ella todo lo demás funciona igual.' },
+    ];
+    return true;
+  }
+  if (ai.status === 'analyzing') {
+    panel.title = ['ANALIZANDO', 'CON IA'];
+    panel.blocks = [
+      { t: 'p', text: 'Estamos enviando tu audio a la IA y esperando su respuesta. Suele tardar entre 10 y 30 segundos.' },
+      { t: 'p', tone: 'muted', text: 'Mientras tanto podés ver las otras pestañas.' },
+    ];
+    return true;
+  }
+  if (ai.status === 'error') {
+    panel.title = ['NO SE PUDO', 'ANALIZAR'];
+    panel.blocks = [
+      { t: 'notice', kind: 'warn', label: 'SIN ANÁLISIS DE LA IA', text: ai.error?.message || 'No se pudo completar el análisis.' },
+      { t: 'p', tone: 'muted', text: session.canRetryAi ? 'La grabación sigue en la memoria de esta pestaña: podés reintentar sin volver a presentar.' : 'Podés volver a intentar la presentación. Lo demás de la devolución sigue siendo válido.' },
+    ];
+    if (session.canRetryAi) panel.options.push(act('ai-retry', 'Reintentar análisis', 'secondary', ev('AI_RETRY')));
+    return true;
+  }
+  return false;
 }
 
 function clockModel(session) {
@@ -270,18 +306,21 @@ export function buildScreen(session, settings, env = {}) {
 
     case S.PREP: {
       const voice = options.inputMode === 'voice';
+      const micAvailable = data.capabilities.speech || (options.aiAnalysis && data.capabilities.ai);
       panel.eyebrow = `PREPARACIÓN · ${sc.name.toUpperCase()}`;
       panel.title = ['PREPARÁ', 'TU PITCH'];
       panel.blocks = [
         { t: 'p', text: `Tu presentación dura ${options.unlimited ? 'lo que necesites' : formatClock(sc.durationSec)}. Pensá en este orden:` },
         { t: 'bullets', items: ['1. El problema', '2. Tu idea', '3. El beneficio', '4. Un cierre con propuesta clara'] },
-        voice
-          ? { t: 'notice', kind: 'privacy', label: 'MICRÓFONO', text: MIC_DISCLOSURE }
-          : { t: 'notice', kind: 'info', label: 'SOLO TEMPORIZADOR', text: 'No se usa el micrófono. Al terminar hacés una autoevaluación.' },
+        options.aiAnalysis
+          ? { t: 'notice', kind: 'privacy', label: 'IA ACTIVADA · QUÉ SE ENVÍA', text: AI_DISCLOSURE }
+          : voice
+            ? { t: 'notice', kind: 'privacy', label: 'MICRÓFONO', text: MIC_DISCLOSURE }
+            : { t: 'notice', kind: 'info', label: options.gestures ? 'TEMPORIZADOR Y CÁMARA' : 'SOLO TEMPORIZADOR', text: options.gestures ? 'No se usa el micrófono. La cámara mide tus manos en este dispositivo y no sale ningún video.' : 'No se usa el micrófono. Al terminar hacés una autoevaluación.' },
       ];
       panel.options = [
-        act('mode-voice', env.speech === false ? 'Micrófono: no disponible' : 'Con micrófono', 'choice',
-          { ...ev('SET_INPUT_MODE', { mode: 'voice' }), on: voice, disabled: env.speech === false }),
+        act('mode-voice', !micAvailable ? 'Micrófono: no disponible' : 'Con micrófono', 'choice',
+          { ...ev('SET_INPUT_MODE', { mode: 'voice' }), on: voice, disabled: !micAvailable }),
         act('mode-timer', 'Solo temporizador', 'choice', { ...ev('SET_INPUT_MODE', { mode: 'timer' }), on: !voice }),
         act('unlimited', 'Sin límite de tiempo', 'toggle', { ...ev('TOGGLE_UNLIMITED'), on: options.unlimited }),
         act('meter', 'Medir nivel de audio', 'toggle', { ...ev('TOGGLE_METER'), on: options.measureAudio, disabled: !voice || env.meter === false }),
@@ -289,25 +328,48 @@ export function buildScreen(session, settings, env = {}) {
         act('prep-more', `Más preparación (${APP_CONFIG.prep.stepSec} s)`, 'secondary', { ui: 'prep-more', icon: 'plus' }),
       ];
       lectern.status = 'PREPARACIÓN';
-      lectern.hint = options.prepSec > 0 ? `Preparación: ${formatClock(options.prepSec)}. No empieza sola.` : 'Sin cuenta regresiva de preparación.';
+      lectern.hint = `${options.prepSec > 0 ? `Preparación: ${formatClock(options.prepSec)}. No empieza sola.` : 'Sin cuenta regresiva de preparación.'}${options.aiAnalysis || options.gestures ? ` IA: ${options.aiAnalysis ? 'sí' : 'no'} · cámara: ${options.gestures ? 'sí' : 'no'}.` : ''}`;
       lectern.actions = [
         act('begin', 'Comenzar presentación', 'primary', ev('BEGIN')),
+        act('open-ai', 'IA y cámara', 'secondary', ev('OPEN_AI')),
         act('back', 'Volver al brief', 'secondary', ev('BACK')),
       ];
       break;
     }
 
-    case S.STARTING:
-      panel.eyebrow = 'MICRÓFONO';
-      panel.title = ['ESPERANDO', 'AL MICRÓFONO'];
+    case S.STARTING: {
+      const asks = [options.inputMode === 'voice' ? 'el micrófono' : '', options.gestures ? 'la cámara' : ''].filter(Boolean).join(' y ');
+      panel.eyebrow = 'PERMISOS';
+      panel.title = ['ESPERANDO', 'LOS PERMISOS'];
       panel.blocks = [
-        { t: 'p', text: 'Aceptá el permiso que muestra el navegador. El tiempo todavía no corre.' },
+        { t: 'p', text: `Aceptá el permiso que muestra el navegador para usar ${asks || 'los dispositivos'}. El tiempo todavía no corre.` },
         { t: 'p', tone: 'muted', text: 'Si no ves ningún aviso, cancelá y practicá solo con temporizador.' },
       ];
       lectern.status = 'ESPERANDO PERMISO';
-      lectern.hint = 'La presentación empieza cuando el micrófono esté listo.';
+      lectern.hint = 'La presentación empieza cuando todo esté listo.';
       lectern.actions = [act('cancel-start', 'Cancelar', 'secondary', ev('CANCEL'))];
       break;
+    }
+
+    case S.AI_SETUP: {
+      const caps = data.capabilities;
+      panel.eyebrow = 'PREPARACIÓN · OPCIONAL';
+      panel.title = ['IA Y', 'CÁMARA'];
+      panel.blocks = [
+        { t: 'notice', kind: 'privacy', label: 'QUÉ SE ENVÍA', text: AI_DISCLOSURE },
+        { t: 'p', tone: 'muted', text: caps.ai ? `Clave de Gemini cargada. Modelo principal: ${APP_CONFIG.ai.models[0]}.` : 'Falta la clave de Gemini (o este navegador no puede grabar audio). Cargala en el panel de texto: tecla T, sección «Análisis con IA».' },
+      ];
+      panel.options = [
+        act('ai-toggle', 'Análisis de voz con IA', 'toggle', { ...ev('TOGGLE_AI'), on: options.aiAnalysis, disabled: !caps.ai && !options.aiAnalysis }),
+        act('gestures-toggle', caps.camera ? 'Gestos con la cámara' : 'Cámara: no disponible', 'toggle', { ...ev('TOGGLE_GESTURES'), on: options.gestures, disabled: !caps.camera && !options.gestures }),
+        act('ai-key', caps.ai ? 'Cambiar la clave (panel de texto)' : 'Cargar la clave (panel de texto)', 'secondary', { ui: 'open-ai-key' }),
+        act('ai-test-key', 'Probar la clave', 'secondary', { ui: 'test-ai-key', disabled: !caps.ai }),
+      ];
+      lectern.status = 'IA Y CÁMARA';
+      lectern.hint = 'Opcional: se activa solo si vos lo elegís.';
+      lectern.actions = [act('close-ai', 'Listo', 'primary', ev('CLOSE'))];
+      break;
+    }
 
     case S.VOICE_PROBLEM: {
       const info = VOICE_PROBLEM_TEXT[data.voiceProblem?.code] || VOICE_PROBLEM_TEXT.unknown;
@@ -406,12 +468,16 @@ export function buildScreen(session, settings, env = {}) {
         act('tab-0', '1 · Qué se midió', 'tab', { ...ev('SET_PAGE', { page: 0 }), on: page === 0 }),
         act('tab-1', '2 · Autoevaluación', 'tab', { ...ev('SET_PAGE', { page: 1 }), on: page === 1 }),
         act('tab-2', '3 · Consejos', 'tab', { ...ev('SET_PAGE', { page: 2 }), on: page === 2 }),
+        ...(fb.ai.status !== 'off' ? [
+          act('tab-3', '4 · IA: contenido', 'tab', { ...ev('SET_PAGE', { page: 3 }), on: page === 3 }),
+          act('tab-4', '5 · IA: entrega', 'tab', { ...ev('SET_PAGE', { page: 4 }), on: page === 4 }),
+        ] : []),
       ];
       if (page === 0) {
         panel.title = ['QUÉ SE MIDIÓ'];
         panel.blocks = [
           ...fb.banners.map((b) => ({ t: 'notice', kind: b.kind === 'demo' ? 'demo' : 'info', label: b.label, text: b.text })),
-          { t: 'measures', rows: fb.measurements.filter((r) => r.available || r.id !== 'audio').slice(0, 6) },
+          { t: 'measures', rows: fb.measurements.filter((r) => r.available || r.id !== 'audio').slice(0, 8) },
           fb.indicator.available
             ? { t: 'indicator', value: fb.indicator.value, label: fb.indicator.label, note: 'Ritmo 40% · muletillas 30% · uso del tiempo 30%. Orientativo: no evalúa el contenido.' }
             : { t: 'indicator', value: null, label: fb.indicator.label, note: fb.indicator.reasons[0] || 'Completá la autoevaluación.' },
@@ -426,21 +492,56 @@ export function buildScreen(session, settings, env = {}) {
           const a = answerInfo(data.rubric[q.id]);
           panel.options.push(act(`rubric-${q.id}`, q.label, 'rubric', { ...ev('RUBRIC_CYCLE', { id: q.id }), on: !!data.rubric[q.id], icon: a.icon, value: a.label }));
         }
-      } else {
+      } else if (page === 2) {
         panel.title = ['CONSEJOS Y', 'REVISIÓN HUMANA'];
+        const aiDone = fb.ai.status === 'done';
         panel.blocks = [
           { t: 'tips', items: fb.tips },
-          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, max3D: 3 },
-          { t: 'notice', kind: 'info', label: 'SIN IA', text: 'La evaluación semántica con IA no está disponible en esta versión. Pedí una opinión a una persona del equipo.' },
+          ...(aiDone && fb.ai.analysis.improvements.length
+            ? [{ t: 'bullets', heading: 'De la IA (puede equivocarse)', items: fb.ai.analysis.improvements.map((i) => i.advice), max3D: 2 }]
+            : []),
+          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, max3D: aiDone ? 2 : 3 },
+          ...(fb.ai.status === 'off'
+            ? [{ t: 'notice', kind: 'info', label: 'SIN IA', text: 'La evaluación con IA es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a una persona del equipo.' }]
+            : []),
           { t: 'bullets', heading: 'Preguntas de práctica (predefinidas; no responden a lo que dijiste)', items: fb.questions, htmlOnly: true },
         ];
+      } else if (!aiStatusPage(session, fb.ai, panel)) {
+        const { analysis } = fb.ai;
+        if (page === 3) {
+          panel.title = ['IA:', 'CONTENIDO'];
+          panel.blocks = [
+            { t: 'notice', kind: 'info', label: 'EVALUACIÓN ASISTIDA POR IA', text: AI_DISCLAIMER },
+            { t: 'p', tone: 'muted', text: firstSentence(analysis.summary, 190), only3D: true },
+            { t: 'measures', only3D: true, rows: [
+              // Sin notas en 3D (en VR no hay panel de texto y la tipografía debe ser legible); el detalle completo está en el panel de texto.
+              ...fb.ai.rubricRows.map((r) => ({ label: r.label, display: r.display, available: true })),
+              { label: 'Respeta la restricción', display: fb.ai.restriction.display, available: true },
+            ] },
+            { t: 'aifull', ai: fb.ai, part: 'content', htmlOnly: true },
+          ];
+        } else {
+          panel.title = ['IA:', 'ENTREGA'];
+          const g = fb.gestures;
+          panel.blocks = [
+            { t: 'notice', kind: 'info', label: 'PERCEPCIÓN DE LA IA, NO MEDICIÓN', text: 'Describe cómo se escucha la entrega. No evalúa emociones ni personalidad.' },
+            { t: 'fields', small: true, only3D: true, rows: [
+              { k: 'Ritmo', v: firstSentence(analysis.delivery.pace.observation, 130) },
+              { k: 'Claridad', v: firstSentence(analysis.delivery.clarity.observation, 130) },
+              { k: 'Entonación y volumen', v: firstSentence(analysis.delivery.energy.observation, 130) },
+              { k: 'Pausas', v: firstSentence(analysis.delivery.pauses.observation, 130) },
+              ...(g?.measured ? [{ k: 'Gestos (cámara, medido en tu dispositivo)', v: `Manos a la vista el ${Math.round(g.handsVisibleShare * 100)} % del tiempo; movimiento ${g.movementLabel}.` }] : []),
+            ] },
+            { t: 'aifull', ai: fb.ai, part: 'delivery', gestures: g, htmlOnly: true },
+          ];
+        }
       }
       lectern.status = 'DEVOLUCIÓN';
       lectern.hint = 'Podés reintentar o cambiar de escenario.';
       lectern.actions = [
         act('retry', 'Reintentar', 'primary', ev('RETRY')),
         act('change-scenario', 'Cambiar escenario', 'secondary', ev('CHANGE_SCENARIO')),
-        ...(options.inputMode === 'voice' ? [act('edit-transcript', 'Revisar transcripción', 'secondary', ev('EDIT_TRANSCRIPT'))] : []),
+        ...(usesSpeech(data) ? [act('edit-transcript', 'Revisar transcripción', 'secondary', ev('EDIT_TRANSCRIPT'))] : []),
       ];
       break;
     }

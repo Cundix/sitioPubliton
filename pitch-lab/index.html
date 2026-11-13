@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#181d16">
+  <!-- Privacidad: el navegador solo deja que esta página se conecte a sí misma y a la API de Gemini (únicamente si la persona activa la IA). -->
+  <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://generativelanguage.googleapis.com data: blob:">
   <meta name="description" content="Publitón Pitch Lab: un simulador de presentación de ideas publicitarias con experiencia inmersiva WebXR. Tu idea merece un buen pitch.">
   <title>Publitón Pitch Lab — Tu idea merece un buen pitch</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -52,6 +54,34 @@
         <p class="muted">Si escribís o pegás texto, la devolución lo marca como «escrito» y no calcula medidas de voz.</p>
       </section>
 
+      <details class="drawer-details" id="ai-settings">
+        <summary>Análisis con IA (Gemini) y cámara — opcional</summary>
+        <p class="hint">Con tu <strong>propia clave</strong> de la API de Gemini, una IA analiza el <strong>audio</strong> de tu presentación: el contenido frente al brief, cómo se escucha la entrega y consejos. Es una <strong>interpretación</strong>, no una medición. Todo esto es opcional: sin clave, el resto funciona igual.</p>
+        <div class="notice notice-privacy" role="note">
+          <strong>Qué se envía y adónde</strong>
+          <p>Si activás el análisis, tu voz se graba en la memoria del navegador y, al terminar, se envía a <strong>Google (generativelanguage.googleapis.com)</strong> junto con el brief. De la cámara solo salen <strong>números</strong> (nunca video). Con una clave de la capa gratuita, Google puede usar lo enviado para mejorar sus productos. Este sitio no guarda audio, transcripciones ni tu clave en ningún servidor.</p>
+        </div>
+        <div class="pref">
+          <label for="ai-key">Clave de la API de Gemini</label>
+          <input id="ai-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…" aria-describedby="ai-key-status">
+        </div>
+        <label class="check"><input id="ai-remember" type="checkbox"> Recordar en este dispositivo (si no, se borra al cerrar la pestaña)</label>
+        <div class="row-buttons">
+          <button id="ai-save" class="btn btn-secondary btn-small" type="button">Guardar clave</button>
+          <button id="ai-test" class="btn btn-secondary btn-small" type="button">Probar clave</button>
+          <button id="ai-clear" class="btn btn-secondary btn-small" type="button">Borrar clave</button>
+        </div>
+        <p id="ai-key-status" class="hint" role="status"></p>
+        <p class="muted small-text">¿Cómo conseguirla? En <a id="ai-help-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio<span class="sr-only"> (abre otra pestaña)</span></a>. La suscripción de consumo (Google AI Plus o Pro) <strong>no</strong> da cuota de API: la API tiene su propia capa gratuita con límites por minuto y por día. Si se agota la cuota, el análisis falla con un aviso y el resto sigue funcionando.</p>
+        <p class="muted small-text">En un casco VR no se puede escribir la clave: cargala acá antes de entrar (se mantiene mientras no cierres la pestaña).</p>
+        <hr class="soft">
+        <p class="hint"><strong>Cámara (gestos de las manos)</strong>: se analiza <strong>en este dispositivo</strong> con un modelo incluido en el sitio (se descarga solo si la activás). No se graba ni se envía video.</p>
+        <div class="row-buttons">
+          <button id="cam-test" class="btn btn-secondary btn-small" type="button" aria-pressed="false">Probar cámara</button>
+        </div>
+        <p id="cam-status" class="hint" role="status"></p>
+      </details>
+
       <details class="drawer-details" id="prefs">
         <summary>Preferencias</summary>
         <div class="pref">
@@ -83,6 +113,10 @@
       </details>
     </aside>
 
+    <figure id="cam-float" class="cam-float" hidden>
+      <video id="cam-preview" muted playsinline aria-label="Vista previa de tu cámara. No se graba."></video>
+      <figcaption>Cámara (no se graba)</figcaption>
+    </figure>
     <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <p id="toast" class="toast" role="status" hidden></p>
     <p class="keyhint" aria-hidden="true">Mouse: mirar · W A S D: caminar · Enter: acción principal · P: pausa · Esc: cancelar · T: panel de texto</p>

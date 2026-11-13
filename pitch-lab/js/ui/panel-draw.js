@@ -119,7 +119,7 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
         ctx.font = `700 ${sz(32)}px ${FONT.body}`;
         ctx.fillStyle = COLORS.yellow;
         if (draw) drawSpaced(ctx, row.k.toUpperCase(), x, cy + sz(28), 3);
-        cy = para(row.v, x, cy + sz(40), w, { size: sz(50), lineHeight: 1.16, maxLines: 3 }) + sz(16);
+        cy = para(row.v, x, cy + sz(40), w, { size: sz(block.small ? 42 : 50), lineHeight: 1.16, maxLines: block.small ? 2 : 3 }) + sz(block.small ? 10 : 16);
       }
       return cy;
     }

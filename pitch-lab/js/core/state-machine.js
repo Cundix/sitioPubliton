@@ -22,6 +22,7 @@ export const S = Object.freeze({
   HOME: 'home',
   TUTORIAL: 'tutorial',
   SETTINGS: 'settings',
+  AI_SETUP: 'ai-setup',
   SELECT: 'select',
   BRIEF: 'brief',
   PREP: 'prep',
@@ -38,23 +39,27 @@ export const S = Object.freeze({
 export const ACTIVE_STATES = Object.freeze([S.STARTING, S.PRESENTING, S.PAUSED, S.CONFIRM_CANCEL]);
 
 export const TUTORIAL_STEPS = 3;
-export const FEEDBACK_PAGES = 3;
+export const FEEDBACK_PAGES = 5; // 1 medidas · 2 autoevaluación · 3 consejos · 4 IA contenido · 5 IA entrega
 
 export function createInitialData(overrides = {}) {
   return {
-    capabilities: { speech: false, ...(overrides.capabilities || {}) },
+    capabilities: { speech: false, ai: false, camera: false, ...(overrides.capabilities || {}) },
     tutorialSeen: overrides.tutorialSeen ?? false,
     tutorialStep: 0,
     tutorialReturn: S.SELECT,
     settingsReturn: S.HOME,
+    aiReturn: S.PREP,
     scenarioId: null,
     briefIndex: 0,
     options: {
       inputMode: overrides.capabilities?.speech ? 'voice' : 'timer',
       unlimited: false,
       measureAudio: false,
+      aiAnalysis: false,   // análisis con IA (grabación + Gemini): opcional y con clave propia
+      gestures: false,     // gestos con la cámara (en el dispositivo): opcional
       prepSec: null,
     },
+    ai: { status: 'off', error: null, model: null },   // off | analyzing | done | error
     voiceProblem: null,
     voiceRetries: 0,
     cancelReturn: null,
@@ -66,9 +71,14 @@ export function createInitialData(overrides = {}) {
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+/** ¿Se está usando el reconocimiento de voz del navegador? (hay revisión de transcripción solo en ese caso) */
+export function usesSpeech(data) {
+  return data.options.inputMode === 'voice' && data.capabilities.speech;
+}
+
 /** Qué estado sigue cuando termina la presentación. */
 function afterPresenting(data) {
-  return data.options.inputMode === 'voice' ? S.REVIEW : S.FEEDBACK;
+  return usesSpeech(data) ? S.REVIEW : S.FEEDBACK;
 }
 
 export const FLOW = {
@@ -122,10 +132,14 @@ export const FLOW = {
   },
 
   [S.PREP]: {
-    BEGIN: { to: (d) => (d.options.inputMode === 'voice' ? S.STARTING : S.PRESENTING) },
+    BEGIN: {
+      // Se pasa por «starting» cuando hay que pedir permisos (micrófono y/o cámara).
+      to: (d) => (d.options.inputMode === 'voice' || (d.options.gestures && d.capabilities.camera) ? S.STARTING : S.PRESENTING),
+    },
+    OPEN_AI: { to: S.AI_SETUP, run: (d) => { d.aiReturn = S.PREP; } },
     BACK: { to: S.BRIEF },
     SET_INPUT_MODE: {
-      guard: (d, p) => (p?.mode === 'voice' ? d.capabilities.speech : p?.mode === 'timer'),
+      guard: (d, p) => (p?.mode === 'voice' ? d.capabilities.speech || (d.options.aiAnalysis && d.capabilities.ai) : p?.mode === 'timer'),
       run: (d, p) => { d.options.inputMode = p.mode; if (p.mode === 'timer') d.options.measureAudio = false; },
     },
     TOGGLE_UNLIMITED: { run: (d) => { d.options.unlimited = !d.options.unlimited; } },
@@ -139,6 +153,23 @@ export const FLOW = {
         d.options.prepSec = clamp((d.options.prepSec ?? 0) + (p?.delta ?? 0), minSec, maxSec);
       },
     },
+  },
+
+  [S.AI_SETUP]: {
+    TOGGLE_AI: {
+      guard: (d) => d.capabilities.ai || d.options.aiAnalysis,
+      run: (d) => {
+        d.options.aiAnalysis = !d.options.aiAnalysis;
+        // La IA analiza el audio: hace falta el micrófono. Sin IA y sin reconocimiento del navegador, no hay voz.
+        if (d.options.aiAnalysis) d.options.inputMode = 'voice';
+        else if (!d.capabilities.speech) { d.options.inputMode = 'timer'; d.options.measureAudio = false; }
+      },
+    },
+    TOGGLE_GESTURES: {
+      guard: (d) => d.capabilities.camera || d.options.gestures,
+      run: (d) => { d.options.gestures = !d.options.gestures; },
+    },
+    CLOSE: { to: (d) => d.aiReturn || S.PREP },
   },
 
   [S.STARTING]: {
@@ -185,6 +216,7 @@ export const FLOW = {
     LOAD_DEMO: {},        // ídem
     CONTINUE: { to: S.FEEDBACK, run: (d) => { d.feedbackPage = 0; } },
     RETRY: { to: S.PREP },
+    AI_RETRY: {},         // lo resuelve Session (vuelve a enviar la grabación que sigue en memoria)
   },
 
   [S.FEEDBACK]: {
@@ -198,7 +230,8 @@ export const FLOW = {
       guard: (d, p) => Object.prototype.hasOwnProperty.call(d.rubric, p?.id),
       run: (d, p) => { d.rubric[p.id] = nextAnswer(d.rubric[p.id]); },
     },
-    EDIT_TRANSCRIPT: { guard: (d) => d.options.inputMode === 'voice', to: S.REVIEW },
+    EDIT_TRANSCRIPT: { guard: (d) => usesSpeech(d), to: S.REVIEW },
+    AI_RETRY: {},
     RETRY: { to: S.PREP },
     CHANGE_SCENARIO: { to: S.SELECT },
   },

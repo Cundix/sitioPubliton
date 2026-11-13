@@ -17,6 +17,7 @@ export const SOURCES = {
   SPEECH_EDITED: 'speech-edited', // reconocimiento corregido por la persona
   TYPED: 'typed',             // escrita o pegada por la persona
   DEMO: 'demo',               // texto de demostración
+  AI: 'ai',                   // transcripción hecha por la IA a partir del audio grabado (solo si no hubo reconocimiento del navegador)
 };
 
 export const SOURCE_LABELS = {
@@ -25,6 +26,7 @@ export const SOURCE_LABELS = {
   'speech-edited': 'Reconocimiento de voz, editado por vos',
   typed: 'Texto escrito o pegado por vos',
   demo: 'Demostración (texto de ejemplo)',
+  ai: 'Transcripción de la IA (Gemini), a partir del audio',
 };
 
 /** Cuenta palabras: secuencias de letras/números (con tildes, ñ y apóstrofes internos). */
@@ -81,7 +83,7 @@ export function countFillers(text, fillers = APP_CONFIG.fillers) {
 export function computeMetrics({ text = '', source = SOURCES.NONE, activeMs = 0, targetSec = null, audio = null }, config = APP_CONFIG) {
   const durationSec = Math.max(0, activeMs / 1000);
   const hasText = source !== SOURCES.NONE && String(text).trim().length > 0;
-  const speechBased = source === SOURCES.SPEECH || source === SOURCES.SPEECH_EDITED;
+  const speechBased = source === SOURCES.SPEECH || source === SOURCES.SPEECH_EDITED || source === SOURCES.AI;
 
   const duration = {
     available: durationSec > 0,
@@ -169,8 +171,8 @@ export function computeIndicator(metrics, config = APP_CONFIG) {
   const cfg = config.indicator;
   const reasons = [];
 
-  const speechBased = metrics.source === SOURCES.SPEECH || metrics.source === SOURCES.SPEECH_EDITED;
-  if (!speechBased) reasons.push('Hace falta una transcripción obtenida por reconocimiento de voz.');
+  const speechBased = metrics.source === SOURCES.SPEECH || metrics.source === SOURCES.SPEECH_EDITED || metrics.source === SOURCES.AI;
+  if (!speechBased) reasons.push('Hace falta una transcripción obtenida del audio (reconocimiento de voz o IA).');
   if (!metrics.words.available || metrics.words.value < min.indicatorWords) {
     reasons.push(`Hacen falta al menos ${min.indicatorWords} palabras.`);
   }

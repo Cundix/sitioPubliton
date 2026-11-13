@@ -135,7 +135,7 @@ export class HtmlOverlay {
       <p class="eyebrow">${esc(panel.eyebrow || lectern.status)}</p>
       <h2 tabindex="-1" id="drawer-title">${esc(title || lectern.status)}</h2>
       ${notice}
-      ${panel.blocks.map(renderBlock).join('')}
+      ${panel.blocks.filter((b) => !b.only3D).map(renderBlock).join('')}
       ${panel.options.length ? `<div class="options" role="group" aria-label="Opciones">${panel.options.map((a) => renderAction(a)).join('')}</div>` : ''}
       ${lectern.hint ? `<p class="hint">${esc(lectern.hint)}</p>` : ''}
       <div class="actions" role="group" aria-label="Acciones">${lectern.actions.map((a) => renderAction(a)).join('')}</div>`;

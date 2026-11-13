@@ -23,7 +23,10 @@ export function renderBlock(block) {
       return `<dl class="kv">${block.rows.map((r) => `<div><dt>${esc(r.k)}</dt><dd>${esc(r.v)}</dd></div>`).join('')}</dl>`;
 
     case 'fields':
-      return `<dl class="fields">${block.rows.map((r) => `<div><dt>${esc(r.k)}</dt><dd>${esc(r.v)}</dd></div>`).join('')}</dl>`;
+      return `<dl class="fields${block.small ? ' fields-small' : ''}">${block.rows.map((r) => `<div><dt>${esc(r.k)}</dt><dd>${esc(r.v)}</dd></div>`).join('')}</dl>`;
+
+    case 'aifull':
+      return renderAiFull(block);
 
     case 'notice':
       return `<div class="notice notice-${esc(block.kind)}" role="note"><strong>${esc(block.label || NOTICE_ICON[block.kind])}</strong><p>${esc(block.text)}</p></div>`;
@@ -53,6 +56,47 @@ export function renderBlock(block) {
     default:
       return '';
   }
+}
+
+const li = (items) => `<ul class="list">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+
+/**
+ * Detalle completo del análisis con IA (solo panel de texto: el panel 3D muestra un resumen).
+ * Todo el texto viene de la IA y se escapa. Siempre se rotula como interpretación.
+ */
+function renderAiFull({ ai, part, gestures }) {
+  if (!ai || ai.status !== 'done') return '';
+  const a = ai.analysis;
+  const before = ai.failedBefore?.length ? ` Antes se intentó con ${ai.failedBefore.join('; ')}.` : '';
+  const foot = `<p class="muted small-text ai-model">Modelo: ${esc(ai.model || 'desconocido')}.${esc(before)} ${esc(ai.disclaimer)}</p>`;
+
+  if (part === 'content') {
+    const rubric = ai.rubricRows.map((r) => `
+      <div class="ai-item"><dt>${esc(r.label)}: <strong>${esc(r.display)}</strong></dt>
+      <dd>${esc(r.note)}${r.quote ? `<blockquote class="quote">«${esc(r.quote)}»</blockquote>` : ''}</dd></div>`).join('');
+    return `<section class="ai-report" aria-label="Detalle del análisis de contenido">
+      <h3>Resumen de la IA</h3><p>${esc(a.summary)}</p>
+      <h3>Por criterio (con cita textual)</h3><dl class="ai-list">${rubric}
+        <div class="ai-item"><dt>Respeta la restricción: <strong>${esc(ai.restriction.display)}</strong></dt><dd>${esc(ai.restriction.note)}</dd></div></dl>
+      ${a.strengths.length ? `<h3>Lo que funcionó</h3>${li(a.strengths)}` : ''}
+      ${a.improvements.length ? `<h3>Para mejorar</h3><ol class="tips">${a.improvements.map((i) => `<li>${esc(i.advice)}${i.why ? `<small>Por qué: ${esc(i.why)}</small>` : ''}</li>`).join('')}</ol>` : ''}
+      ${foot}</section>`;
+  }
+
+  const g = gestures?.measured
+    ? `<h3>Gestos (cámara, medido en tu dispositivo)</h3><p>Manos a la vista el ${Math.round(gestures.handsVisibleShare * 100)} % del tiempo; dos manos el ${Math.round(gestures.twoHandsShare * 100)} %; movimiento ${esc(gestures.movementLabel)}. Es una medida aproximada del movimiento de las manos: no evalúa si el gesto fue adecuado.</p>`
+    : '';
+  return `<section class="ai-report" aria-label="Detalle de la entrega">
+    <dl class="ai-list">
+      <div class="ai-item"><dt>Ritmo</dt><dd>${esc(a.delivery.pace.observation)}</dd></div>
+      <div class="ai-item"><dt>Claridad</dt><dd>${esc(a.delivery.clarity.observation)}</dd></div>
+      <div class="ai-item"><dt>Entonación y volumen</dt><dd>${esc(a.delivery.energy.observation)}</dd></div>
+      <div class="ai-item"><dt>Pausas</dt><dd>${esc(a.delivery.pauses.observation)}</dd></div>
+      <div class="ai-item"><dt>Muletillas</dt><dd>${esc(a.delivery.fillers.observation)}</dd></div>
+    </dl>
+    ${g}
+    ${a.limitations.length ? `<h3>Límites de este análisis</h3>${li(a.limitations)}` : ''}
+    ${foot}</section>`;
 }
 
 /** Botón HTML para una acción. */

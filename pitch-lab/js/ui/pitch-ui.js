@@ -163,15 +163,20 @@ export class PitchUI {
     const items = [];
     if (hasOptions) {
       const n = p.options.length;
-      const rubricMode = p.options.some((o) => o.kind === 'rubric');
       const top = 190;
       const avail = PANEL.H - top - 90;
-      const gap = 18;
-      const h = Math.min(rubricMode ? 150 : 124, (avail - gap * (n - 1)) / n);
-      const total = n * h + (n - 1) * gap;
-      const startY = top + (rubricMode || n > 4 ? 0 : (avail - total) / 2);
+      const gap = n > 7 ? 12 : 18;
+      const base = (o) => (o.kind === 'rubric' ? 150 : o.kind === 'tab' ? 82 : 124);
+      const sum = p.options.reduce((s, o) => s + base(o), 0);
+      const scale = Math.min(1, (avail - gap * (n - 1)) / sum);
+      const heights = p.options.map((o) => Math.round(base(o) * scale));
+      const total = heights.reduce((s, v) => s + v, 0) + gap * (n - 1);
+      const startY = top + (n > 4 || p.options.some((o) => o.kind === 'rubric') ? 0 : (avail - total) / 2);
+      let cursor = startY;
       p.options.forEach((a, i) => {
-        const x = PANEL.optionsX, y = startY + i * (h + gap), w = PANEL.optionsW;
+        const h = heights[i];
+        const x = PANEL.optionsX, y = cursor, w = PANEL.optionsW;
+        cursor += h + gap;
         items.push({
           key: `P-${a.id}`,
           action: a,
