@@ -6,7 +6,7 @@ import { chromium } from 'playwright-core';
 
 export const BASE_URL = process.env.PITCHLAB_URL || 'http://localhost:8080/pitch-lab/';
 
-export async function launch({ fakeMic = true, headless = true } = {}) {
+export async function launch({ fakeMic = true, headless = true, fakeAudioFile = null } = {}) {
   const channel = process.env.PITCHLAB_BROWSER || 'msedge';
   const args = [
     '--use-angle=swiftshader',
@@ -16,6 +16,8 @@ export async function launch({ fakeMic = true, headless = true } = {}) {
     '--autoplay-policy=no-user-gesture-required',
   ];
   if (fakeMic) args.push('--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream');
+  // Un archivo WAV como "micrófono" (se repite en bucle salvo que termine en %noloop).
+  if (fakeAudioFile) args.push(`--use-file-for-fake-audio-capture=${fakeAudioFile}`);
   return chromium.launch({ channel, headless, args });
 }
 
@@ -32,7 +34,7 @@ export async function openPage(browser, { width = 1280, height = 720, url = BASE
   page.on('pageerror', (error) => problems.push(`pageerror: ${error.message} :: ${(error.stack || '').split('\n').slice(0, 5).join(' | ')}`));
   page.on('requestfailed', (req) => problems.push(`requestfailed: ${req.url()} ${req.failure()?.errorText}`));
   page.on('response', (res) => { if (res.status() >= 400) problems.push(`http ${res.status()}: ${res.url()}`); });
-  await page.goto(url, { waitUntil: 'load' });
+  await page.goto(url, { waitUntil: 'load', timeout: 60000 }); // holgado: el render por software es lento si hay dos navegadores a la vez
   return { context, page, problems };
 }
 

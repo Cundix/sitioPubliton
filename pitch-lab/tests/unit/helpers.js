@@ -67,3 +67,27 @@ export class FakeMeter {
 
 /** Espera a que se resuelvan promesas pendientes. */
 export const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+/** Respuesta de la IA de ejemplo (ya con la forma que valida normalizeAnalysis). */
+export const GOOD_ANALYSIS = {
+  audible: true,
+  transcript: 'Hola, el problema es que nadie conoce la marca. Mi idea es una campaña en el barrio.',
+  summary: 'Presenta el problema y una idea concreta; falta un cierre con propuesta.',
+  rubric: {
+    problem: { level: 'yes', quote: 'nadie conoce la marca', note: 'Se entiende el problema.' },
+    idea: { level: 'yes', quote: 'una campaña en el barrio', note: 'La idea es concreta.' },
+    benefit: { level: 'partial', quote: '', note: 'El beneficio aparece sin desarrollar.' },
+    close: { level: 'no', quote: '', note: 'No hay propuesta de siguiente paso.' },
+  },
+  briefFit: { restriction: 'partial', note: 'La restricción se respeta a medias.' },
+  delivery: {
+    pace: { observation: 'Se percibe un ritmo pausado.' },
+    clarity: { observation: 'Se entiende bien.' },
+    energy: { observation: 'La entonación varía poco.' },
+    pauses: { observation: 'Hay pausas cortas.' },
+    fillers: { observation: 'Aparece un "eh" al inicio.' },
+  },
+  strengths: ['Problema claro'],
+  improvements: [{ advice: 'Cerrá con una propuesta concreta.', why: 'El cierre no aparece.' }],
+  limitations: ['Solo se evaluó el audio.'],
+};

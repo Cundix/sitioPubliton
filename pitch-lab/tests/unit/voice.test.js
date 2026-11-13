@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SpeechController } from '../../js/voice/speech-recognizer.js';
 import { detectCapabilities, detectImmersive } from '../../js/voice/capabilities.js';
-import { semanticEvaluator, SemanticEvaluatorUnavailable } from '../../js/ai/semantic-evaluator.js';
 import { Settings } from '../../js/core/settings.js';
 import { flush } from './helpers.js';
 
@@ -116,11 +115,6 @@ test('Capacidades: detecta soporte real y explica la falta de WebXR', async () =
   assert.match(noHmd.reason, /casco/);
   const ok = await detectImmersive({ navigator: { xr: { isSessionSupported: async () => true } }, isSecureContext: true });
   assert.equal(ok.supported, true);
-});
-
-test('Evaluación semántica: la interfaz existe pero no está disponible', async () => {
-  assert.equal(semanticEvaluator.available, false);
-  await assert.rejects(() => semanticEvaluator.evaluate({ transcript: 'x' }), SemanticEvaluatorUnavailable);
 });
 
 test('Preferencias: se guardan solo ajustes y toleran almacenamiento roto', () => {

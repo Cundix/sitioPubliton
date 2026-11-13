@@ -488,8 +488,13 @@ await test('14. Pausa automática si la pestaña pasa a segundo plano', async ({
 await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader)', async ({ page }) => {
   const info = {};
   await dispatch(page, 'START'); await dispatch(page, 'SKIP');
-  const snap = async (key) => {
-    await wait(700);
+  const snap = async (key, stageKey = key) => {
+    // Con render por software el espacio nuevo puede tardar en dibujarse: se espera a que cambie el espacio y a que
+    // se completen 3 cuadros antes de leer el renderizador (antes era una espera fija de 700 ms y a veces leía datos viejos).
+    await page.waitForFunction((k) => window.pitchLab.stage.key === k, stageKey, { timeout: 20000 });
+    const frame0 = await page.evaluate(() => window.pitchLab.scene.renderer.info.render.frame);
+    await page.waitForFunction((f) => window.pitchLab.scene.renderer.info.render.frame >= f + 3, frame0, { timeout: 30000 });
+    await wait(300);
     info[key] = await page.evaluate(() => { const r = window.pitchLab.scene.renderer.info; return { calls: r.render.calls, triangles: r.render.triangles, geometries: r.memory.geometries, textures: r.memory.textures }; });
   };
   await snap('hub');
@@ -498,7 +503,7 @@ await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader
     await snap(id);
     await dispatch(page, 'CHANGE_SCENARIO');
   }
-  await snap('hub-de-nuevo');
+  await snap('hub-de-nuevo', 'hub');
   console.log('    recursos:', JSON.stringify(info));
   await fs.writeFile(path.join(here, 'recursos-3d.json'), JSON.stringify(info, null, 2));
   for (const [k, v] of Object.entries(info)) assert.ok(v.calls < 400, `${k}: ${v.calls} llamadas de dibujo`);
