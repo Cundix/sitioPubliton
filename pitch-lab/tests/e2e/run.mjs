@@ -524,7 +524,8 @@ await test('16. Rutas bajo /sitioPubliton/pitch-lab/ (simulación de GitHub Page
 
 await test('17. Sitio anterior sin regresiones', async ({ page }) => {
   const title = await page.title();
-  assert.match(title, /Publitón — Hackeando el mensaje/);
+  // El equipo rediseñó el sitio (2026-11-12) y cambió el título: ya no dice «Hackeando el mensaje». Se exige solo la marca.
+  assert.match(title, /^Publitón/);
   assert.match(await page.textContent('h1'), /HACKEÁ/);
   assert.equal(await page.evaluate(() => document.querySelectorAll('[data-reserve]').length), 2);
   await page.click('[data-reserve="creador"]');
