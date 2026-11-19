@@ -21,6 +21,8 @@ import { GOOD_ANALYSIS } from '../unit/helpers.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const only = process.argv.slice(2);
+// Host propio de la página (localhost o, al probar el sitio publicado, cundix.github.io): lo demás es «externo».
+const OWN_HOST = new URL(process.env.PITCHLAB_URL || 'http://localhost:8080/pitch-lab/').host;
 const MEDIAPIPE_INFO = /XNNPACK delegate/; // aviso informativo de MediaPipe (sale por console.error)
 const KEY = `AIza${'e2e-prueba-'.padEnd(35, 'k')}`;
 const results = [];
@@ -314,7 +316,7 @@ await test('IA 3. Recorrido completo: micrófono → WAV 16 kHz → Gemini (simu
   assert.equal(stored.idb, 0);
   assert.equal(stored.stream, null);
   assert.equal(stored.recorder, null);
-  const external = [...hosts].filter((h) => !/^localhost(:\d+)?$/.test(h));
+  const external = [...hosts].filter((h) => h !== OWN_HOST);
   assert.deepEqual(external, ['generativelanguage.googleapis.com']);
 }, { browser, opts: { init: MOCK_SPEECH_ABSENT } });
 
@@ -433,7 +435,7 @@ await test('IA 7. Cámara: el modelo de manos se carga del mismo sitio, mide en 
   assert.ok(mp.some((n) => n.endsWith('hand_landmarker.task')), 'cargó el modelo de manos');
   assert.ok(mp.some((n) => n.endsWith('.wasm')), 'cargó el runtime WebAssembly');
   assert.equal(calls.length, 0);
-  assert.deepEqual([...hosts].filter((h) => !/^localhost(:\d+)?$/.test(h)), []);
+  assert.deepEqual([...hosts].filter((h) => h !== OWN_HOST), []);
 }, { browser, opts: { init: MOCK_SPEECH_ABSENT }, allow: [MEDIAPIPE_INFO] });
 
 // ---------------------------------------------------------------------------

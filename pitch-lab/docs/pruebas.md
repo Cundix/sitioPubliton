@@ -83,6 +83,22 @@ con estado **built**. Verificado después con consultas HTTP y con el navegador 
 
 Sigue pendiente verificar el enlace publicado **dentro de un casco físico** y con **voz real**.
 
+### Publicación de la versión con IA y cámara (2026-11-13)
+
+Se subió a `main` sin `--force` (`39471ed..05013f3`, encima del rediseño del sitio que había subido el equipo) y Pages construyó el commit
+`05013f3` («built»). Verificado con consultas HTTP y con el navegador automatizado contra el enlace real:
+
+| Comprobación | Resultado |
+|---|---|
+| `js/main.js`, `js/ai/gemini-client.js`, `js/ai/analysis-service.js`, `vendor/mediapipe/vision_bundle.mjs`, `docs/analisis-con-ia.md` y una captura | **200** con el tipo de contenido correcto |
+| `vendor/mediapipe/wasm/vision_wasm_internal.wasm` (14,7 MB) y `hand_landmarker.task` (7,8 MB) | **200**, `application/wasm` y `application/octet-stream` |
+| `index.html` publicado | Incluye la política CSP `connect-src` |
+| Pruebas e2e «IA 3» (grabación → WAV → devolución), «IA 7» (cámara con MediaPipe servido desde Pages, sin hosts externos) e «IA 10» (política de conexiones) contra el enlace publicado | **3 / 3** correctas |
+| Sitio principal `https://cundix.github.io/sitioPubliton/` | **200** (con el rediseño del equipo; la prueba 17 se ajustó porque cambió el título) |
+
+No se probó la API real de Gemini **desde el dominio publicado** (la clave temporal se borró); el CORS desde `cundix.github.io` se verificó
+antes con llamadas reales. Para hacerlo: abrir el enlace, cargar una clave propia y presentar con la IA activada.
+
 ## Otras verificaciones realizadas
 
 | Tema | Resultado |

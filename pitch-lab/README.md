@@ -8,7 +8,7 @@ audiencia virtual. Al terminar obtiene una devolución comprensible y puede volv
 
 Complementa el evento **Publitón** (TP4 de Diseño: experiencia inmersiva VR). Integrantes: Fiscina, Fuentes, Diaz y Tana.
 
-- Enlace publicado: <https://cundix.github.io/sitioPubliton/pitch-lab/> — publicado y verificado el 2026-11-04 (ver [`docs/pruebas.md`](docs/pruebas.md), «Verificación de la publicación»). **La versión con IA y cámara (2026-11-13) todavía no está subida al sitio público** (ver [`STATUS.md`](STATUS.md))
+- Enlace publicado: <https://cundix.github.io/sitioPubliton/pitch-lab/> — publicado y verificado el 2026-11-04; la **versión con IA y cámara** se publicó y verificó el 2026-11-13 (ver [`docs/pruebas.md`](docs/pruebas.md), «Verificación de la publicación»)
 - Sitio del evento (sin cambios): <https://cundix.github.io/sitioPubliton/>
 
 ## Qué se puede hacer

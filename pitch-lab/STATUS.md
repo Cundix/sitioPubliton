@@ -8,7 +8,7 @@ _Última actualización: 2026-11-13 (se sumó el análisis con IA y la cámara).
 |---|---|
 | Código en el repositorio (`main`) | **Subido** a `main` sin `--force`; Pages construyó los commits subidos («built»). La verificación se hizo sobre `df6fd36` y sobre el último commit (`6316c7f`) |
 | Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **publicado y verificado el 2026-11-04** (HTTP 200 en los recursos, 8/8 pruebas e2e contra el enlace real, sitio anterior intacto) |
-| **Versión con IA y cámara (2026-11-13)** | **NO está subida ni publicada todavía.** Los cambios están solo en la carpeta local (sin commit). El enlace público sigue mostrando la versión del 2026-11-04, sin la función de IA. Para publicarla: commit y push a `main`, esperar la construcción de Pages y repetir la verificación de `docs/pruebas.md` |
+| **Versión con IA y cámara (2026-11-13)** | **Publicada** (push a `main` sin `--force`, commit `05013f3`; Pages «built»). Verificado: HTTP 200 con el tipo correcto en los archivos nuevos (incluidos `hand_landmarker.task` y `vision_wasm_internal.wasm`) y 3 pruebas de navegador real contra el enlace publicado (recorrido de grabación y análisis con API simulada, cámara con MediaPipe servido desde Pages, política de conexiones). **No** se probó la API real desde el dominio publicado (la clave temporal ya se borró); el CORS desde `cundix.github.io` se había verificado antes con llamadas reales |
 | Qué NO está verificado | Uso en un casco físico y voz real (ver «Falta») |
 
 ## Terminado (y cómo se comprobó)
