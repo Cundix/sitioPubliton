@@ -14,9 +14,10 @@ import { SCENARIOS } from '../config/scenarios.js';
 import { BRIEFS } from '../config/briefs.js';
 import { APP_CONFIG } from '../config/app-config.js';
 import { RUBRIC_QUESTIONS, answerInfo } from './rubric.js';
-import { formatClock, firstSentence, AI_DISCLAIMER } from './feedback.js';
+import { formatClock, firstSentence, AI_DISCLAIMER, AI_DISCLAIMER_3D, HUMAN_REVIEW_3D } from './feedback.js';
 import { SOURCES, SOURCE_LABELS } from './metrics.js';
 import { WARNING_LABELS } from './time-warnings.js';
+import { snapTurnLabel, heightLabel } from './settings.js';
 
 const act = (id, label, kind, extra = {}) => ({ id, label, kind, ...extra });
 const ev = (event, payload) => ({ event, payload });
@@ -28,7 +29,7 @@ const TUTORIAL = [
     bullets: [
       'Mouse: arrastrá para mirar alrededor.',
       'W A S D o flechas: caminar. Q y E: girar.',
-      'Con casco VR: usá las marcas del piso para teletransportarte. No hay desplazamiento continuo.',
+      'Con casco VR: marcas del piso para teletransportarte y joystick para girar. No hay desplazamiento continuo.',
     ],
   },
   {
@@ -37,6 +38,7 @@ const TUTORIAL = [
     bullets: [
       'Apuntá con el mouse o con el láser del control.',
       'Clic o gatillo para presionar. Los botones grandes del atril son los principales.',
+      'Finalizar pide mantener presionado un momento, para no terminar sin querer.',
       'Teclado: Enter acción principal · P pausa · Esc cancelar · R recentrar.',
     ],
   },
@@ -82,8 +84,16 @@ const VOICE_PROBLEM_TEXT = {
   },
 };
 
+const HOLD_FINISH_HINT = 'Mantené presionado «Finalizar» para terminar la presentación.';
+
 const MIC_DISCLOSURE =
   'Al comenzar, el navegador te pedirá permiso para usar el micrófono. En algunos navegadores (por ejemplo Chrome) el audio se envía a un servicio externo del navegador para reconocerlo. Esta experiencia no graba ni guarda audio ni texto.';
+
+// Versiones para el espacio 3D (dentro del casco no hay panel de texto y cada línea cuesta lugar con letra legible).
+const MIC_DISCLOSURE_3D =
+  'El navegador pide permiso para el micrófono y, en algunos, envía el audio a un servicio externo para reconocerlo. No se guarda audio ni texto.';
+const AI_DISCLOSURE_3D =
+  'Tu voz se graba y se envía a Google (Gemini) con tu clave. De la cámara solo salen números. No se guarda audio ni texto.';
 
 const AI_DISCLOSURE =
   'Se graba tu voz en la memoria del navegador y, al terminar, se envía a Google (API de Gemini) con tu propia clave, junto con el brief. De la cámara solo salen números, nunca video. Con una clave gratuita, Google puede usar lo enviado para mejorar sus productos. Este sitio no guarda audio ni texto.';
@@ -137,12 +147,13 @@ function clockModel(session) {
   const sc = session.scenario;
 
   if (state === S.PREP) {
-    if (!(view.prepSec > 0)) return { mode: 'prep', label: 'PREPARACIÓN', time: '--:--', sub: 'Sin cuenta regresiva', warning: 'none', progress: 0 };
+    if (!(view.prepSec > 0)) return { mode: 'prep', label: 'PREPARACIÓN', time: '--:--', sub: 'Sin cuenta regresiva', short: 'SIN CUENTA', warning: 'none', progress: 0 };
     return {
       mode: 'prep',
       label: view.prepDone ? 'PREPARACIÓN LISTA' : 'PREPARACIÓN',
       time: formatClock(view.prepRemainingSec ?? view.prepSec),
       sub: view.prepDone ? 'Empezá cuando quieras' : 'Tiempo para pensar',
+      short: view.prepDone ? 'LISTO' : 'A PENSAR',
       warning: 'none',
       progress: view.prepSec ? 1 - (view.prepRemainingSec ?? view.prepSec) / view.prepSec : 0,
     };
@@ -156,6 +167,7 @@ function clockModel(session) {
       label: paused ? 'EN PAUSA' : unlimited ? 'TRANSCURRIDO' : 'RESTANTE',
       time: formatClock(unlimited ? view.elapsedSec : view.remainingSec ?? 0),
       sub: unlimited ? 'Práctica sin límite' : WARNING_LABELS[view.warning],
+      short: paused ? 'DETENIDO' : unlimited ? 'SIN LÍMITE' : WARNING_LABELS[view.warning],
       warning: paused ? 'none' : view.warning,
       progress: unlimited ? 0 : Math.min(1, view.elapsedSec / view.totalSec),
       paused,
@@ -168,6 +180,7 @@ function clockModel(session) {
     label: 'DURACIÓN',
     time: total ? formatClock(total) : '--:--',
     sub: sc ? sc.name : 'Elegí un escenario',
+    short: '',
     warning: 'none',
     progress: 0,
   };
@@ -228,17 +241,23 @@ export function buildScreen(session, settings, env = {}) {
     }
 
     case S.SETTINGS: {
+      panel.layout = 'grid';
       panel.eyebrow = 'AJUSTES';
       panel.title = ['A TU', 'MEDIDA'];
       panel.blocks = [
         { t: 'meter', label: 'Volumen de los avisos', value: settings.get('volume'), text: `${Math.round(settings.get('volume') * 100)}%` },
-        { t: 'p', tone: 'muted', text: 'Los avisos de tiempo siempre tienen señal visual además del sonido.' },
+        { t: 'kv', rows: [{ k: 'Altura de la vista en VR', v: heightLabel(settings.get('heightCm')) }] },
+        { t: 'p', tone: 'muted', htmlOnly: true, text: 'Los avisos de tiempo siempre tienen señal visual además del sonido.' },
       ];
       panel.options = [
         act('vol-down', 'Bajar volumen', 'secondary', { ui: 'volume-down', icon: 'minus' }),
         act('vol-up', 'Subir volumen', 'secondary', { ui: 'volume-up', icon: 'plus' }),
         act('motion', 'Movimiento reducido', 'toggle', { ui: 'toggle-motion', on: settings.get('reducedMotion') }),
         act('seated', 'Modo sentado (VR)', 'toggle', { ui: 'toggle-seated', on: settings.get('seated') }),
+        act('snap', `Giro con joystick: ${snapTurnLabel(settings.get('snapTurnDeg'))}`, 'secondary', { ui: 'cycle-snap' }),
+        act('haptics', 'Vibración de controles', 'toggle', { ui: 'toggle-haptics', on: settings.get('haptics') }),
+        act('height-down', 'Bajar la vista', 'secondary', { ui: 'height-down', icon: 'minus' }),
+        act('height-up', 'Subir la vista', 'secondary', { ui: 'height-up', icon: 'plus' }),
       ];
       lectern.status = 'AJUSTES';
       lectern.hint = 'Se guardan en este navegador.';
@@ -309,14 +328,14 @@ export function buildScreen(session, settings, env = {}) {
       const voice = options.inputMode === 'voice';
       const micAvailable = data.capabilities.speech || (options.aiAnalysis && data.capabilities.ai);
       panel.eyebrow = `PREPARACIÓN · ${sc.name.toUpperCase()}`;
-      panel.title = ['PREPARÁ', 'TU PITCH'];
+      panel.title = ['PREPARÁ TU PITCH'];
       panel.blocks = [
-        { t: 'p', text: `Tu presentación dura ${options.unlimited ? 'lo que necesites' : formatClock(sc.durationSec)}. Pensá en este orden:` },
+        { t: 'p', text: `Dura ${options.unlimited ? 'lo que necesites' : formatClock(sc.durationSec)}. Pensá en este orden:` },
         { t: 'bullets', items: ['1. El problema', '2. Tu idea', '3. El beneficio', '4. Un cierre con propuesta clara'] },
         options.aiAnalysis
-          ? { t: 'notice', kind: 'privacy', label: 'IA ACTIVADA · QUÉ SE ENVÍA', text: AI_DISCLOSURE }
+          ? { t: 'notice', kind: 'privacy', label: 'IA ACTIVADA · QUÉ SE ENVÍA', text: AI_DISCLOSURE, text3D: AI_DISCLOSURE_3D }
           : voice
-            ? { t: 'notice', kind: 'privacy', label: 'MICRÓFONO', text: MIC_DISCLOSURE }
+            ? { t: 'notice', kind: 'privacy', label: 'MICRÓFONO', text: MIC_DISCLOSURE, text3D: MIC_DISCLOSURE_3D }
             : { t: 'notice', kind: 'info', label: options.gestures ? 'TEMPORIZADOR Y CÁMARA' : 'SOLO TEMPORIZADOR', text: options.gestures ? 'No se usa el micrófono. La cámara mide tus manos en este dispositivo y no sale ningún video.' : 'No se usa el micrófono. Al terminar hacés una autoevaluación.' },
       ];
       panel.options = [
@@ -355,10 +374,10 @@ export function buildScreen(session, settings, env = {}) {
     case S.AI_SETUP: {
       const caps = data.capabilities;
       panel.eyebrow = 'PREPARACIÓN · OPCIONAL';
-      panel.title = ['IA Y', 'CÁMARA'];
+      panel.title = ['IA Y CÁMARA'];
       panel.blocks = [
-        { t: 'notice', kind: 'privacy', label: 'QUÉ SE ENVÍA', text: AI_DISCLOSURE },
-        { t: 'p', tone: 'muted', text: caps.ai ? `Clave de Gemini cargada. Modelo principal: ${APP_CONFIG.ai.models[0]}.` : 'Falta la clave de Gemini (o este navegador no puede grabar audio). Cargala en el panel de texto: tecla T, sección «Análisis con IA».' },
+        { t: 'notice', kind: 'privacy', label: 'QUÉ SE ENVÍA', text: AI_DISCLOSURE, text3D: AI_DISCLOSURE_3D },
+        { t: 'p', tone: 'muted', optional3D: true, text: caps.ai ? `Clave de Gemini cargada. Modelo principal: ${APP_CONFIG.ai.models[0]}.` : 'Falta la clave de Gemini (o este navegador no puede grabar audio). Cargala en el panel de texto: tecla T, sección «Análisis con IA».' },
       ];
       panel.options = [
         act('ai-toggle', 'Análisis de voz con IA', 'toggle', { ...ev('TOGGLE_AI'), on: options.aiAnalysis, disabled: !caps.ai && !options.aiAnalysis }),
@@ -396,7 +415,7 @@ export function buildScreen(session, settings, env = {}) {
       lectern.status = 'EN VIVO';
       lectern.hint = liveHint(session);
       lectern.actions = [
-        act('finish', 'Finalizar', 'primary', ev('FINISH')),
+        act('finish', 'Finalizar', 'primary', { ...ev('FINISH'), hold: true, holdHint: HOLD_FINISH_HINT }),
         act('pause', 'Pausar', 'secondary', ev('PAUSE')),
         act('cancel', 'Cancelar', 'danger', ev('REQUEST_CANCEL')),
       ];
@@ -408,12 +427,17 @@ export function buildScreen(session, settings, env = {}) {
       panel.blocks = [
         { t: 'p', text: 'El tiempo y el reconocimiento están detenidos. Respirá y seguí cuando quieras.' },
         { t: 'kv', rows: [{ k: 'Tiempo usado', v: formatClock(session.getTimeView().elapsedSec) }] },
+        // Reconocer en vez de recordar: en la pausa se puede volver a leer el brief (en la presentación el panel no tapa al público).
+        { t: 'fields', small: true, optional3D: true, rows: [
+          { k: 'Tu brief · marca ficticia', v: brief.brand },
+          { k: 'Restricción creativa', v: brief.constraint },
+        ] },
       ];
       lectern.status = 'EN PAUSA';
       lectern.hint = 'Nada corre mientras estás en pausa.';
       lectern.actions = [
         act('resume', 'Continuar', 'primary', ev('RESUME')),
-        act('finish', 'Finalizar', 'secondary', ev('FINISH')),
+        act('finish', 'Finalizar', 'secondary', { ...ev('FINISH'), hold: true, holdHint: HOLD_FINISH_HINT }),
         act('cancel', 'Cancelar', 'danger', ev('REQUEST_CANCEL')),
       ];
       break;
@@ -436,12 +460,12 @@ export function buildScreen(session, settings, env = {}) {
     case S.REVIEW: {
       const t = session.getTranscript();
       panel.eyebrow = 'REVISIÓN';
-      panel.title = ['REVISÁ LA', 'TRANSCRIPCIÓN'];
+      panel.title = ['REVISÁ LA TRANSCRIPCIÓN'];
       if (t.text) {
         panel.blocks = [
           { t: 'tag', source: t.source, text: SOURCE_LABELS[t.source] },
           { t: 'quote', text: t.text },
-          { t: 'notice', kind: 'info', label: 'PUEDE TENER ERRORES', text: 'El reconocimiento se equivoca. En computadora podés corregir el texto en el panel de texto.' },
+          { t: 'notice', kind: 'info', label: 'PUEDE TENER ERRORES', text: 'El reconocimiento se equivoca. En computadora podés corregir el texto en el panel de texto.', text3D: 'Puede tener errores. Se corrige en el panel de texto (computadora).' },
         ];
       } else {
         panel.blocks = [
@@ -477,10 +501,12 @@ export function buildScreen(session, settings, env = {}) {
       if (page === 0) {
         panel.title = ['QUÉ SE MIDIÓ'];
         panel.blocks = [
-          ...fb.banners.map((b) => ({ t: 'notice', kind: b.kind === 'demo' ? 'demo' : 'info', label: b.label, text: b.text })),
-          { t: 'measures', rows: fb.measurements.filter((r) => r.available || r.id !== 'audio').slice(0, 8) },
+          ...fb.banners.map((b) => ({ t: 'notice', kind: b.kind === 'demo' ? 'demo' : 'info', label: b.label, text: b.text, text3D: b.short })),
+          { t: 'measures', htmlOnly: true, rows: fb.measurements.filter((r) => r.available || r.id !== 'audio').slice(0, 8) },
+          // En 3D solo las cuatro medidas que alimentan el indicador, en tarjetas grandes; el resto está en el panel de texto.
+          { t: 'measures', only3D: true, cards: true, rows: ['duration', 'timeUse', 'wpm', 'fillers'].map((id) => fb.measurements.find((r) => r.id === id)).filter(Boolean) },
           fb.indicator.available
-            ? { t: 'indicator', value: fb.indicator.value, label: fb.indicator.label, note: 'Ritmo 40% · muletillas 30% · uso del tiempo 30%. Orientativo: no evalúa el contenido.' }
+            ? { t: 'indicator', value: fb.indicator.value, label: fb.indicator.label, note: 'Ritmo 40% · muletillas 30% · uso del tiempo 30%. Orientativo: no evalúa el contenido.', note3D: 'Orientativo. No evalúa el contenido.' }
             : { t: 'indicator', value: null, label: fb.indicator.label, note: fb.indicator.reasons[0] || 'Completá la autoevaluación.' },
         ];
       } else if (page === 1) {
@@ -494,26 +520,26 @@ export function buildScreen(session, settings, env = {}) {
           panel.options.push(act(`rubric-${q.id}`, q.label, 'rubric', { ...ev('RUBRIC_CYCLE', { id: q.id }), on: !!data.rubric[q.id], icon: a.icon, value: a.label }));
         }
       } else if (page === 2) {
-        panel.title = ['CONSEJOS Y', 'REVISIÓN HUMANA'];
+        panel.title = ['CONSEJOS'];
         const aiDone = fb.ai.status === 'done';
         panel.blocks = [
           { t: 'tips', items: fb.tips },
           ...(aiDone && fb.ai.analysis.improvements.length
-            ? [{ t: 'bullets', heading: 'De la IA (puede equivocarse)', items: fb.ai.analysis.improvements.map((i) => i.advice), max3D: 2 }]
+            ? [{ t: 'bullets', heading: 'De la IA (puede equivocarse)', items: fb.ai.analysis.improvements.map((i) => i.advice), max3D: 1, optional3D: true }]
             : []),
-          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, max3D: aiDone ? 2 : 3 },
+          { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, htmlOnly: true },
+          { t: 'bullets', heading: 'Requiere revisión humana', items: [HUMAN_REVIEW_3D], only3D: true },
           ...(fb.ai.status === 'off'
-            ? [{ t: 'notice', kind: 'info', label: 'SIN IA', text: 'La evaluación con IA es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a una persona del equipo.' }]
+            ? [{ t: 'notice', kind: 'info', label: 'SIN IA', optional3D: true, text: 'La evaluación con IA es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a una persona del equipo.', text3D: 'La IA es opcional: se activa en la preparación, en «IA y cámara».' }]
             : []),
           { t: 'bullets', heading: 'Preguntas de práctica (predefinidas; no responden a lo que dijiste)', items: fb.questions, htmlOnly: true },
         ];
       } else if (!aiStatusPage(session, fb.ai, panel)) {
         const { analysis } = fb.ai;
         if (page === 3) {
-          panel.title = ['IA:', 'CONTENIDO'];
+          panel.title = ['IA: CONTENIDO'];
           panel.blocks = [
-            { t: 'notice', kind: 'info', label: 'EVALUACIÓN ASISTIDA POR IA', text: AI_DISCLAIMER },
-            { t: 'p', tone: 'muted', text: firstSentence(analysis.summary, 190), only3D: true },
+            { t: 'notice', kind: 'info', label: 'EVALUACIÓN ASISTIDA POR IA', text: AI_DISCLAIMER, text3D: AI_DISCLAIMER_3D },
             { t: 'measures', only3D: true, rows: [
               // Sin notas en 3D (en VR no hay panel de texto y la tipografía debe ser legible); el detalle completo está en el panel de texto.
               ...fb.ai.rubricRows.map((r) => ({ label: r.label, display: r.display, available: true })),
@@ -522,15 +548,17 @@ export function buildScreen(session, settings, env = {}) {
             { t: 'aifull', ai: fb.ai, part: 'content', htmlOnly: true },
           ];
         } else {
-          panel.title = ['IA:', 'ENTREGA'];
+          panel.title = ['IA: ENTREGA'];
           const g = fb.gestures;
           panel.blocks = [
-            { t: 'notice', kind: 'info', label: 'PERCEPCIÓN DE LA IA, NO MEDICIÓN', text: 'Describe cómo se escucha la entrega. No evalúa emociones ni personalidad.' },
+            { t: 'notice', kind: 'info', label: 'PERCEPCIÓN DE LA IA, NO MEDICIÓN', text: 'Describe cómo se escucha la entrega. No evalúa emociones ni personalidad.', text3D: 'No evalúa emociones ni personalidad.' },
             { t: 'fields', small: true, only3D: true, rows: [
-              { k: 'Ritmo', v: firstSentence(analysis.delivery.pace.observation, 130) },
-              { k: 'Claridad', v: firstSentence(analysis.delivery.clarity.observation, 130) },
-              { k: 'Entonación y volumen', v: firstSentence(analysis.delivery.energy.observation, 130) },
-              { k: 'Pausas', v: firstSentence(analysis.delivery.pauses.observation, 130) },
+              { k: 'Ritmo', v: firstSentence(analysis.delivery.pace.observation, 78) },
+              { k: 'Claridad', v: firstSentence(analysis.delivery.clarity.observation, 78) },
+              { k: 'Entonación y volumen', v: firstSentence(analysis.delivery.energy.observation, 78) },
+            ] },
+            { t: 'fields', small: true, only3D: true, optional3D: true, rows: [
+              { k: 'Pausas', v: firstSentence(analysis.delivery.pauses.observation, 78) },
               ...(g?.measured ? [{ k: 'Gestos (cámara, medido en tu dispositivo)', v: `Manos a la vista el ${Math.round(g.handsVisibleShare * 100)} % del tiempo; movimiento ${g.movementLabel}.` }] : []),
             ] },
             { t: 'aifull', ai: fb.ai, part: 'delivery', gestures: g, htmlOnly: true },

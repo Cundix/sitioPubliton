@@ -126,6 +126,8 @@ textarea{width:100%;background:var(--surface);border:2px solid var(--border);bor
 .row-buttons{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
 .small-text{font-size:14px}
 hr.soft{border:0;border-top:1px solid var(--border);margin:16px 0}
+select{width:100%;min-height:44px;background:var(--surface);color:var(--white);border:2px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:17px}
+select option{background:var(--surface);color:var(--white)}
 input[type=password],input[type=text]{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:12px;font-size:17px}
 .btn[aria-busy="true"]{opacity:.7;cursor:progress}
 .status-ok{color:var(--yellow)}

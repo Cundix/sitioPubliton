@@ -73,11 +73,84 @@ AFRAME.registerComponent('xr-ray', {
   },
 });
 
+/**
+ * Vibración corta de los controles: confirma al tacto que el rayo tocó algo, que se presionó o que una
+ * acción no está disponible (UX for XR, cap. 4: el tacto es la señal sutil que acompaña a la vista y al sonido).
+ * Nunca es la única señal: siempre hay resaltado visual y, en las acciones, un sonido.
+ * Se puede apagar en Ajustes. Si el control no tiene motor de vibración (o son manos sin control) no hace nada.
+ */
+export const HAPTIC_PULSES = Object.freeze({
+  hover: { intensity: 0.12, ms: 18 },
+  press: { intensity: 0.5, ms: 40 },
+  denied: { intensity: 0.7, ms: 90 },
+  teleport: { intensity: 0.35, ms: 50 },
+  confirm: { intensity: 0.8, ms: 120 },
+});
+
+export class Haptics {
+  constructor({ getSession, settings, now = () => performance.now() }) {
+    this.getSession = getSession;
+    this.settings = settings;
+    this.now = now;
+    this.sent = 0;       // cuántas vibraciones se pidieron (sirve para las pruebas)
+    this.lastAt = new Map();
+  }
+
+  /** Mano ('left' / 'right') del control que apuntó, a partir del evento del cursor de A-Frame. */
+  static handFromEvent(event) {
+    const cursor = event?.detail?.cursorEl;
+    const hand = cursor?.components?.['xr-ray']?.data?.hand;
+    return hand === 'left' || hand === 'right' ? hand : null;
+  }
+
+  fromEvent(event, kind) {
+    const hand = Haptics.handFromEvent(event);
+    return hand ? this.pulse(hand, kind) : false;
+  }
+
+  pulse(hand, kind) {
+    const spec = HAPTIC_PULSES[kind];
+    if (!spec || !this.settings.get('haptics')) return false;
+    const session = this.getSession();
+    if (!session) return false;
+    // El rayo recorre varios botones al moverse: se limita la frecuencia para que no sea un zumbido continuo.
+    const key = `${hand}:${kind}`;
+    const t = this.now();
+    if (kind === 'hover' && t - (this.lastAt.get(key) ?? -1e9) < 60) return false;
+    this.lastAt.set(key, t);
+    for (const source of session.inputSources || []) {
+      if (source.handedness !== hand) continue;
+      const pad = source.gamepad;
+      try {
+        const actuator = pad?.hapticActuators?.[0];
+        if (actuator?.pulse) {
+          Promise.resolve(actuator.pulse(spec.intensity, spec.ms)).catch(() => {});
+        } else if (pad?.vibrationActuator?.playEffect) {
+          Promise.resolve(pad.vibrationActuator.playEffect('dual-rumble', {
+            startDelay: 0, duration: spec.ms, weakMagnitude: spec.intensity, strongMagnitude: spec.intensity,
+          })).catch(() => {});
+        } else {
+          return false;
+        }
+        this.sent += 1;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+}
+
 /** Consulta si hay modo inmersivo y mantiene app.xr al día. */
 export async function setupXR(scene) {
   const result = await detectImmersive(window);
   app.xr.supported = result.supported;
   app.xr.reason = result.reason;
+  app.haptics = new Haptics({
+    getSession: () => scene.renderer?.xr?.getSession?.() ?? null,
+    settings: app.settings,
+  });
 
   const sync = () => {
     app.xr.active = scene.is('vr-mode');

@@ -5,6 +5,7 @@
 import { DEG } from './scene-kit.js';
 import { makeSign } from './furniture.js';
 import { formatClock } from '../core/feedback.js';
+import { app } from '../app-context.js';
 
 const T = () => globalThis.AFRAME.THREE;
 
@@ -150,9 +151,9 @@ export class Maquette {
     this.sign.el.object3D.rotation.x = -40 * DEG;
     this.root.appendChild(this.sign.el);
 
-    this._enter = () => { this.hover = true; this.onHover?.(this, true); this.refresh(); };
+    this._enter = (e) => { this.hover = true; this.onHover?.(this, true, e); this.refresh(); if (this.interactive) app.haptics?.fromEvent(e, 'hover'); };
     this._leave = () => { this.hover = false; this.onHover?.(this, false); this.refresh(); };
-    this._click = () => { if (this.interactive) this.onPick(this.sc.id); };
+    this._click = (e) => { if (this.interactive) { app.haptics?.fromEvent(e, 'press'); this.onPick(this.sc.id); } };
     this.hitEl.addEventListener('mouseenter', this._enter);
     this.hitEl.addEventListener('mouseleave', this._leave);
     this.hitEl.addEventListener('click', this._click);

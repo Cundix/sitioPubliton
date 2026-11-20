@@ -92,10 +92,10 @@ export function buildSala(kit, sc) {
     pads: sc.pads,
     anchors: {
       lectern: { pos: [0, 0, 0] },
-      panel: { pos: [0, 2.05, -0.5], scale: 1.2 },
+      panel: { pos: [0, 2.05, -0.5], scale: 1.3 },
       clock: { pos: [0, 2.05, room.minZ + 0.05], rotY: 0, scale: 1.04 },
       brief: { pos: [0, 1.6, room.maxZ - 0.075], rotY: 180, scale: 1.25 },
-      compact: { pos: [0, 1.4, room.minZ + 0.05], rotY: 0, scale: 0.8 },
+      compact: { pos: [0, 1.4, room.minZ + 0.05], rotY: 0, scale: 1.1 },
     },
     entities,
     audience,

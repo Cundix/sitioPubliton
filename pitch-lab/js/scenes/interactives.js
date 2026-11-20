@@ -11,7 +11,7 @@ const T = () => globalThis.AFRAME.THREE;
 
 /** Marca circular en el piso. Al apuntarla y presionar, la persona se teletransporta (sin deslizarse). */
 export class TeleportPad {
-  constructor(pad, { onTeleport }) {
+  constructor(pad, { onTeleport, onHaptic }) {
     const THREE = T();
     this.pad = pad;
     this.hover = false;
@@ -53,9 +53,9 @@ export class TeleportPad {
     this.labelHolder.appendChild(this.label.el);
     this.root.appendChild(this.labelHolder);
 
-    this._enter = () => { this.hover = true; this.refresh(); };
+    this._enter = (e) => { this.hover = true; this.refresh(); onHaptic?.('hover', e); };
     this._leave = () => { this.hover = false; this.refresh(); };
-    this._click = () => onTeleport(pad);
+    this._click = (e) => { onHaptic?.('teleport', e); onTeleport(pad); };
     this.hitEl.addEventListener('mouseenter', this._enter);
     this.hitEl.addEventListener('mouseleave', this._leave);
     this.hitEl.addEventListener('click', this._click);
@@ -81,7 +81,7 @@ export class TeleportPad {
 
 /** Botón flotante 3D independiente (por ejemplo, "Volver al atril" en el asiento del público). */
 export class FloatingButton {
-  constructor({ action, pos, rotY = 0, w = 0.8, h = 0.2, onPress }) {
+  constructor({ action, pos, rotY = 0, w = 0.8, h = 0.2, onPress, onHaptic }) {
     this.action = action;
     this.hover = false;
     this.surface = new CanvasSurface(w, h, 800);
@@ -90,9 +90,9 @@ export class FloatingButton {
     this.el.setObject3D('mesh', this.surface.mesh);
     this.el.object3D.position.set(...pos);
     this.el.object3D.rotation.y = rotY * DEG;
-    this._enter = () => { this.hover = true; this.draw(); };
+    this._enter = (e) => { this.hover = true; this.draw(); onHaptic?.('hover', e); };
     this._leave = () => { this.hover = false; this.draw(); };
-    this._click = () => onPress(this.action);
+    this._click = (e) => { onHaptic?.('press', e); onPress(this.action); };
     this.el.addEventListener('mouseenter', this._enter);
     this.el.addEventListener('mouseleave', this._leave);
     this.el.addEventListener('click', this._click);

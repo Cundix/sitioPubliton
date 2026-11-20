@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-19T23:50:37.952Z",
+  "fecha": "2026-11-20T11:13:03.396Z",
   "nota": "Emulación con IWER (Meta Quest 3 simulado). No reemplaza una prueba en casco físico.",
   "resultados": [
     {
@@ -27,11 +27,31 @@
       "status": "ok"
     },
     {
-      "name": "X7. Salir de VR: la sesión termina y vuelve la interfaz de escritorio",
+      "name": "X7. Altura de la vista: la corrección de a 5 cm se aplica en VR y tiene tope",
       "status": "ok"
     },
     {
-      "name": "X8. Sin errores de consola durante la sesión inmersiva emulada",
+      "name": "X8. Giro por tramos con el joystick: gira sobre la cabeza, no repite al mantener y respeta el ángulo elegido",
+      "status": "ok"
+    },
+    {
+      "name": "X9. Vibración de los controles: al apuntar y al presionar, y se puede apagar",
+      "status": "ok"
+    },
+    {
+      "name": "X10. Una sola mano alcanza: todo se puede hacer solo con el control izquierdo (y solo con el derecho)",
+      "status": "ok"
+    },
+    {
+      "name": "X11. «Mantené presionado» para finalizar: un toque corto no termina y avisa dentro del casco; mantener sí termina",
+      "status": "ok"
+    },
+    {
+      "name": "X12. Salir de VR: la sesión termina y vuelve la interfaz de escritorio",
+      "status": "ok"
+    },
+    {
+      "name": "X13. Sin errores de consola durante la sesión inmersiva emulada",
       "status": "ok"
     }
   ]

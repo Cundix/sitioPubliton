@@ -1,0 +1,476 @@
+{
+  "fecha": "2026-11-20T11:14:35.137Z",
+  "nota": "Medición con la geometría real en un navegador de pruebas. No reemplaza una prueba en casco físico.",
+  "minimoGrados": 0.8,
+  "comodoGrados": 1.2,
+  "pantallas": [
+    {
+      "pantalla": "vestíbulo · inicio",
+      "textos": 38,
+      "peor": {
+        "kind": "panel",
+        "text": "P",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "vestíbulo · tutorial 1",
+      "textos": 34,
+      "peor": {
+        "kind": "panel",
+        "text": "T",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "vestíbulo · tutorial 2",
+      "textos": 38,
+      "peor": {
+        "kind": "panel",
+        "text": "T",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "vestíbulo · tutorial 3",
+      "textos": 37,
+      "peor": {
+        "kind": "panel",
+        "text": "T",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "vestíbulo · elegir escenario",
+      "textos": 45,
+      "peor": {
+        "kind": "panel",
+        "text": "E",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "vestíbulo · ajustes",
+      "textos": 37,
+      "peor": {
+        "kind": "panel",
+        "text": "A",
+        "size": 46,
+        "dist": 2.55,
+        "cos": 0.88,
+        "deg": 0.81
+      }
+    },
+    {
+      "pantalla": "sala · brief",
+      "textos": 184,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · preparación",
+      "textos": 182,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · IA y cámara",
+      "textos": 147,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · presentando",
+      "textos": 121,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · pausa",
+      "textos": 172,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · confirmar cancelación",
+      "textos": 135,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 1",
+      "textos": 176,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 2",
+      "textos": 148,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 3",
+      "textos": 168,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 1 con IA",
+      "textos": 191,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 3 con IA",
+      "textos": 188,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 4 con IA",
+      "textos": 169,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 5 con IA",
+      "textos": 200,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "cliente · brief",
+      "textos": 194,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · preparación",
+      "textos": 192,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · IA y cámara",
+      "textos": 152,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · presentando",
+      "textos": 126,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · pausa",
+      "textos": 177,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · confirmar cancelación",
+      "textos": 140,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · devolución 1",
+      "textos": 186,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · devolución 2",
+      "textos": 158,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "cliente · devolución 3",
+      "textos": 178,
+      "peor": {
+        "kind": "brief (recordatorio)",
+        "text": "MARCA FICTICIA",
+        "size": 104,
+        "dist": 7.59,
+        "cos": 1,
+        "deg": 0.82
+      }
+    },
+    {
+      "pantalla": "auditorio · brief",
+      "textos": 180,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · preparación",
+      "textos": 178,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · IA y cámara",
+      "textos": 146,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · presentando",
+      "textos": 120,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · pausa",
+      "textos": 171,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · confirmar cancelación",
+      "textos": 134,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · devolución 1",
+      "textos": 172,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · devolución 2",
+      "textos": 144,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "auditorio · devolución 3",
+      "textos": 164,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "B",
+        "size": 40,
+        "dist": 6.46,
+        "cos": 0.8,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · revisión con transcripción larga",
+      "textos": 138,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · revisión sin transcripción",
+      "textos": 134,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    }
+  ]
+}

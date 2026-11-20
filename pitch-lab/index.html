@@ -90,6 +90,21 @@
         </div>
         <label class="check"><input id="pref-motion" type="checkbox"> Reducir movimiento (público quieto, sin giros ni fundidos)</label>
         <label class="check"><input id="pref-seated" type="checkbox"> Modo sentado (eleva la vista en VR)</label>
+        <div class="pref">
+          <label for="pref-snap">Giro con el joystick (VR)</label>
+          <select id="pref-snap">
+            <option value="0">Desactivado</option>
+            <option value="15">15° por empujón</option>
+            <option value="30">30° por empujón</option>
+            <option value="45">45° por empujón</option>
+            <option value="90">90° por empujón</option>
+          </select>
+        </div>
+        <div class="pref">
+          <label for="pref-height">Altura de la vista en VR: <span id="pref-height-text"></span></label>
+          <input id="pref-height" type="range" min="-30" max="30" step="5">
+        </div>
+        <label class="check"><input id="pref-haptics" type="checkbox"> Vibración de los controles (VR)</label>
         <button id="btn-reset" class="btn btn-secondary btn-small" type="button">Reiniciar la experiencia</button>
       </details>
 
@@ -107,7 +122,8 @@
             <tr><th scope="row">Cancelar / volver</th><td>Esc</td></tr>
             <tr><th scope="row">Recentrar</th><td>R</td></tr>
             <tr><th scope="row">Panel de texto</th><td>T</td></tr>
-            <tr><th scope="row">En VR</th><td>Láser del control + gatillo; marcas del piso para teletransportarte</td></tr>
+            <tr><th scope="row">En VR</th><td>Láser del control + gatillo; marcas del piso para teletransportarte; joystick de costado para girar (se ajusta en Preferencias)</td></tr>
+            <tr><th scope="row">Finalizar (botón 3D)</th><td>Mantené presionado un momento: así no se termina sin querer. La tecla F y este panel lo hacen al instante</td></tr>
           </tbody>
         </table>
       </details>

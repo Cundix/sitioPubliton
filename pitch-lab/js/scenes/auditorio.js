@@ -5,6 +5,7 @@ import { addLectern, makeSign, addBezel, addGlow } from './furniture.js';
 import { addFloor, addCeilingDetail, addSpeaker, addMonitorWedge, addLightBeam } from './dressing.js';
 import { buildAudience } from './audience.js';
 import { FloatingButton } from './interactives.js';
+import { app } from '../app-context.js';
 
 export const STAGE_LEVEL = 0;
 export const HALL_FLOOR = -0.6;
@@ -104,6 +105,9 @@ export function buildAuditorio(kit, sc, { onPress }) {
   kit.cyl(0.02, 0.02, H - 5.9, [-0.5, 5.9 + (H - 5.9) / 2, clockZ - 0.05], '#11160E', { seg: 6 });
   kit.cyl(0.02, 0.02, H - 5.9, [0.5, 5.9 + (H - 5.9) / 2, clockZ - 0.05], '#11160E', { seg: 6 });
   addBezel(kit, { x: 0, y: 5.4, z: clockZ, w: 3.4, h: 1.32, rotY: 0, depth: 0.2 });
+  // Recordatorio de la marca del brief, colgado debajo del reloj (en el auditorio el brief grande queda a la espalda de quien presenta)
+  addBezel(kit, { x: 0, y: 4.1, z: clockZ, w: 2.72, h: 0.96, rotY: 0, depth: 0.12 });
+  [-1.0, 1.0].forEach((x) => kit.cyl(0.02, 0.02, 0.22, [x, 4.65, clockZ - 0.05], '#11160E', { seg: 6 }));
 
   // --- Cartel de salida ---
   const exit = makeSign({ text: 'SALIDA', w: 1.1, h: 0.3, bg: '#FFC94A', fg: '#181D16', size: 0.7, px: 300 });
@@ -130,6 +134,7 @@ export function buildAuditorio(kit, sc, { onPress }) {
       w: 0.66,
       h: 0.18,
       onPress,
+      onHaptic: (kind, evt) => app.haptics?.fromEvent(evt, kind),
     });
     entities.push(back.el);
     disposers.push(() => back.dispose());
@@ -153,10 +158,10 @@ export function buildAuditorio(kit, sc, { onPress }) {
     pads: sc.pads,
     anchors: {
       lectern: { pos: [0, 0, 0] },
-      panel: { pos: [0, 2.05, -0.5], scale: 1.2 },
+      panel: { pos: [0, 2.05, -0.5], scale: 1.3 },
       clock: { pos: [0, 5.4, clockZ + 0.01], rotY: 0, scale: 2.3 },
       brief: { pos: [0, 3.6, room.maxZ - 0.075], rotY: 180, scale: 4.17 },
-      compact: null,
+      compact: { pos: [0, 4.1, clockZ + 0.01], rotY: 0, scale: 2.2 },
     },
     entities,
     audience,

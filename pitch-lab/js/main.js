@@ -98,6 +98,10 @@ async function main() {
       case 'volume-up': settings.set('volume', settings.get('volume') + 0.1); cues.play('click'); break;
       case 'toggle-motion': settings.set('reducedMotion', !settings.get('reducedMotion')); break;
       case 'toggle-seated': settings.set('seated', !settings.get('seated')); break;
+      case 'cycle-snap': settings.cycleSnapTurn(); cues.play('click'); break;
+      case 'toggle-haptics': settings.set('haptics', !settings.get('haptics')); cues.play('click'); break;
+      case 'height-down': settings.adjustHeight(-1); cues.play('click'); break;
+      case 'height-up': settings.adjustHeight(1); cues.play('click'); break;
       case 'prep-less':
       case 'prep-more': {
         const step = APP_CONFIG.prep.stepSec * (name === 'prep-more' ? 1 : -1);

@@ -49,10 +49,14 @@ export const actionPoint = (page, id) => page.evaluate((actionId) => {
     y: rect.top + ((1 - v.y) / 2) * rect.height,
     inView: Math.abs(v.x) < 0.97 && Math.abs(v.y) < 0.97 && v.z < 1,
     disabled: !!found.action.disabled,
+    hold: !!found.action.hold,
   };
 }, id);
 
-/** Hace clic con el mouse sobre un botón 3D. */
+/** Tiempo que hay que mantener apretado un botón de «mantené presionado» (hold.js) más un margen. */
+export const HOLD_WAIT_MS = 1600;
+
+/** Hace clic con el mouse sobre un botón 3D. Los botones de «mantené presionado» se mantienen apretados el tiempo necesario. */
 export async function click3D(page, id) {
   const p = await actionPoint(page, id);
   assert.ok(p, `no existe el botón 3D "${id}"`);
@@ -60,7 +64,13 @@ export async function click3D(page, id) {
   await page.mouse.move(p.x - 12, p.y - 6);
   await page.mouse.move(p.x, p.y, { steps: 3 });
   await wait(170);
-  await page.mouse.click(p.x, p.y);
+  if (p.hold) {
+    await page.mouse.down();
+    await wait(HOLD_WAIT_MS);
+    await page.mouse.up();
+  } else {
+    await page.mouse.click(p.x, p.y);
+  }
   await wait(120);
 }
 

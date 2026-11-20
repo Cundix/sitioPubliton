@@ -1,22 +1,37 @@
 // Dibujo del panel informativo, el atril, el reloj y la pantalla del brief.
 // Todo se dibuja con las tipografías de Publitón: Anton para títulos y Barlow para texto.
+//
+// TAMAÑO DEL TEXTO (UX for XR: «evitá el texto chico»). Estos dibujos son lo único que se puede leer dentro de un
+// casco, así que cada texto tiene un mínimo medido en grados (altura de mayúsculas vista desde el punto de inicio):
+//   - panel (a ~2,2 m, escala 1,3): mínimo 46 px del lienzo  ≈ 0,8°
+//   - atril (a ~1,6 m): mínimo 36 px                         ≈ 0,9°
+// El criterio y la medición están en tests/e2e/legibilidad.mjs y docs/auditoria-ux-xr.md.
+// Si un contenido no entra con esos tamaños se RECORTA el texto, no se achica la letra.
 
 import {
   COLORS, FONT, roundRect, wrapText, drawSpaced, drawParagraph, measureParagraph, drawIcon, drawNotice,
 } from './draw.js';
-import { WARNING_LABELS } from '../core/time-warnings.js';
 
 // ---------- Panel informativo (2048 × 1152) ----------
 
 export const PANEL = { W: 2048, H: 1152, margin: 84, optionsX: 1130, optionsW: 830 };
+export const MIN_FONT_PANEL = 46;
+export const MIN_FONT_LECTERN = 36;
+
+/** Distribución de las opciones en dos columnas debajo del encabezado (pantalla de ajustes). */
+export const GRID = { top: 600, gap: 22, cols: 2, bottomMargin: 56 };
+
+/** Tamaño de letra del panel: escala con `k` pero nunca baja del mínimo legible. */
+const fontSize = (n, k) => Math.max(MIN_FONT_PANEL, Math.round(n * k));
 
 /**
- * Dibuja el panel. `k` escala todas las tipografías (1 = tamaño grande, para leer a ~2 m en VR).
- * Con draw = false solo mide. Devuelve la coordenada y donde terminó el contenido.
+ * Dibuja el panel. `k` escala los textos principales (1 = tamaño grande, para leer a ~2 m en VR). Los textos nunca
+ * bajan de MIN_FONT_PANEL. Con draw = false solo mide. Devuelve la coordenada y donde terminó el contenido.
  */
-export function drawPanel(ctx, W, H, panel, { hasOptions, k = 1, draw = true }) {
+export function drawPanel(ctx, W, H, panel, { hasOptions, k = 1, draw = true, dropped = null }) {
   const m = PANEL.margin;
-  const contentW = hasOptions ? PANEL.optionsX - m - 40 : W - m * 2;
+  const grid = panel.layout === 'grid';
+  const contentW = hasOptions && !grid ? PANEL.optionsX - m - 40 : W - m * 2;
 
   if (draw) {
     roundRect(ctx, 6, 6, W - 12, H - 12, 40);
@@ -31,43 +46,67 @@ export function drawPanel(ctx, W, H, panel, { hasOptions, k = 1, draw = true }) 
 
   let y = 62;
   ctx.textBaseline = 'alphabetic';
-  ctx.font = `700 ${Math.round(34 * Math.max(k, 0.85))}px ${FONT.body}`;
+  ctx.font = `700 ${MIN_FONT_PANEL}px ${FONT.body}`;
   ctx.fillStyle = COLORS.muted;
-  if (draw) drawSpaced(ctx, panel.eyebrow || '', m, y + 30, 4);
-  y += 64;
+  if (draw) drawSpaced(ctx, panel.eyebrow || '', m, y + 36, 4);
+  y += 70;
 
   // Título (Anton). La última línea va en amarillo cuando hay más de una. Se ajusta al ancho disponible.
-  let titleSize = Math.round((panel.title.length > 1 ? 150 : 160) * k);
+  // En la pantalla de dos columnas el título va en una sola línea para dejar lugar a las opciones.
+  const lines = grid ? [panel.title.join(' ')] : panel.title;
+  const kt = Math.min(k, 1); // el título no crece cuando hay lugar de sobra: solo el cuerpo
+  let titleSize = Math.round((grid ? 120 : lines.length > 1 ? 150 : 160) * kt);
   ctx.font = `400 ${titleSize}px ${FONT.display}`;
-  const widest = Math.max(...panel.title.map((l) => ctx.measureText(l).width), 1);
+  const widest = Math.max(...lines.map((l) => ctx.measureText(l).width), 1);
   if (widest > contentW) titleSize = Math.floor(titleSize * (contentW / widest));
   ctx.font = `400 ${titleSize}px ${FONT.display}`;
   if (draw) {
-    panel.title.forEach((line, i) => {
-      ctx.fillStyle = panel.title.length > 1 && i === panel.title.length - 1 ? COLORS.yellow : COLORS.white;
+    lines.forEach((line, i) => {
+      ctx.fillStyle = lines.length > 1 && i === lines.length - 1 ? COLORS.yellow : COLORS.white;
       ctx.fillText(line, m, y + titleSize * 0.9 + i * titleSize * 0.98);
     });
   }
-  y += panel.title.length * titleSize * 0.98 + 34 * k;
+  y += lines.length * titleSize * 0.98 + 34 * kt;
 
-  const bottom = H - 64;
-  for (const block of panel.blocks.filter((b) => !b.htmlOnly)) {
+  const bottom = grid ? GRID.top - 16 : H - 64;
+  panel.blocks.filter((b) => !b.htmlOnly).forEach((block, i) => {
+    if (dropped?.has(i)) return; // no entra con letra legible: se omite y se avisa abajo
     y = drawBlock(ctx, block, m, y, contentW, bottom, k, draw) + 26 * k;
-  }
+  });
+  if (dropped?.size) y = drawBlock(ctx, { t: 'p', tone: 'muted', size: 46, text: MORE_DETAIL }, m, y, contentW, bottom, k, draw) + 26 * k;
   return y;
 }
 
-/** Elige el mayor tamaño de letra con el que todo el contenido entra en el panel. */
+/** Aviso cuando se omitió contenido del panel 3D para no achicar la letra (el panel de texto lo muestra completo). */
+export const MORE_DETAIL = 'Más detalle: panel de texto (tecla T).';
+
+/** Límite de contenido hasta el que puede llegar el panel (después hay opciones en dos columnas o el borde). */
+export function panelLimit(panel, H = PANEL.H) {
+  return panel.layout === 'grid' ? GRID.top - 16 : H - 56;
+}
+
+/**
+ * Elige cómo dibujar el panel para que todo entre SIN bajar de la letra mínima: si sobra lugar agranda el cuerpo del
+ * texto (hasta 1,3: más cómodo de leer), si falta lo achica un poco (hasta 0,8) y, si no alcanza, omite desde el final
+ * los bloques marcados `optional3D` (el panel de texto los muestra siempre). Devuelve { k, dropped }.
+ */
 export function fitPanel(ctx, W, H, panel, hasOptions) {
-  for (let k = 1; k >= 0.58; k -= 0.06) {
-    const end = drawPanel(ctx, W, H, panel, { hasOptions, k, draw: false });
-    if (end <= H - 56) return k;
+  const limit = panelLimit(panel, H);
+  const blocks = panel.blocks.filter((b) => !b.htmlOnly);
+  const optional = blocks.map((b, i) => (b.optional3D ? i : -1)).filter((i) => i >= 0);
+  for (let drop = 0; drop <= optional.length; drop++) {
+    const dropped = new Set(optional.slice(optional.length - drop));
+    for (let k = 1.3; k >= 0.8; k -= 0.05) {
+      const end = drawPanel(ctx, W, H, panel, { hasOptions, k, draw: false, dropped });
+      if (end <= limit) return { k, dropped };
+    }
   }
-  return 0.58;
+  return { k: 0.8, dropped: new Set(optional) };
 }
 
 function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
-  const sz = (n) => Math.round(n * k);
+  const sz = (n) => Math.round(n * k);          // geometría (separaciones, íconos)
+  const fs = (n) => fontSize(n, k);              // letra (con mínimo)
   // En modo medición (draw = false) se usa measureParagraph sin pintar.
   const para = (text, px, py, pw, opts) => (draw
     ? drawParagraph(ctx, text, px, py, pw, opts)
@@ -75,39 +114,43 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
 
   switch (block.t) {
     case 'p':
-      return para(block.text, x, y, w, { size: sz(64), lineHeight: 1.2, color: block.tone === 'muted' ? COLORS.muted : COLORS.white });
+      return para(block.text, x, y, w, { size: fs(block.size || 64), lineHeight: 1.2, color: block.tone === 'muted' ? COLORS.muted : COLORS.white });
 
     case 'bullets': {
       let cy = y;
       if (block.heading) {
-        ctx.font = `700 ${sz(34)}px ${FONT.body}`;
+        const hf = fs(44);
+        ctx.font = `700 ${hf}px ${FONT.body}`;
         ctx.fillStyle = COLORS.yellow;
-        if (draw) drawSpaced(ctx, block.heading.toUpperCase(), x, cy + sz(30), 3);
-        cy += sz(58);
+        if (draw) drawSpaced(ctx, block.heading.toUpperCase(), x, cy + hf * 0.9, 3);
+        cy += hf * 1.4;
       }
+      const f = fs(58);
       for (const item of (block.max3D ? block.items.slice(0, block.max3D) : block.items)) {
-        if (draw) drawIcon(ctx, 'diamond', x + sz(16), cy + sz(32), sz(30), COLORS.yellow);
-        cy = para(item, x + sz(56), cy, w - sz(56), { size: sz(58), lineHeight: 1.18 }) + sz(14);
+        if (draw) drawIcon(ctx, 'diamond', x + f * 0.28, cy + f * 0.6, f * 0.52, COLORS.yellow);
+        cy = para(item, x + f * 0.95, cy, w - f * 0.95, { size: f, lineHeight: 1.18 }) + sz(14);
       }
       return cy;
     }
 
     case 'kv': {
       let cy = y;
+      const lf = fs(44);
+      const vf = fs(48);
       for (const row of block.rows) {
-        ctx.font = `700 ${sz(48)}px ${FONT.body}`;
+        ctx.font = `700 ${vf}px ${FONT.body}`;
         const lines = wrapText(ctx, row.v, w * 0.6);
         if (draw) {
-          ctx.font = `400 ${sz(42)}px ${FONT.body}`;
+          ctx.font = `400 ${lf}px ${FONT.body}`;
           ctx.fillStyle = COLORS.muted;
-          ctx.fillText(row.k, x, cy + sz(46));
-          ctx.font = `700 ${sz(48)}px ${FONT.body}`;
+          ctx.fillText(row.k, x, cy + vf * 0.95);
+          ctx.font = `700 ${vf}px ${FONT.body}`;
           ctx.fillStyle = COLORS.white;
           ctx.textAlign = 'right';
-          lines.forEach((l, i) => ctx.fillText(l, x + w, cy + sz(46) + i * sz(56)));
+          lines.forEach((l, i) => ctx.fillText(l, x + w, cy + vf * 0.95 + i * vf * 1.18));
           ctx.textAlign = 'left';
         }
-        cy += Math.max(sz(78), lines.length * sz(56) + sz(22));
+        cy += Math.max(vf * 1.55, lines.length * vf * 1.18 + sz(24));
         if (draw) { ctx.fillStyle = COLORS.border; ctx.fillRect(x, cy - 10, w, 2); }
       }
       return cy;
@@ -115,24 +158,27 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
 
     case 'fields': {
       let cy = y;
+      const lf = fs(42);
+      const vf = fs(block.small ? 44 : 50);
       for (const row of block.rows) {
-        ctx.font = `700 ${sz(32)}px ${FONT.body}`;
+        ctx.font = `700 ${lf}px ${FONT.body}`;
         ctx.fillStyle = COLORS.yellow;
-        if (draw) drawSpaced(ctx, row.k.toUpperCase(), x, cy + sz(28), 3);
-        cy = para(row.v, x, cy + sz(40), w, { size: sz(block.small ? 42 : 50), lineHeight: 1.16, maxLines: block.small ? 2 : 3 }) + sz(block.small ? 10 : 16);
+        if (draw) drawSpaced(ctx, row.k.toUpperCase(), x, cy + lf * 0.85, 3);
+        cy = para(row.v, x, cy + lf * 1.15, w, { size: vf, lineHeight: 1.16, maxLines: block.small ? 2 : 3 }) + sz(block.small ? 12 : 18);
       }
       return cy;
     }
 
     case 'notice': {
-      const h = drawNotice(ctx, { x, y, w, kind: block.kind, label: block.label, text: block.text, size: sz(44), draw });
+      const h = drawNotice(ctx, { x, y, w, kind: block.kind, label: block.label, text: block.text3D || block.text, size: fs(44), draw });
       return y + h;
     }
 
     case 'tag': {
-      ctx.font = `700 ${sz(32)}px ${FONT.body}`;
-      const tw = ctx.measureText(block.text.toUpperCase()).width + sz(80);
-      const th = sz(60);
+      const f = fs(42);
+      ctx.font = `700 ${f}px ${FONT.body}`;
+      const tw = ctx.measureText(block.text.toUpperCase()).width + f * 2.1;
+      const th = f * 1.55;
       if (draw) {
         roundRect(ctx, x, y, tw, th, th / 2);
         ctx.fillStyle = block.source === 'demo' ? COLORS.pink : COLORS.surface2;
@@ -140,17 +186,17 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
         ctx.strokeStyle = block.source === 'demo' ? COLORS.pink : COLORS.border;
         ctx.lineWidth = 3;
         ctx.stroke();
-        drawIcon(ctx, block.source === 'demo' ? 'tag' : 'mic', x + sz(34), y + th / 2, sz(30), COLORS.white);
+        drawIcon(ctx, block.source === 'demo' ? 'tag' : 'mic', x + f * 0.95, y + th / 2, f * 0.8, COLORS.white);
         ctx.fillStyle = COLORS.white;
         ctx.textBaseline = 'middle';
-        ctx.fillText(block.text.toUpperCase(), x + sz(62), y + th / 2 + 2);
+        ctx.fillText(block.text.toUpperCase(), x + f * 1.6, y + th / 2 + 2);
         ctx.textBaseline = 'alphabetic';
       }
       return y + th;
     }
 
     case 'quote': {
-      const size = sz(48);
+      const size = fs(48);
       const maxLines = Math.max(2, Math.floor((bottom - y - sz(260)) / (size * 1.28)));
       const opts = { size, lineHeight: 1.28, maxLines };
       const boxH = Math.min(measureParagraph(ctx, block.text, w - 60, opts) + 44, bottom - y);
@@ -167,43 +213,78 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
     }
 
     case 'meter': {
-      const by = y + sz(64), bw = w * 0.7, bh = sz(40);
+      const lf = fs(42);
+      const by = y + lf * 1.5, bw = w * 0.7, bh = sz(40);
       if (draw) {
-        ctx.font = `700 ${sz(40)}px ${FONT.body}`;
+        ctx.font = `700 ${lf}px ${FONT.body}`;
         ctx.fillStyle = COLORS.muted;
-        ctx.fillText(block.label, x, y + sz(40));
+        ctx.fillText(block.label, x, y + lf * 0.95);
         roundRect(ctx, x, by, bw, bh, bh / 2);
         ctx.fillStyle = COLORS.surface2;
         ctx.fill();
         roundRect(ctx, x, by, Math.max(bh, bw * block.value), bh, bh / 2);
         ctx.fillStyle = COLORS.yellow;
         ctx.fill();
-        ctx.font = `700 ${sz(54)}px ${FONT.body}`;
+        ctx.font = `700 ${fs(54)}px ${FONT.body}`;
         ctx.fillStyle = COLORS.white;
-        ctx.fillText(block.text, x + bw + 28, by + bh - 4);
+        ctx.fillText(block.text, x + bw + 28, by + bh - 2);
       }
       return by + bh + 10;
     }
 
     case 'measures': {
-      let cy = y;
-      const rowH = sz(92);
-      for (const row of block.rows) {
+      if (block.cards) {
+        // Tarjetas de dos columnas: las medidas principales, grandes y legibles dentro del casco.
+        const gap = 18;
+        const cw = (w - gap) / 2;
+        const clf = fs(42);
+        const cvf = fs(56);
+        const ch = clf * 1.15 + cvf * 1.2 + sz(34);
         if (draw) {
-          ctx.font = `700 ${sz(46)}px ${FONT.body}`;
+          block.rows.forEach((row, i) => {
+            const cx = x + (i % 2) * (cw + gap);
+            const cy = y + Math.floor(i / 2) * (ch + gap);
+            roundRect(ctx, cx, cy, cw, ch, 16);
+            ctx.fillStyle = COLORS.surface;
+            ctx.fill();
+            ctx.strokeStyle = row.available ? COLORS.border : COLORS.muted;
+            ctx.lineWidth = 3;
+            if (!row.available) ctx.setLineDash([12, 8]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.font = `700 ${clf}px ${FONT.body}`;
+            ctx.fillStyle = COLORS.muted;
+            ctx.fillText(row.short || row.label, cx + 22, cy + sz(17) + clf * 0.9);
+            ctx.font = `700 ${cvf}px ${FONT.body}`;
+            ctx.fillStyle = row.available ? COLORS.yellow : COLORS.muted;
+            let value = row.display;
+            while (value.length > 3 && ctx.measureText(value).width > cw - 44) value = `${value.slice(0, -2).trimEnd()}…`;
+            ctx.fillText(value, cx + 22, cy + ch - sz(17) - cvf * 0.12);
+          });
+        }
+        return y + Math.ceil(block.rows.length / 2) * (ch + gap) - gap;
+      }
+      let cy = y;
+      const lf = fs(46);
+      const vf = fs(50);
+      const nf = fs(42);
+      for (const row of block.rows) {
+        const rowH = row.note ? lf * 1.12 + nf * 1.3 + sz(22) : vf * 1.3 + sz(18);
+        if (draw) {
+          ctx.font = `700 ${lf}px ${FONT.body}`;
           ctx.fillStyle = row.available ? COLORS.white : COLORS.muted;
-          ctx.fillText(row.label, x, cy + sz(40));
-          ctx.font = `700 ${sz(50)}px ${FONT.body}`;
+          ctx.fillText(row.label, x, cy + lf * 0.95);
+          ctx.font = `700 ${vf}px ${FONT.body}`;
           ctx.textAlign = 'right';
           ctx.fillStyle = row.available ? COLORS.yellow : COLORS.muted;
-          ctx.fillText(row.display, x + w, cy + sz(42));
+          ctx.fillText(row.display, x + w, cy + vf * 0.95);
           ctx.textAlign = 'left';
           if (row.note) {
-            ctx.font = `400 ${sz(34)}px ${FONT.body}`;
+            ctx.font = `400 ${nf}px ${FONT.body}`;
             ctx.fillStyle = COLORS.muted;
             let note = row.note;
             while (note.length > 4 && ctx.measureText(note).width > w) note = `${note.slice(0, -2).trimEnd()}…`;
-            ctx.fillText(note, x, cy + sz(78));
+            ctx.fillText(note, x, cy + lf * 1.12 + nf * 0.95);
           }
           ctx.fillStyle = COLORS.border;
           ctx.fillRect(x, cy + rowH - 8, w, 2);
@@ -214,7 +295,8 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
     }
 
     case 'indicator': {
-      const h = sz(170);
+      const lf = fs(42);
+      const h = sz(220);
       if (draw) {
         roundRect(ctx, x, y, w, h, 18);
         ctx.fillStyle = COLORS.surface;
@@ -224,29 +306,30 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
         if (block.value == null) ctx.setLineDash([16, 10]);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.font = `700 ${sz(30)}px ${FONT.body}`;
+        ctx.font = `700 ${lf}px ${FONT.body}`;
         ctx.fillStyle = COLORS.muted;
-        drawSpaced(ctx, block.label.toUpperCase(), x + 28, y + sz(44), 3);
+        drawSpaced(ctx, (block.value == null ? 'Indicador técnico orientativo' : block.label).toUpperCase(), x + 28, y + lf * 1.1, 3);
         if (block.value == null) {
-          ctx.font = `400 ${sz(78)}px ${FONT.display}`;
+          ctx.font = `400 ${sz(84)}px ${FONT.display}`;
           ctx.fillStyle = COLORS.white;
-          ctx.fillText('SIN DATOS SUFICIENTES', x + 28, y + sz(124));
-          ctx.font = `400 ${sz(30)}px ${FONT.body}`;
+          ctx.fillText('SIN DATOS SUFICIENTES', x + 28, y + lf * 1.1 + sz(100));
+          ctx.font = `400 ${lf}px ${FONT.body}`;
           ctx.fillStyle = COLORS.muted;
-          let note = block.note;
+          let note = block.note3D || block.note;
           while (note.length > 4 && ctx.measureText(note).width > w - 56) note = `${note.slice(0, -2).trimEnd()}…`;
-          ctx.fillText(note, x + 28, y + sz(158));
+          ctx.fillText(note, x + 28, y + h - 22);
         } else {
-          ctx.font = `400 ${sz(112)}px ${FONT.display}`;
+          ctx.font = `400 ${sz(120)}px ${FONT.display}`;
           ctx.fillStyle = COLORS.yellow;
-          ctx.fillText(String(block.value), x + 28, y + sz(134));
+          const by = y + lf * 1.1 + sz(112);
+          ctx.fillText(String(block.value), x + 28, by);
           const nw = ctx.measureText(String(block.value)).width;
-          ctx.font = `700 ${sz(46)}px ${FONT.body}`;
+          ctx.font = `700 ${fs(46)}px ${FONT.body}`;
           ctx.fillStyle = COLORS.muted;
-          ctx.fillText('/ 100', x + 44 + nw, y + sz(134));
-          ctx.font = `400 ${sz(30)}px ${FONT.body}`;
-          const lines = wrapText(ctx, block.note, w - sz(420));
-          lines.slice(0, 3).forEach((l, i) => ctx.fillText(l, x + sz(400), y + sz(90) + i * sz(38)));
+          ctx.fillText('/ 100', x + 44 + nw, by);
+          ctx.font = `400 ${lf}px ${FONT.body}`;
+          const noteLines = wrapText(ctx, block.note3D || block.note, w - sz(470));
+          noteLines.slice(0, 3).forEach((l, i) => ctx.fillText(l, x + sz(450), y + lf * 1.1 + sz(30) + i * lf * 1.2));
         }
       }
       return y + h;
@@ -254,19 +337,21 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
 
     case 'tips': {
       let cy = y;
+      const tf = fs(48);
+      const bf = fs(42);
       block.items.forEach((tip, i) => {
         if (draw) {
           ctx.font = `400 ${sz(72)}px ${FONT.display}`;
           ctx.fillStyle = COLORS.yellow;
           ctx.fillText(String(i + 1), x, cy + sz(64));
         }
-        cy = para(tip.text, x + sz(64), cy, w - sz(64), { size: sz(48), lineHeight: 1.18 });
+        cy = para(tip.short || tip.text, x + sz(64), cy, w - sz(64), { size: tf, lineHeight: 1.18 });
         if (draw) {
-          ctx.font = `400 ${sz(34)}px ${FONT.body}`;
+          ctx.font = `400 ${bf}px ${FONT.body}`;
           ctx.fillStyle = COLORS.muted;
-          ctx.fillText(`Basado en: ${tip.basedOn}`, x + sz(64), cy + sz(26));
+          ctx.fillText(`Basado en: ${tip.basedOn}`, x + sz(64), cy + bf * 0.95);
         }
-        cy += sz(54);
+        cy += bf * 1.3 + sz(30);
       });
       return cy;
     }
@@ -279,8 +364,17 @@ function drawBlock(ctx, block, x, y, w, bottom, k, draw) {
 // ---------- Atril: cara de control (1300 × 560) ----------
 
 export const LECTERN = { W: 1300, H: 560 };
+/** Recuadro del reloj del atril (a la vista de quien presenta, sin depender del reloj lejano de la pared). */
+export const LECTERN_CLOCK = { x: 650, y: 14, w: 344, h: 172 };
+const HINT_W_FULL = 940;
 
-export function drawLecternFace(ctx, W, H, lectern) {
+/**
+ * @param {object} lectern  { status, hint, actions }
+ * @param {object} [extra]
+ * @param {object} [extra.clock]  modelo del reloj: se dibuja el recuadro de tiempo (si no es el modo «idle»)
+ * @param {{text:string, kind:string}|null} [extra.flash]  aviso corto que reemplaza a la pista (se ve dentro del casco)
+ */
+export function drawLecternFace(ctx, W, H, lectern, { clock = null, flash = null } = {}) {
   roundRect(ctx, 4, 4, W - 8, H - 8, 30);
   ctx.fillStyle = COLORS.surface;
   ctx.fill();
@@ -288,30 +382,80 @@ export function drawLecternFace(ctx, W, H, lectern) {
   ctx.strokeStyle = COLORS.border;
   ctx.stroke();
 
+  const showClock = clock && clock.mode !== 'idle';
+
   // Estado
   ctx.fillStyle = COLORS.yellow;
-  ctx.fillRect(34, 34, 18, 18);
-  ctx.font = `700 34px ${FONT.body}`;
+  ctx.fillRect(34, 32, 18, 18);
+  ctx.font = `700 ${MIN_FONT_LECTERN + 2}px ${FONT.body}`;
   ctx.fillStyle = COLORS.yellow;
   ctx.textBaseline = 'alphabetic';
   drawSpaced(ctx, lectern.status || '', 66, 54, 4);
 
-  // Pista (hasta 3 líneas)
-  drawParagraph(ctx, lectern.hint || '', 34, 70, 940, { size: 34, lineHeight: 1.2, color: COLORS.white, maxLines: 3 });
+  // Pista (hasta 3 líneas) o aviso corto
+  const hintW = showClock ? LECTERN_CLOCK.x - 34 - 24 : HINT_W_FULL;
+  if (flash) {
+    const color = flash.kind === 'warn' ? COLORS.pink : COLORS.yellow;
+    drawIcon(ctx, flash.kind === 'warn' ? 'warn' : 'info', 34 + 21, 70 + 30, 42, color);
+    drawParagraph(ctx, flash.text, 34 + 58, 70, hintW - 58, { size: MIN_FONT_LECTERN, lineHeight: 1.15, color: COLORS.white, maxLines: 3, weight: 700 });
+  } else {
+    drawParagraph(ctx, lectern.hint || '', 34, 70, hintW, { size: MIN_FONT_LECTERN, lineHeight: 1.15, color: COLORS.white, maxLines: 3 });
+  }
+
+  if (showClock) drawLecternClock(ctx, LECTERN_CLOCK, clock);
 
   // Separador de utilidades
   ctx.fillStyle = COLORS.border;
   ctx.fillRect(1010, 34, 3, H - 68);
 }
 
-// ---------- Reloj (1440 × 560) ----------
+/** Reloj chico del atril: etiqueta, tiempo y aviso en palabras (además del color y el trazo). */
+function drawLecternClock(ctx, box, clock) {
+  const { x, y, w, h } = box;
+  const warn = clock.warning;
+  const border = warn === 'final' ? COLORS.pink : warn === 'warning' ? COLORS.yellow : clock.mode === 'prep' ? COLORS.blue : COLORS.border;
+  const bw = warn === 'final' ? 10 : warn === 'warning' ? 8 : 4;
+  roundRect(ctx, x + bw / 2, y + bw / 2, w - bw, h - bw, 22);
+  ctx.fillStyle = COLORS.dark;
+  ctx.fill();
+  ctx.lineWidth = bw;
+  ctx.strokeStyle = border;
+  if (warn === 'warning') ctx.setLineDash([30, 14]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = `700 ${MIN_FONT_LECTERN - 2}px ${FONT.body}`;
+  ctx.fillStyle = COLORS.muted;
+  drawSpaced(ctx, clock.label || '', x + 22, y + 38, 3);
+  if (clock.paused) drawIcon(ctx, 'pause', x + w - 40, y + 28, 34, COLORS.yellow);
+
+  ctx.font = `400 88px ${FONT.display}`;
+  ctx.fillStyle = warn === 'final' ? COLORS.pink : warn === 'warning' ? COLORS.yellow : COLORS.white;
+  ctx.textAlign = 'center';
+  ctx.fillText(clock.time || '0:00', x + w / 2, y + 130);
+  ctx.textAlign = 'left';
+
+  ctx.font = `700 ${MIN_FONT_LECTERN - 2}px ${FONT.body}`;
+  ctx.fillStyle = warn === 'warning' || warn === 'final' ? COLORS.white : COLORS.muted;
+  let sx = x + 22;
+  if (warn === 'warning' || warn === 'final') {
+    drawIcon(ctx, 'warn', x + 36, y + h - 25, 30, warn === 'final' ? COLORS.pink : COLORS.yellow);
+    sx = x + 62;
+  }
+  drawSpaced(ctx, (clock.short || '').toUpperCase(), sx, y + h - 14, 2);
+}
+
+// ---------- Reloj de la pared (1440 × 560) ----------
+// Se mira de lejos (de 5 a 11 m): solo muestra los números, que son lo único que se lee a esa distancia.
+// Las etiquetas y el estado en palabras están en el reloj del atril y en el panel de texto.
 
 export const CLOCK = { W: 1440, H: 560 };
 
 export function drawClock(ctx, W, H, clock) {
   const warn = clock.warning;
-  const border = warn === 'final' ? COLORS.pink : warn === 'warning' ? COLORS.yellow : COLORS.border;
-  const bw = warn === 'final' ? 16 : warn === 'warning' ? 12 : 6;
+  const border = warn === 'final' ? COLORS.pink : warn === 'warning' ? COLORS.yellow : clock.mode === 'prep' ? COLORS.blue : COLORS.border;
+  const bw = warn === 'final' ? 16 : warn === 'warning' ? 12 : 8;
 
   roundRect(ctx, bw / 2, bw / 2, W - bw, H - bw, 34);
   ctx.fillStyle = COLORS.dark;
@@ -322,31 +466,17 @@ export function drawClock(ctx, W, H, clock) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Etiqueta
-  ctx.textBaseline = 'alphabetic';
-  ctx.font = `700 44px ${FONT.body}`;
-  ctx.fillStyle = COLORS.muted;
-  drawSpaced(ctx, clock.label || '', 60, 90, 6);
-
-  // Pausa: dibujo de pausa además del texto
-  if (clock.paused) drawIcon(ctx, 'pause', W - 90, 70, 56, COLORS.yellow);
+  // Íconos de estado (pausa y aviso), grandes y sin texto
+  if (clock.paused) drawIcon(ctx, 'pause', 110, 100, 110, COLORS.yellow);
+  else if (warn === 'warning' || warn === 'final') drawIcon(ctx, 'warn', 110, 100, 110, warn === 'final' ? COLORS.pink : COLORS.yellow);
 
   // Tiempo
-  ctx.font = `400 330px ${FONT.display}`;
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = `400 400px ${FONT.display}`;
   ctx.fillStyle = warn === 'final' ? COLORS.pink : warn === 'warning' ? COLORS.yellow : COLORS.white;
   ctx.textAlign = 'center';
-  ctx.fillText(clock.time || '0:00', W / 2, 395);
+  ctx.fillText(clock.time || '0:00', W / 2, 430);
   ctx.textAlign = 'left';
-
-  // Sub etiqueta con ícono para los avisos
-  ctx.font = `700 44px ${FONT.body}`;
-  ctx.fillStyle = warn === 'none' || warn === 'ok' ? COLORS.muted : COLORS.white;
-  let sx = 60;
-  if (warn === 'warning' || warn === 'final') {
-    drawIcon(ctx, 'warn', 90, 462, 56, warn === 'final' ? COLORS.pink : COLORS.yellow);
-    sx = 140;
-  }
-  drawSpaced(ctx, (clock.sub || '').toUpperCase(), sx, 478, 4);
 
   // Progreso
   const px = 60, py = H - 56, pw = W - 120, ph = 24;
@@ -372,20 +502,20 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
 
   const m = 90;
   ctx.textBaseline = 'alphabetic';
-  ctx.font = `700 38px ${FONT.body}`;
+  ctx.font = `700 40px ${FONT.body}`;
   ctx.fillStyle = COLORS.yellow;
   drawSpaced(ctx, `BRIEF · ${(scenarioName || '').toUpperCase()}`, m, 100, 6);
 
   // Etiqueta de marca ficticia
-  ctx.font = `700 30px ${FONT.body}`;
+  ctx.font = `700 42px ${FONT.body}`;
   const label = 'MARCA FICTICIA';
-  const lw = ctx.measureText(label).width + 90;
-  roundRect(ctx, W - m - lw, 56, lw, 56, 28);
+  const lw = ctx.measureText(label).width + 100;
+  roundRect(ctx, W - m - lw, 48, lw, 76, 38);
   ctx.fillStyle = COLORS.pink;
   ctx.fill();
   ctx.fillStyle = COLORS.white;
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, W - m - lw + 45, 86);
+  ctx.fillText(label, W - m - lw + 50, 88);
   ctx.textBaseline = 'alphabetic';
 
   // Marca
@@ -409,7 +539,7 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
     const fy = 430 + Math.floor(i / 2) * 250;
     ctx.fillStyle = COLORS.yellow;
     ctx.fillRect(fx, fy, 70, 8);
-    ctx.font = `700 32px ${FONT.body}`;
+    ctx.font = `700 38px ${FONT.body}`;
     drawSpaced(ctx, k.toUpperCase(), fx, fy + 52, 4);
     drawParagraph(ctx, v, fx, fy + 66, colW, { size: 42, lineHeight: 1.2, maxLines: 4 });
   });
@@ -417,16 +547,22 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
   // Guía
   ctx.fillStyle = COLORS.surface;
   ctx.fillRect(0, H - 120, W, 120);
-  ctx.font = `700 30px ${FONT.body}`;
+  ctx.font = `700 38px ${FONT.body}`;
   ctx.fillStyle = COLORS.yellow;
-  drawSpaced(ctx, 'QUÉ PRESENTAR', m, H - 62, 4);
-  ctx.font = `400 36px ${FONT.body}`;
+  drawSpaced(ctx, 'QUÉ PRESENTAR', m, H - 58, 4);
+  ctx.font = `400 38px ${FONT.body}`;
   ctx.fillStyle = COLORS.white;
   let text = brief.guide;
-  const maxW = W - m * 2 - 340;
+  const maxW = W - m * 2 - 400;
   while (text.length > 4 && ctx.measureText(text).width > maxW) text = `${text.slice(0, -2).trimEnd()}…`;
-  ctx.fillText(text, m + 330, H - 60);
+  ctx.fillText(text, m + 400, H - 56);
 }
+
+// ---------- Recordatorio del brief en la pared del público (1200 × 420) ----------
+// Se mira de lejos (de 5 a 8 m): solo la marca y la etiqueta de «ficticia», en tamaño grande.
+// El detalle del brief está en el panel (estado «Brief») y en la pantalla de la pared de atrás.
+
+export const COMPACT = { W: 1200, H: 420 };
 
 export function drawBriefCompact(ctx, W, H, brief) {
   roundRect(ctx, 4, 4, W - 8, H - 8, 28);
@@ -435,16 +571,24 @@ export function drawBriefCompact(ctx, W, H, brief) {
   ctx.strokeStyle = COLORS.border;
   ctx.lineWidth = 5;
   ctx.stroke();
+
   ctx.textBaseline = 'alphabetic';
-  ctx.font = `700 30px ${FONT.body}`;
-  ctx.fillStyle = COLORS.yellow;
-  drawSpaced(ctx, 'TU BRIEF · MARCA FICTICIA', 40, 62, 4);
-  let compactSize = 96;
-  ctx.font = `400 ${compactSize}px ${FONT.display}`;
-  while (ctx.measureText(brief.brand.toUpperCase()).width > W - 80 && compactSize > 50) { compactSize -= 4; ctx.font = `400 ${compactSize}px ${FONT.display}`; }
+  ctx.font = `700 104px ${FONT.body}`;
+  const label = 'MARCA FICTICIA';
+  const lw = ctx.measureText(label).width + 90;
+  roundRect(ctx, 40, 34, lw, 140, 70);
+  ctx.fillStyle = COLORS.pink;
+  ctx.fill();
   ctx.fillStyle = COLORS.white;
-  ctx.fillText(brief.brand.toUpperCase(), 40, 170);
-  drawParagraph(ctx, `Restricción: ${brief.constraint}`, 40, 196, W - 80, { size: 34, lineHeight: 1.2, maxLines: 2, color: COLORS.muted });
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, 40 + 45, 106);
+  ctx.textBaseline = 'alphabetic';
+
+  let compactSize = 190;
+  ctx.font = `400 ${compactSize}px ${FONT.display}`;
+  while (ctx.measureText(brief.brand.toUpperCase()).width > W - 80 && compactSize > 60) { compactSize -= 4; ctx.font = `400 ${compactSize}px ${FONT.display}`; }
+  ctx.fillStyle = COLORS.white;
+  ctx.fillText(brief.brand.toUpperCase(), 40, 368);
 }
 
 // ---------- Cartel genérico ----------
@@ -466,5 +610,3 @@ export function drawSign(ctx, W, H, { text, sub, bg = COLORS.dark, fg = COLORS.w
   }
   ctx.textAlign = 'left';
 }
-
-export { WARNING_LABELS };

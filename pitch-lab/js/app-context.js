@@ -8,6 +8,7 @@ export const app = {
   caps: null,        // capacidades del navegador
   cues: null,        // avisos sonoros
   scene: null,       // <a-scene>
+  haptics: null,     // vibración de los controles (Haptics)
   walk: null,        // componente walk-rig
   stage: null,       // componente stage-controller (entorno vigente)
   overlay: null,     // panel de texto accesible (HtmlOverlay)

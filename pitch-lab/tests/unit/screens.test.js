@@ -96,3 +96,107 @@ test('El reloj marca avisos con texto y no solo con color', () => {
   assert.match(final.sub, /CUENTA FINAL/);
   assert.equal(final.time, '0:08');
 });
+
+// ---------- Revisión con «UX for XR»: opciones de VR, mantener presionado y textos para el casco ----------
+
+function toPresenting(opts) {
+  const m = make(opts);
+  const { session } = m;
+  session.dispatch('START'); session.dispatch('SKIP'); session.dispatch('PICK_SCENARIO', { id: 'sala' });
+  session.dispatch('ENTER'); session.dispatch('PREPARE'); session.dispatch('SET_INPUT_MODE', { mode: 'timer' }); session.dispatch('BEGIN');
+  return m;
+}
+
+test('Ajustes: las opciones de comodidad en VR están en el menú 3D (en dos columnas) y reflejan las preferencias', () => {
+  const { session, settings } = make();
+  session.dispatch('OPEN_SETTINGS');
+  const model = checkScreen(session, settings);
+  assert.equal(model.panel.layout, 'grid');
+  const ids = model.panel.options.map((o) => o.id);
+  for (const id of ['vol-down', 'vol-up', 'motion', 'seated', 'snap', 'haptics', 'height-down', 'height-up']) assert.ok(ids.includes(id), `falta «${id}»`);
+  assert.equal(model.panel.options.length, 8, 'ocho opciones = cuatro filas de dos');
+  assert.match(model.panel.options.find((o) => o.id === 'snap').label, /30°/);
+  assert.equal(model.panel.options.find((o) => o.id === 'haptics').on, true);
+  settings.set('snapTurnDeg', 0);
+  settings.set('haptics', false);
+  settings.set('heightCm', -10);
+  const next = buildScreen(session, settings, { speech: true, meter: true });
+  assert.match(next.panel.options.find((o) => o.id === 'snap').label, /Desactivado/);
+  assert.equal(next.panel.options.find((o) => o.id === 'haptics').on, false);
+  const height = next.panel.blocks.find((b) => b.t === 'kv');
+  assert.match(height.rows[0].v, /−10 cm/);
+});
+
+test('Finalizar pide mantener presionado (en la presentación y en la pausa) y el resto de las acciones no', () => {
+  const { session, settings } = toPresenting();
+  const live = checkScreen(session, settings);
+  const finish = live.lectern.actions.find((a) => a.id === 'finish');
+  assert.equal(finish.hold, true);
+  assert.match(finish.holdHint, /Mantené presionado/);
+  assert.equal(live.lectern.actions.filter((a) => a.hold).length, 1, 'solo «Finalizar» pide mantener');
+  session.dispatch('PAUSE');
+  const paused = checkScreen(session, settings);
+  assert.equal(paused.lectern.actions.find((a) => a.id === 'finish').hold, true);
+  assert.ok(!paused.lectern.actions.find((a) => a.id === 'resume').hold);
+  // La tecla F y el panel de texto no pasan por el botón 3D: el evento FINISH sigue valiendo sin pulsación sostenida.
+  assert.equal(session.dispatch('FINISH'), true);
+});
+
+test('El reloj trae un texto corto para el atril en todos los modos (preparación, en vivo, pausa, aviso)', () => {
+  const { session, settings, clock } = make();
+  session.dispatch('START'); session.dispatch('SKIP'); session.dispatch('PICK_SCENARIO', { id: 'sala' });
+  assert.equal(buildScreen(session, settings).clock.mode, 'idle');
+  session.dispatch('ENTER'); session.dispatch('PREPARE'); session.dispatch('SET_INPUT_MODE', { mode: 'timer' });
+  const prep = buildScreen(session, settings).clock;
+  assert.equal(prep.mode, 'prep');
+  assert.ok(prep.short && prep.short.length <= 14, `prep: «${prep.short}»`);
+  session.dispatch('BEGIN');
+  assert.equal(buildScreen(session, settings).clock.short, 'EN TIEMPO');
+  clock.advance(45_000);
+  assert.equal(buildScreen(session, settings).clock.short, 'POCO TIEMPO');
+  clock.advance(7_000);
+  assert.equal(buildScreen(session, settings).clock.short, 'CUENTA FINAL');
+  session.dispatch('PAUSE');
+  const paused = buildScreen(session, settings).clock;
+  assert.equal(paused.short, 'DETENIDO');
+  assert.equal(paused.paused, true);
+});
+
+test('Los textos para el casco dicen lo mismo que los completos pero son más cortos, y los avisos de privacidad no se pierden', () => {
+  const { session, settings } = make();
+  session.dispatch('START'); session.dispatch('SKIP'); session.dispatch('PICK_SCENARIO', { id: 'sala' });
+  session.dispatch('ENTER'); session.dispatch('PREPARE');
+  const mic = buildScreen(session, settings, { speech: true, meter: true }).panel.blocks.find((b) => b.t === 'notice');
+  assert.match(mic.text, /servicio externo/, 'el panel de texto conserva el aviso completo');
+  assert.ok(mic.text3D && mic.text3D.length < mic.text.length, 'el casco tiene una versión más corta');
+  assert.match(mic.text3D, /micrófono/);
+  assert.match(mic.text3D, /servicio externo/);
+  assert.match(mic.text3D, /No se guarda audio ni texto/, 'sigue diciendo que no se guarda nada');
+});
+
+test('Devolución: tarjetas de las medidas principales en 3D, detalle completo en el panel de texto y consejos con versión corta', async () => {
+  const { session, settings } = make();
+  session.dispatch('START'); session.dispatch('SKIP'); session.dispatch('PICK_SCENARIO', { id: 'sala' });
+  session.dispatch('ENTER'); session.dispatch('PREPARE'); session.dispatch('SET_INPUT_MODE', { mode: 'timer' });
+  session.dispatch('BEGIN'); await flush();
+  session.dispatch('FINISH');
+  const model = checkScreen(session, settings);
+  assert.equal(session.state, S.FEEDBACK);
+  const cards = model.panel.blocks.find((b) => b.t === 'measures' && b.cards);
+  assert.ok(cards && cards.only3D, 'hay tarjetas solo para el casco');
+  assert.deepEqual(cards.rows.map((r) => r.id), ['duration', 'timeUse', 'wpm', 'fillers']);
+  for (const r of cards.rows) assert.ok(r.short, `la medida ${r.id} tiene nombre corto`);
+  const full = model.panel.blocks.find((b) => b.t === 'measures' && b.htmlOnly);
+  assert.ok(full && full.rows.length >= cards.rows.length, 'el panel de texto sigue mostrando todas las medidas');
+  // Las medidas que no se pudieron calcular se muestran como tales (no se esconden)
+  assert.ok(cards.rows.some((r) => !r.available), 'sin voz, palabras por minuto y muletillas figuran como sin datos');
+  session.dispatch('SET_PAGE', { page: 2 });
+  const tips = buildScreen(session, settings).panel.blocks.find((b) => b.t === 'tips');
+  for (const tip of tips.items) {
+    assert.ok(tip.short && tip.short.length < tip.text.length, 'cada consejo tiene una versión corta');
+    assert.ok(tip.basedOn, 'y sigue diciendo en qué dato se basa');
+  }
+  const human = buildScreen(session, settings).panel.blocks.filter((b) => b.heading === 'Requiere revisión humana');
+  assert.equal(human.length, 2, 'una lista completa (texto) y una frase corta (3D)');
+  assert.ok(human.some((b) => b.htmlOnly) && human.some((b) => b.only3D));
+});

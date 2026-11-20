@@ -2,14 +2,15 @@
 // y las mantiene sincronizadas con el modelo de pantalla (UIHub).
 //
 //  - Panel informativo: flota delante de la persona; contiene textos y opciones.
-//  - Atril: cara inclinada con el estado y los botones principales de cada paso.
-//  - Reloj: tiempo restante (o de preparación) con señales visuales de aviso.
-//  - Brief: pantalla en la pared + recordatorio compacto.
+//  - Atril: cara inclinada con el estado, el reloj chico y los botones principales de cada paso.
+//    Los avisos cortos («Mantené presionado…») también se ven acá, porque dentro del casco no hay panel de texto.
+//  - Reloj: tiempo restante (o de preparación) en la pared, solo con números porque se mira de lejos.
+//  - Brief: pantalla en la pared + recordatorio con la marca.
 
 import { CanvasSurface } from './canvas-surface.js';
 import { ButtonPool } from './button3d.js';
 import {
-  PANEL, LECTERN, CLOCK, BRIEF,
+  PANEL, LECTERN, CLOCK, BRIEF, COMPACT, GRID, MIN_FONT_PANEL, MIN_FONT_LECTERN, panelLimit,
   drawPanel, fitPanel, drawLecternFace, drawClock, drawBriefScreen, drawBriefCompact,
 } from './panel-draw.js';
 import { DEG } from '../scenes/scene-kit.js';
@@ -18,6 +19,7 @@ export const FACE_W = 1.3;
 export const FACE_H = 0.56;
 export const FACE_TILT = -22; // grados
 export const FACE_POS = [0, 1.0301, 0.0250];
+export const FLASH_MS = 6000;
 
 function makeEntity(parent, { pos = [0, 0, 0], rotX = 0, rotY = 0, scale = 1 } = {}) {
   const el = document.createElement('a-entity');
@@ -35,11 +37,13 @@ export class PitchUI {
    * @param {UIHub} deps.hub
    * @param {Function} deps.onPress  ejecuta una acción
    * @param {Function} deps.onDenied acción deshabilitada
+   * @param {Function} [deps.onHoldAbort] se soltó antes de tiempo un botón de «mantené presionado»
+   * @param {Function} [deps.onHaptic]    (tipo, evento) -> vibración del control
    * @param {object} deps.settings
    * @param {object} deps.anchors    posiciones: lectern, panel, clock, brief, compact
    * @param {object} deps.scenarioName
    */
-  constructor({ parent, hub, onPress, onDenied, settings, anchors, getScenarioName, getBrief, getEnv, getHasView }) {
+  constructor({ parent, hub, onPress, onDenied, onHoldAbort, onHaptic, settings, anchors, getScenarioName, getBrief, getEnv, getHasView }) {
     this.getHasView = getHasView;
     this.hub = hub;
     this.settings = settings;
@@ -50,6 +54,9 @@ export class PitchUI {
     this.surfaces = [];
     this.pools = [];
     this.briefKey = '';
+    this.flash = null;       // aviso corto en el atril: { text, kind }
+    this._flashTimer = null;
+    this.lecternModel = null;
     this.root = makeEntity(parent);
 
     // ----- Atril -----
@@ -57,14 +64,14 @@ export class PitchUI {
     this.lecternEl = makeEntity(this.root, { pos: la.pos, rotY: la.rotY || 0 });
     this.faceEl = makeEntity(this.lecternEl, { pos: FACE_POS, rotX: FACE_TILT });
     this.faceSurface = this._surface(this.faceEl, FACE_W, FACE_H, 1000);
-    this.lecternPool = this._pool(this.faceEl, onPress, onDenied);
+    this.lecternPool = this._pool(this.faceEl, onPress, onDenied, onHoldAbort, onHaptic, MIN_FONT_LECTERN);
 
     // ----- Panel -----
     if (anchors.panel) {
       const a = anchors.panel;
       this.panelEl = makeEntity(this.root, { pos: a.pos, rotY: a.rotY || 0, scale: a.scale || 1 });
       this.panelSurface = this._surface(this.panelEl, PANEL.W / 1024, PANEL.H / 1024, 1024);
-      this.panelPool = this._pool(this.panelEl, onPress, onDenied);
+      this.panelPool = this._pool(this.panelEl, onPress, onDenied, onHoldAbort, onHaptic, MIN_FONT_PANEL);
     }
 
     // ----- Reloj -----
@@ -83,13 +90,14 @@ export class PitchUI {
     if (anchors.compact) {
       const a = anchors.compact;
       this.compactEl = makeEntity(this.root, { pos: a.pos, rotY: a.rotY || 0, scale: a.scale || 1 });
-      this.compactSurface = this._surface(this.compactEl, 1.2, 0.38, 1000);
+      this.compactSurface = this._surface(this.compactEl, COMPACT.W / 1000, COMPACT.H / 1000, 1000);
     }
 
     this._off = [
       hub.on('model', (m) => this.renderAll(m)),
       hub.on('clock', (c) => this.renderClock(c)),
       hub.on('hint', (l) => this.renderLectern({ ...hub.model, lectern: l })),
+      hub.on('toast', (t) => this.showFlash(t)),
     ];
     this.renderAll(hub.model);
   }
@@ -101,8 +109,8 @@ export class PitchUI {
     return s;
   }
 
-  _pool(parentEl, onPress, onDenied) {
-    const p = new ButtonPool(parentEl, { onPress, onDenied });
+  _pool(parentEl, onPress, onDenied, onHoldAbort, onHaptic, minFont) {
+    const p = new ButtonPool(parentEl, { onPress, onDenied, onHoldAbort, onHaptic, minFont });
     this.pools.push(p);
     return p;
   }
@@ -115,9 +123,25 @@ export class PitchUI {
   }
 
   // ----- Atril -----
+  drawFace() {
+    if (!this.lecternModel) return;
+    const clock = this.hub.model?.clock || null;
+    this.faceSurface.draw((ctx, W, H) => drawLecternFace(ctx, W, H, this.lecternModel, { clock, flash: this.flash }));
+  }
+
+  /** Aviso corto dentro del espacio 3D (reemplaza a la pista del atril unos segundos). */
+  showFlash({ text, kind = 'info' } = {}) {
+    if (!text) return;
+    this.flash = { text, kind };
+    clearTimeout(this._flashTimer);
+    this._flashTimer = setTimeout(() => { this.flash = null; this.drawFace(); }, FLASH_MS);
+    this.drawFace();
+  }
+
   renderLectern(model) {
     const l = model.lectern;
-    this.faceSurface.draw((ctx, W, H) => drawLecternFace(ctx, W, H, l));
+    this.lecternModel = l;
+    this.drawFace();
 
     const px = (x, y, w, h) => ({ x: (x + w / 2 - LECTERN.W / 2) / 1000, y: (LECTERN.H / 2 - (y + h / 2)) / 1000, w: w / 1000, h: h / 1000 });
     const items = [];
@@ -152,21 +176,43 @@ export class PitchUI {
     if (!p.visible) { this.panelPool.clear(); return; }
 
     const hasOptions = p.options.length > 0;
+    const grid = p.layout === 'grid';
     let endY = 0;
     this.panelSurface.draw((ctx, W, H) => {
-      const k = fitPanel(ctx, W, H, p, hasOptions);
-      endY = drawPanel(ctx, W, H, p, { hasOptions, k });
-      this.lastFit = { state: model.state, k, endY };
+      const { k, dropped } = fitPanel(ctx, W, H, p, hasOptions);
+      endY = drawPanel(ctx, W, H, p, { hasOptions, k, dropped });
+      this.lastFit = { state: model.state, k, endY, dropped: dropped.size };
     });
-    if (endY > PANEL.H - 40) console.warn(`[pitch-ui] contenido del panel desborda en "${model.state}" (${Math.round(endY)} px)`);
+    if (endY > panelLimit(p) + 4) console.warn(`[pitch-ui] contenido del panel desborda en "${model.state}" (${Math.round(endY)} px)`);
 
     const items = [];
-    if (hasOptions) {
+    if (hasOptions && grid) {
+      // Dos columnas debajo del encabezado: sirve para pantallas con muchas opciones cortas (ajustes).
+      const n = p.options.length;
+      const rows = Math.ceil(n / GRID.cols);
+      const cellW = (PANEL.W - PANEL.margin * 2 - GRID.gap * (GRID.cols - 1)) / GRID.cols;
+      const avail = PANEL.H - GRID.top - GRID.bottomMargin;
+      const cellH = Math.min(150, (avail - GRID.gap * (rows - 1)) / rows);
+      p.options.forEach((a, i) => {
+        const col = i % GRID.cols;
+        const row = Math.floor(i / GRID.cols);
+        const x = PANEL.margin + col * (cellW + GRID.gap);
+        const y = GRID.top + row * (cellH + GRID.gap);
+        items.push({
+          key: `P-${a.id}`,
+          action: a,
+          x: (x + cellW / 2 - PANEL.W / 2) / 1024,
+          y: (PANEL.H / 2 - (y + cellH / 2)) / 1024,
+          w: cellW / 1024,
+          h: cellH / 1024,
+        });
+      });
+    } else if (hasOptions) {
       const n = p.options.length;
       const top = 190;
       const avail = PANEL.H - top - 90;
       const gap = n > 7 ? 12 : 18;
-      const base = (o) => (o.kind === 'rubric' ? 150 : o.kind === 'tab' ? 82 : 124);
+      const base = (o) => (o.kind === 'rubric' ? 150 : o.kind === 'tab' ? 96 : 124);
       const sum = p.options.reduce((s, o) => s + base(o), 0);
       const scale = Math.min(1, (avail - gap * (n - 1)) / sum);
       const heights = p.options.map((o) => Math.round(base(o) * scale));
@@ -192,8 +238,13 @@ export class PitchUI {
 
   // ----- Reloj -----
   renderClock(clock) {
-    if (!this.clockSurface) return;
-    this.clockSurface.draw((ctx, W, H) => drawClock(ctx, W, H, clock));
+    this.clockSurface?.draw((ctx, W, H) => drawClock(ctx, W, H, clock));
+    // El atril también muestra el tiempo: se repinta solo su cara (los botones no cambian).
+    const key = `${clock.mode}|${clock.time}|${clock.warning}|${clock.paused ? 1 : 0}|${clock.label}|${clock.short}`;
+    if (key !== this._faceClockKey) {
+      this._faceClockKey = key;
+      this.drawFace();
+    }
   }
 
   // ----- Brief -----
@@ -207,6 +258,7 @@ export class PitchUI {
   }
 
   dispose() {
+    clearTimeout(this._flashTimer);
     this._off.forEach((off) => off());
     this.pools.forEach((p) => p.dispose());
     this.surfaces.forEach((s) => s.dispose());

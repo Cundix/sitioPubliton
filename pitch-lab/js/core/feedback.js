@@ -19,6 +19,7 @@ export function buildMeasurements(metrics, targetSec, gestures = null) {
   rows.push({
     id: 'duration',
     label: 'Duración efectiva',
+    short: 'Duración',
     available: metrics.duration.available,
     display: metrics.duration.available ? formatClock(metrics.duration.value) : '—',
     note: 'Sin contar pausas.',
@@ -29,39 +30,42 @@ export function buildMeasurements(metrics, targetSec, gestures = null) {
     ? {
       id: 'timeUse',
       label: 'Uso del tiempo',
+      short: 'Uso del tiempo',
       available: true,
       display: `${Math.round(metrics.timeUse.value * 100)}% de ${formatClock(targetSec)}`,
       source: metrics.timeUse.source,
     }
-    : { id: 'timeUse', label: 'Uso del tiempo', available: false, display: 'No aplica', note: metrics.timeUse.reason });
+    : { id: 'timeUse', label: 'Uso del tiempo', short: 'Uso del tiempo', available: false, display: 'No aplica', note: metrics.timeUse.reason });
 
   rows.push(metrics.words.available
-    ? { id: 'words', label: 'Palabras', available: true, display: String(metrics.words.value), source: metrics.words.source }
-    : { id: 'words', label: 'Palabras', available: false, display: 'Sin datos', note: metrics.words.reason });
+    ? { id: 'words', label: 'Palabras', short: 'Palabras', available: true, display: String(metrics.words.value), source: metrics.words.source }
+    : { id: 'words', label: 'Palabras', short: 'Palabras', available: false, display: 'Sin datos', note: metrics.words.reason });
 
   rows.push(metrics.wpm.available
     ? {
       id: 'wpm',
       label: 'Palabras por minuto',
+      short: 'Palabras/min',
       available: true,
       display: String(metrics.wpm.value),
       note: metrics.wpm.edited ? 'Calculado con texto editado por vos.' : undefined,
       source: metrics.wpm.source,
     }
-    : { id: 'wpm', label: 'Palabras por minuto', available: false, display: 'Sin datos', note: metrics.wpm.reason });
+    : { id: 'wpm', label: 'Palabras por minuto', short: 'Palabras/min', available: false, display: 'Sin datos', note: metrics.wpm.reason });
 
   if (metrics.fillers.available) {
     const terms = Object.entries(metrics.fillers.byTerm).map(([t, n]) => `«${t}» ×${n}`).join(', ');
     rows.push({
       id: 'fillers',
       label: 'Muletillas detectadas',
+      short: 'Muletillas',
       available: true,
       display: `${metrics.fillers.value}`,
       note: terms || 'Ninguna de la lista.',
       source: metrics.fillers.source,
     });
   } else {
-    rows.push({ id: 'fillers', label: 'Muletillas detectadas', available: false, display: 'Sin datos', note: metrics.fillers.reason });
+    rows.push({ id: 'fillers', label: 'Muletillas detectadas', short: 'Muletillas', available: false, display: 'Sin datos', note: metrics.fillers.reason });
   }
 
   if (metrics.audio.available) {
@@ -114,18 +118,21 @@ export function buildTips(metrics, config = APP_CONFIG) {
       candidates.push({
         weight: (v - cfg.paceWpm.idealMax) / cfg.paceWpm.idealMax,
         text: `Hablaste a unas ${v} palabras por minuto, por encima del rango de referencia (${cfg.paceWpm.idealMin}–${cfg.paceWpm.idealMax}). Probá hacer una pausa corta después de cada idea importante.`,
+        short: `Ritmo rápido (${v} por minuto). Hacé una pausa corta después de cada idea importante.`,
         basedOn: `Palabras por minuto: ${v}`,
       });
     } else if (v < cfg.paceWpm.idealMin) {
       candidates.push({
         weight: (cfg.paceWpm.idealMin - v) / cfg.paceWpm.idealMin,
         text: `Hablaste a unas ${v} palabras por minuto, por debajo del rango de referencia (${cfg.paceWpm.idealMin}–${cfg.paceWpm.idealMax}). Si te sobró tiempo, sumá un ejemplo concreto o repetí el beneficio principal.`,
+        short: `Ritmo lento (${v} por minuto). Si te sobró tiempo, sumá un ejemplo concreto.`,
         basedOn: `Palabras por minuto: ${v}`,
       });
     } else {
       candidates.push({
         weight: 0.01,
         text: `Tu ritmo (${v} palabras por minuto) estuvo dentro del rango de referencia. Probá mantenerlo y marcar las ideas clave con una pausa.`,
+        short: `Buen ritmo (${v} por minuto). Marcá las ideas clave con una pausa.`,
         basedOn: `Palabras por minuto: ${v}`,
       });
     }
@@ -136,6 +143,7 @@ export function buildTips(metrics, config = APP_CONFIG) {
     candidates.push({
       weight: metrics.fillers.per100 / cfg.fillersPer100.zero,
       text: `Se detectaron ${metrics.fillers.value} muletillas, sobre todo «${top[0]}». Probá reemplazarlas por un silencio corto mientras pensás la próxima frase.`,
+      short: `${metrics.fillers.value} muletillas, sobre todo «${top[0]}». Probá un silencio corto en su lugar.`,
       basedOn: `Muletillas: ${metrics.fillers.value} (lista configurable)`,
     });
   }
@@ -147,21 +155,24 @@ export function buildTips(metrics, config = APP_CONFIG) {
       candidates.push({
         weight: u - cfg.timeUse.idealMax,
         text: `Usaste el ${pct}% del tiempo del escenario. Elegí qué ideas recortar para llegar al cierre dentro del tiempo.`,
+        short: `Usaste el ${pct}% del tiempo. Elegí qué ideas recortar para llegar al cierre.`,
         basedOn: `Uso del tiempo: ${pct}%`,
       });
     } else if (u < cfg.timeUse.idealMin) {
       candidates.push({
         weight: cfg.timeUse.idealMin - u,
         text: `Usaste el ${pct}% del tiempo del escenario. Tenés margen para desarrollar mejor el beneficio o sumar un ejemplo.`,
+        short: `Usaste el ${pct}% del tiempo. Tenés margen para desarrollar mejor el beneficio.`,
         basedOn: `Uso del tiempo: ${pct}%`,
       });
     }
   }
 
-  const tips = candidates.sort((a, b) => b.weight - a.weight).slice(0, 2).map(({ text, basedOn }) => ({ text, basedOn }));
+  const tips = candidates.sort((a, b) => b.weight - a.weight).slice(0, 2).map(({ text, short, basedOn }) => ({ text, short, basedOn }));
   if (tips.length === 0) {
     tips.push({
       text: 'Con los datos de esta práctica no hay un consejo específico. Completá la autoevaluación y volvé a intentarlo hablando con el micrófono para obtener más medidas.',
+      short: 'Sin consejo específico con estos datos. Completá la autoevaluación y probá de nuevo con micrófono.',
       basedOn: 'Datos insuficientes',
     });
   }
@@ -183,6 +194,11 @@ const ATTEMPT_LABELS = { quota: 'cuota agotada', 'model-unavailable': 'no dispon
 
 export const AI_DISCLAIMER =
   'Es una interpretación automática del audio. Puede equivocarse: no es una medición ni una calificación. Revisala con una persona.';
+/** Versión para el espacio 3D, donde cada línea cuesta lugar: dice lo mismo (interpretación, puede fallar, que la revise alguien). */
+export const AI_DISCLAIMER_3D = 'Interpretación automática: puede equivocarse. Que la revise una persona.';
+
+/** Resumen de lo que no puede juzgar una herramienta, en una frase (versión 3D de HUMAN_REVIEW_ITEMS). */
+export const HUMAN_REVIEW_3D = 'Una persona debe revisar si el problema, la idea, el beneficio y el cierre se entienden.';
 
 /** Primera oración (acotada) de un texto, para mostrar en espacios chicos. */
 export function firstSentence(text, max = 120) {
@@ -235,30 +251,35 @@ export function buildBanners(metrics) {
       kind: 'demo',
       label: 'DEMOSTRACIÓN',
       text: 'El texto es de ejemplo y no fue dicho por vos. Las medidas de texto no reflejan tu presentación.',
+      short: 'Texto de ejemplo: no lo dijiste vos.',
     });
   } else if (metrics.source === SOURCES.TYPED) {
     banners.push({
       kind: 'typed',
       label: 'TEXTO ESCRITO',
       text: 'La transcripción fue escrita o pegada por vos. No se calculan palabras por minuto ni medidas de voz.',
+      short: 'Texto escrito por vos: sin medidas de voz.',
     });
   } else if (metrics.source === SOURCES.AI) {
     banners.push({
       kind: 'edited',
       label: 'TRANSCRIPCIÓN DE LA IA',
       text: 'No hubo reconocimiento del navegador: el texto lo transcribió la IA a partir del audio. Puede tener errores.',
+      short: 'Lo transcribió la IA: puede tener errores.',
     });
   } else if (metrics.source === SOURCES.SPEECH_EDITED) {
     banners.push({
       kind: 'edited',
       label: 'TEXTO EDITADO',
       text: 'Corregiste la transcripción del reconocimiento. Las medidas usan tu versión y pueden no reflejar lo dicho.',
+      short: 'Texto corregido por vos: las medidas usan tu versión.',
     });
   } else if (metrics.source === SOURCES.NONE) {
     banners.push({
       kind: 'novoice',
       label: 'SIN VOZ',
       text: 'Esta práctica no tiene transcripción. Solo se midió el tiempo; el resto depende de tu autoevaluación.',
+      short: 'Sin transcripción: solo se midió el tiempo.',
     });
   }
   return banners;

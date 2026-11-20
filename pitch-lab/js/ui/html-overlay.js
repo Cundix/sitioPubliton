@@ -6,6 +6,7 @@
 import { esc, renderBlock, renderAction } from './html-blocks.js';
 import { S } from '../core/state-machine.js';
 import { SOURCE_LABELS } from '../core/metrics.js';
+import { heightLabel } from '../core/settings.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -72,14 +73,28 @@ export class HtmlOverlay {
     const seated = $('pref-seated');
     seated.checked = this.settings.get('seated');
     seated.addEventListener('change', () => this.settings.set('seated', seated.checked));
+    const haptics = $('pref-haptics');
+    haptics.checked = this.settings.get('haptics');
+    haptics.addEventListener('change', () => this.settings.set('haptics', haptics.checked));
+    const snap = $('pref-snap');
+    snap.value = String(this.settings.get('snapTurnDeg'));
+    snap.addEventListener('change', () => this.settings.set('snapTurnDeg', Number(snap.value)));
+    const height = $('pref-height');
+    height.value = String(this.settings.get('heightCm'));
+    height.addEventListener('input', () => this.settings.set('heightCm', Number(height.value)));
     this.settings.on('change', ({ key, value }) => {
       if (key === 'volume') vol.value = Math.round(value * 100);
       if (key === 'reducedMotion') motion.checked = value;
       if (key === 'seated') seated.checked = value;
+      if (key === 'haptics') haptics.checked = value;
+      if (key === 'snapTurnDeg') snap.value = String(value);
+      if (key === 'heightCm') height.value = String(value);
+      $('pref-height-text').textContent = heightLabel(this.settings.get('heightCm'));
       $('pref-volume-text').textContent = `${Math.round(this.settings.get('volume') * 100)}%`;
       document.documentElement.classList.toggle('reduce-motion', this.settings.get('reducedMotion'));
     });
     $('pref-volume-text').textContent = `${Math.round(this.settings.get('volume') * 100)}%`;
+    $('pref-height-text').textContent = heightLabel(this.settings.get('heightCm'));
     document.documentElement.classList.toggle('reduce-motion', this.settings.get('reducedMotion'));
 
     // Transcripción editable
@@ -189,6 +204,7 @@ export class HtmlOverlay {
   }
 
   toast(text, kind = 'info') {
+    this.hub.emit('toast', { text, kind }); // dentro del casco no hay panel de texto: el aviso también se ve en el atril
     this.toastEl.textContent = text;
     this.toastEl.dataset.kind = kind;
     this.toastEl.hidden = false;

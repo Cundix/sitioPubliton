@@ -157,7 +157,7 @@ export function drawNotice(ctx, { x, y, w, kind = 'info', label, text, size = 36
   const textW = w - (textX - x) - pad;
   ctx.font = `400 ${size}px ${FONT.body}`;
   const lines = wrapText(ctx, text, textW);
-  const labelH = label ? size * 0.95 : 0;
+  const labelH = label ? size * 1.15 : 0;
   const h = pad * 2 + labelH + lines.length * size * 1.28;
   if (!draw) return h;
 
@@ -172,10 +172,10 @@ export function drawNotice(ctx, { x, y, w, kind = 'info', label, text, size = 36
 
   let ty = y + pad;
   if (label) {
-    ctx.font = `700 ${size * 0.78}px ${FONT.body}`;
+    ctx.font = `700 ${size * 0.92}px ${FONT.body}`;
     ctx.fillStyle = accent;
     ctx.textBaseline = 'alphabetic';
-    drawSpaced(ctx, label, textX, ty + size * 0.72, size * 0.1);
+    drawSpaced(ctx, label, textX, ty + size * 0.86, size * 0.08);
     ty += labelH;
   }
   ctx.font = `400 ${size}px ${FONT.body}`;

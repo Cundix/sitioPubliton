@@ -18,10 +18,10 @@
     "textures": 20
   },
   "auditorio": {
-    "calls": 131,
-    "triangles": 42404,
-    "geometries": 97,
-    "textures": 20
+    "calls": 136,
+    "triangles": 42478,
+    "geometries": 101,
+    "textures": 21
   },
   "hub-de-nuevo": {
     "calls": 105,

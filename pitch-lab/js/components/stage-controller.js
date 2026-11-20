@@ -75,7 +75,7 @@ AFRAME.registerComponent('stage-controller', {
     root.setObject3D('static', kit.group);
     env.entities.forEach((e) => root.appendChild(e));
     env.pads.forEach((pad) => {
-      const tp = new TeleportPad(pad, { onTeleport: (p) => app.walk?.teleportTo(p) });
+      const tp = new TeleportPad(pad, { onTeleport: (p) => app.walk?.teleportTo(p), onHaptic: (kind, evt) => app.haptics?.fromEvent(evt, kind) });
       this.pads.push(tp);
       root.appendChild(tp.root);
     });
@@ -86,6 +86,11 @@ AFRAME.registerComponent('stage-controller', {
       settings: app.settings,
       onPress,
       onDenied: (a) => app.cues?.play('denied', a),
+      onHoldAbort: (a) => {
+        app.cues?.play('denied', a);
+        app.overlay?.toast(a.holdHint || 'Mantené presionado el botón para confirmar.', 'info');
+      },
+      onHaptic: (kind, evt) => app.haptics?.fromEvent(evt, kind),
       anchors: env.anchors,
       getScenarioName: () => app.session.scenario?.name || '',
       getBrief: () => app.session.brief,

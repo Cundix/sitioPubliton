@@ -1,13 +1,19 @@
 // Dibujo de un botón del espacio 3D según su tipo y estado.
 // Tipos: primary, secondary, danger, toggle, choice, tab, rubric.
-// Estados: hover (apuntado), pressed, disabled y "on" (activado).
+// Estados: hover (apuntado), pressed, disabled, "on" (activado) y progress (avance de «mantené presionado»).
 // El estado nunca se transmite solo con color: hay texto, formas y trama.
+//
+// Tamaño mínimo de letra (`minFont`, en píxeles del lienzo del botón): depende de la distancia a la que se
+// mira cada superficie. El atril se mira a ~1,6 m y el panel a ~2,2 m; ver tests/e2e/legibilidad.mjs.
 
 import { COLORS, FONT, roundRect, drawIcon, hatch, wrapText } from './draw.js';
 
-/** Elige un tamaño de fuente que entre en el ancho dado (hasta 2 líneas si hay alto). */
-function fitLabel(ctx, text, maxW, maxH, startSize, weight = 700) {
-  for (let size = startSize; size >= 22; size -= 2) {
+export const DEFAULT_MIN_FONT = 36;
+
+/** Elige un tamaño de fuente que entre en el ancho dado (hasta 2 líneas si hay alto). Nunca baja de `minFont`. */
+function fitLabel(ctx, text, maxW, maxH, startSize, minFont, weight = 700) {
+  const start = Math.max(startSize, minFont);
+  for (let size = start; size >= minFont; size -= 2) {
     ctx.font = `${weight} ${size}px ${FONT.body}`;
     if (ctx.measureText(text).width <= maxW) return { size, lines: [text] };
     if (maxH >= size * 2.5) {
@@ -15,11 +21,11 @@ function fitLabel(ctx, text, maxW, maxH, startSize, weight = 700) {
       if (lines.length <= 2 && lines.every((l) => ctx.measureText(l).width <= maxW)) return { size, lines };
     }
   }
-  ctx.font = `${weight} 22px ${FONT.body}`;
-  return { size: 22, lines: wrapText(ctx, text, maxW).slice(0, 2) };
+  ctx.font = `${weight} ${minFont}px ${FONT.body}`;
+  return { size: minFont, lines: wrapText(ctx, text, maxW).slice(0, 2) };
 }
 
-export function drawButton(ctx, w, h, action, { hover = false, pressed = false } = {}) {
+export function drawButton(ctx, w, h, action, { hover = false, pressed = false, progress = 0, minFont = DEFAULT_MIN_FONT } = {}) {
   const kind = action.kind || 'secondary';
   const disabled = !!action.disabled;
   const on = !!action.on;
@@ -46,9 +52,20 @@ export function drawButton(ctx, w, h, action, { hover = false, pressed = false }
   roundRect(ctx, x, y, bw2, bh, r);
   ctx.fillStyle = fill;
   ctx.fill();
+
+  // Avance de «mantené presionado»: una franja clara que crece de izquierda a derecha, con el borde en amarillo.
+  if (progress > 0) {
+    ctx.save();
+    roundRect(ctx, x, y, bw2, bh, r);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(255, 233, 176, 0.5)';
+    ctx.fillRect(x, y, bw2 * Math.min(1, progress), bh);
+    ctx.restore();
+  }
+
   if (disabled) ctx.setLineDash([14, 10]);
   ctx.lineWidth = bw;
-  ctx.strokeStyle = border;
+  ctx.strokeStyle = progress > 0 ? COLORS.yellow : border;
   ctx.stroke();
   ctx.setLineDash([]);
   if (disabled) hatch(ctx, x, y, bw2, bh);
@@ -78,22 +95,23 @@ export function drawButton(ctx, w, h, action, { hover = false, pressed = false }
       drawIcon(ctx, action.icon || 'empty', padX + lead / 2, cy, lead * 0.62, on ? COLORS.yellow : COLORS.muted);
     }
 
-    const { size, lines } = fitLabel(ctx, action.label, maxW, kind === 'rubric' ? bh * 0.62 : bh, Math.min(46, h * 0.36));
+    const { size, lines } = fitLabel(ctx, action.label, maxW, kind === 'rubric' ? bh * 0.62 : bh, Math.min(48, h * 0.42), minFont);
     ctx.fillStyle = textColor;
     ctx.font = `700 ${size}px ${FONT.body}`;
-    const blockH = lines.length * size * 1.15 + (kind === 'rubric' ? size * 0.95 : 0);
+    const valueSize = Math.max(Math.round(minFont * 0.9), size * 0.8);
+    const blockH = lines.length * size * 1.15 + (kind === 'rubric' ? valueSize * 1.2 : 0);
     let ty = cy - blockH / 2 + size * 0.58;
     for (const line of lines) { ctx.fillText(line, textX, ty); ty += size * 1.15; }
     if (kind === 'rubric') {
-      ctx.font = `700 ${size * 0.8}px ${FONT.body}`;
+      ctx.font = `700 ${valueSize}px ${FONT.body}`;
       ctx.fillStyle = on ? COLORS.yellow : COLORS.muted;
-      ctx.fillText(action.value || '', textX, ty + size * 0.12);
+      ctx.fillText(action.value || '', textX, ty + valueSize * 0.15);
     }
 
     if (kind === 'toggle') {
       const sw = Math.min(trail, 150), sh = Math.min(sw * 0.5, bh * 0.52);
       const sx = w - padX - sw, sy = cy - sh / 2;
-      ctx.font = `700 ${sh * 0.6}px ${FONT.body}`;
+      ctx.font = `700 ${Math.max(minFont, sh * 0.7)}px ${FONT.body}`;
       ctx.fillStyle = on ? COLORS.yellow : COLORS.muted;
       ctx.textAlign = 'right';
       ctx.fillText(on ? 'SÍ' : 'NO', sx - 16, cy + 2);
@@ -113,14 +131,24 @@ export function drawButton(ctx, w, h, action, { hover = false, pressed = false }
     const iconName = action.icon || (kind === 'primary' ? 'arrow' : kind === 'danger' ? 'cross' : null);
     const iconSpace = iconName ? h * 0.5 : 0;
     const maxW = w - padX * 2 - iconSpace;
-    const { size, lines } = fitLabel(ctx, action.label, maxW, bh, Math.min(54, h * 0.38));
+    // Con «mantené presionado» hay una segunda línea de ayuda debajo del nombre.
+    const hintSize = action.hold ? minFont : 0;
+    const { size, lines } = fitLabel(ctx, action.label, maxW, bh - (hintSize ? hintSize * 1.1 : 0), Math.min(56, h * 0.42), minFont);
     ctx.font = `700 ${size}px ${FONT.body}`;
     ctx.fillStyle = textColor;
     ctx.textAlign = centered ? 'center' : 'left';
     const tx = centered ? w / 2 : padX;
-    const blockH = lines.length * size * 1.15;
+    const hintH = hintSize ? hintSize * 1.25 : 0;
+    const blockH = lines.length * size * 1.15 + hintH;
     let ty = cy - blockH / 2 + size * 0.58;
     for (const line of lines) { ctx.fillText(line, tx, ty); ty += size * 1.15; }
+    if (hintSize) {
+      ctx.font = `700 ${hintSize}px ${FONT.body}`;
+      let hint = 'MANTENÉ PRESIONADO';
+      if (ctx.measureText(hint).width > maxW) hint = 'MANTENÉ';
+      ctx.fillStyle = kind === 'primary' ? '#FFE9B0' : COLORS.yellow;
+      ctx.fillText(hint, tx, ty - size * 0.58 + hintSize * 0.7);
+    }
     ctx.textAlign = 'left';
     if (iconName) drawIcon(ctx, iconName, w - padX - h * 0.18, cy, h * 0.36, kind === 'danger' ? COLORS.pink : textColor);
   }

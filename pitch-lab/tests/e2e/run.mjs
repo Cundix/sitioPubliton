@@ -206,6 +206,31 @@ await test('4. Sesión sin voz: inicio, pausa, continuación y finalización con
   assert.equal(await page.evaluate(() => window.pitchLab.session.getFeedback().rubricSummary.answered), 2);
 }, { browser });
 
+await test('4b. Finalizar pide mantener presionado: un clic corto no termina y avisa en el atril; mantener sí; la tecla F lo hace al instante', async ({ page }) => {
+  await openAndStartSession(page, { scenario: 'sala' });
+  await resetView(page);
+  await click3D(page, 'begin'); await waitState(page, 'presenting');
+  await wait(700);
+  // Clic corto sobre «Finalizar»: no pasa nada grave y se explica cómo hacerlo
+  const p = await actionPoint(page, 'finish');
+  assert.ok(p && p.hold, '«Finalizar» es un botón de mantener presionado');
+  await page.mouse.move(p.x - 10, p.y - 4); await page.mouse.move(p.x, p.y, { steps: 3 }); await wait(200);
+  await page.mouse.click(p.x, p.y); await wait(350);
+  assert.equal(await state(page), 'presenting', 'un clic corto no termina la presentación');
+  const flash = await page.evaluate(() => window.pitchLab.stage.ui.flash);
+  assert.match(flash?.text || '', /Mantené presionado/, 'el aviso se ve dentro del espacio 3D (en el atril)');
+  // Soltar antes de tiempo a mitad de camino tampoco termina
+  await page.mouse.move(p.x, p.y); await page.mouse.down(); await wait(250); await page.mouse.up(); await wait(250);
+  assert.equal(await state(page), 'presenting');
+  // Mantener el tiempo completo sí
+  await click3D(page, 'finish');
+  await waitState(page, 'feedback');
+  // La tecla F (y el panel de texto) no piden mantener: no hay riesgo de gatillo accidental
+  await dispatch(page, 'RETRY'); await dispatch(page, 'BEGIN'); await waitState(page, 'presenting');
+  await page.keyboard.press('f');
+  await waitState(page, 'feedback', 2000);
+}, { browser });
+
 await test('5. Cancelación con confirmación y reinicio sin estado residual', async ({ page }) => {
   await openAndStartSession(page, { scenario: 'cliente' });
   await resetView(page);
@@ -396,6 +421,18 @@ await test('12. Modo sentado, movimiento reducido, volumen y persistencia de pre
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('reduce-motion')), true);
   await click3D(page, 'seated');
   assert.equal(await page.evaluate(() => window.pitchLab.settings.get('seated')), true);
+  // Opciones de comodidad en VR (también están en el menú 3D: dentro del casco no hay panel de texto)
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('snapTurnDeg')), 30, 'giro de 30° de entrada');
+  await click3D(page, 'snap');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('snapTurnDeg')), 45);
+  await click3D(page, 'haptics');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('haptics')), false);
+  await click3D(page, 'height-up'); await click3D(page, 'height-up');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('heightCm')), 10);
+  await click3D(page, 'height-down');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('heightCm')), 5);
+  const snapLabel = await page.evaluate(() => window.pitchLab.hub.model.panel.options.find((o) => o.id === 'snap').label);
+  assert.match(snapLabel, /45°/, 'el botón muestra el valor actual');
   await click3D(page, 'close');
   await waitState(page, 'home');
   // Con movimiento reducido las maquetas no giran
@@ -404,10 +441,24 @@ await test('12. Modo sentado, movimiento reducido, volumen y persistencia de pre
   // Persistencia
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('publiton-pitch-lab.preferencias.v1')));
   assert.equal(saved.seated, true);
+  assert.equal(saved.snapTurnDeg, 45);
+  assert.equal(saved.haptics, false);
+  assert.equal(saved.heightCm, 5);
   assert.ok(!JSON.stringify(saved).match(/transcri|audio/i), 'solo se guardan preferencias');
   await page.reload();
   await waitReady(page);
   assert.equal(await page.evaluate(() => window.pitchLab.settings.get('seated')), true);
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('snapTurnDeg')), 45, 'las opciones nuevas también se recuerdan');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('heightCm')), 5);
+  // El panel de texto las refleja y las cambia
+  await page.keyboard.press('t'); await wait(250);
+  await page.click('#prefs summary');
+  assert.equal(await page.evaluate(() => document.getElementById('pref-snap').value), '45');
+  assert.equal(await page.evaluate(() => document.getElementById('pref-haptics').checked), false);
+  await page.selectOption('#pref-snap', '15');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('snapTurnDeg')), 15);
+  await page.check('#pref-haptics');
+  assert.equal(await page.evaluate(() => window.pitchLab.settings.get('haptics')), true);
 }, { browser, opts: { permissions: [] } });
 
 await test('13. Panel de texto accesible: botones reales, foco visible, anuncios y modo solo teclado', async ({ page }) => {

@@ -2,9 +2,14 @@
 //   - caminar con teclado (W A S D / flechas) y girar (Q / E) en computadora,
 //   - respetar los límites del escenario (zonas caminables y obstáculos),
 //   - teletransportar a puntos fijos (la forma de moverse en VR; sin deslizamientos),
+//   - girar por tramos con el joystick en VR (quien está sentado no puede girar el cuerpo),
 //   - recentrar la vista,
-//   - elevar la vista en modo sentado.
-// No hay movimiento automático de cámara: todo cambio de posición lo inicia la persona.
+//   - elevar la vista en modo sentado y corregir la altura.
+// No hay movimiento automático de cámara: todo cambio de posición o de giro lo inicia la persona.
+
+/** El joystick cuenta como empujado a partir de este valor y vuelve a estar listo cuando se suelta casi del todo. */
+export const SNAP_PUSH = 0.7;
+export const SNAP_RELEASE = 0.3;
 
 import { app } from '../app-context.js';
 import { APP_CONFIG } from '../config/app-config.js';
@@ -35,6 +40,7 @@ AFRAME.registerComponent('walk-rig', {
     this.v = new this.THREE.Vector3();
     this.p = new this.THREE.Vector3();
     this.fade = null;
+    this.snapArmed = { left: true, right: true }; // un empujón del joystick = un giro; hay que soltar para el siguiente
     app.walk = this;
 
     this.onKeyDown = (e) => {
@@ -53,7 +59,7 @@ AFRAME.registerComponent('walk-rig', {
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('blur', this.onBlur);
 
-    this._off = app.settings.on('change', ({ key }) => { if (key === 'seated') this.applyHeight(); });
+    this._off = app.settings.on('change', ({ key }) => { if (key === 'seated' || key === 'heightCm') this.applyHeight(); });
     this.el.sceneEl.addEventListener('enter-vr', () => this.applyHeight());
     this.el.sceneEl.addEventListener('exit-vr', () => this.applyHeight());
   },
@@ -103,11 +109,54 @@ AFRAME.registerComponent('walk-rig', {
     rig.position.z += z - this.p.z;
   },
 
+  /** Altura de la plataforma: la del piso de la zona + el modo sentado + la corrección fina (solo en VR). */
   applyHeight() {
     const rig = this.el.object3D;
     const y = this.zone?.y ?? 0;
-    const seatedBoost = app.settings.get('seated') && this.isVR() ? APP_CONFIG.movement.seatedOffsetM : 0;
-    rig.position.y = y + seatedBoost;
+    const vr = this.isVR();
+    const seatedBoost = app.settings.get('seated') && vr ? APP_CONFIG.movement.seatedOffsetM : 0;
+    const adjust = vr ? (app.settings.get('heightCm') || 0) / 100 : 0;
+    rig.position.y = y + seatedBoost + adjust;
+  },
+
+  /**
+   * Gira `deg` grados hacia la derecha (direction > 0) o la izquierda (< 0) SOBRE LA CABEZA de la persona:
+   * lo que está delante suyo no se desplaza, solo cambia hacia dónde mira. Es un salto, no un deslizamiento.
+   */
+  snapTurn(direction, deg = app.settings.get('snapTurnDeg')) {
+    if (!deg || !direction) return false;
+    const cam = this.getCamera();
+    if (!cam) return false;
+    const rig = this.el.object3D;
+    rig.updateMatrixWorld(true);
+    cam.getWorldPosition(this.p);
+    const x0 = this.p.x;
+    const z0 = this.p.z;
+    rig.rotation.y -= Math.sign(direction) * deg * DEG;
+    rig.updateMatrixWorld(true);
+    cam.getWorldPosition(this.p);
+    rig.position.x += x0 - this.p.x;
+    rig.position.z += z0 - this.p.z;
+    return true;
+  },
+
+  /** Lee el joystick de cada control (mapeo estándar de WebXR: ejes 2 y 3) y gira cuando se empuja de costado. */
+  pollSnapTurn() {
+    const session = this.el.sceneEl.renderer?.xr?.getSession?.();
+    if (!session) return;
+    const deg = app.settings.get('snapTurnDeg');
+    for (const source of session.inputSources || []) {
+      const hand = source.handedness;
+      const pad = source.gamepad;
+      if (!pad || (hand !== 'left' && hand !== 'right')) continue;
+      const x = (pad.axes.length >= 4 ? pad.axes[2] : pad.axes[0]) || 0;
+      if (this.snapArmed[hand] && Math.abs(x) >= SNAP_PUSH) {
+        this.snapArmed[hand] = false;
+        if (deg) this.snapTurn(x, deg);
+      } else if (Math.abs(x) <= SNAP_RELEASE) {
+        this.snapArmed[hand] = true;
+      }
+    }
   },
 
   /** Teletransporte instantáneo a un punto fijo (sin deslizamiento: no marea). */
@@ -158,7 +207,8 @@ AFRAME.registerComponent('walk-rig', {
       this.fade.mat.opacity = Math.max(0, 1 - this.fade.t / 0.28);
     }
 
-    if (this.isVR() || !this.zone || this.down.size === 0) return;
+    if (this.isVR()) { this.pollSnapTurn(); return; }
+    if (!this.zone || this.down.size === 0) return;
     const cam = this.getCamera();
     if (!cam) return;
     const rig = this.el.object3D;
