@@ -162,8 +162,10 @@ Detalle, presupuesto y mediciones: [`modelos-3d.md`](modelos-3d.md).
 | Componente | Archivo | Función |
 |---|---|---|
 | `stage-controller` | `components/stage-controller.js` | Elige y reconstruye el espacio (hub/escenario) al cambiar el estado |
-| `walk-rig` | `components/walk-rig.js` | Caminar con teclado, límites, teletransporte, recentrado, modo sentado, fundido |
+| `walk-rig` | `components/walk-rig.js` | Caminar con teclado, límites, teletransporte, recentrado, modo sentado, altura, **giro por tramos con el joystick**, fundido |
 | `xr-ray` | `components/xr-support.js` | Rayo de puntería por mano/control (target ray de WebXR) |
+| `Haptics` | `components/xr-support.js` | Vibración corta de los controles según el evento (apuntar, presionar, no disponible); apagable |
+| `HoldGesture` | `ui/hold.js` | Pulsación sostenida («mantené presionado»), sin dependencias de A-Frame |
 
 > Nota técnica: A-Frame evalúa las propiedades de un componente al registrarlo, por eso los componentes no usan
 > *getters* (ver `docs/problemas-resueltos.md`, problema 1).

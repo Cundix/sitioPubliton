@@ -59,6 +59,22 @@ movement: { walkSpeed: 1.6, turnSpeedDeg: 70, seatedOffsetM: 0.45 },
 ```
 
 Para agregar una muletilla basta con sumarla a `fillers` (palabra o frase, sin importar mayúsculas ni tildes).
+
+## Preferencias de la persona — `js/core/settings.js`
+
+Se guardan en el navegador (`localStorage`), nunca audio ni texto. Se cambian desde Ajustes (menú 3D) o desde «Preferencias» del panel de texto.
+
+| Preferencia | Valores | Por defecto |
+|---|---|---|
+| `volume` | 0 a 1 | 0,7 |
+| `reducedMotion` | sí / no | el del sistema |
+| `seated` | sí / no (eleva la vista 45 cm en VR) | no |
+| `snapTurnDeg` | 0 (apagado), 15, 30, 45, 90 | 30 |
+| `haptics` | sí / no (vibración de los controles) | sí |
+| `heightCm` | −30 a +30, de a 5 (solo en VR) | 0 |
+
+Los parámetros de la pulsación sostenida (`HOLD_MS`, 700) y de la vibración (`HAPTIC_PULSES`) están en `js/ui/hold.js` y
+`js/components/xr-support.js`. Los tamaños mínimos de letra, en `js/ui/panel-draw.js` (`MIN_FONT_PANEL`, `MIN_FONT_LECTERN`).
 La fórmula del indicador y sus límites están explicados en [`metricas-y-puntaje.md`](metricas-y-puntaje.md).
 
 ## Cosas que se rompen fácil

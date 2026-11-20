@@ -43,14 +43,16 @@ diga ni del puntaje y no es una evaluación del argumento.**
 |---|---|---|
 | Mirar | Arrastrar con el mouse | Mover la cabeza |
 | Moverse | W A S D o flechas · girar con Q y E | Marcas del piso (teletransporte instantáneo). No hay desplazamiento continuo |
+| Girar | Q y E | Joystick de costado: gira por tramos (15/30/45/90° o apagado, en Ajustes) |
 | Botones | Clic con el mouse sobre los botones 3D | Rayo del control + gatillo (o pellizco con manos) |
 | Acción principal | Enter | Botón grande azul del atril |
 | Pausar / continuar | P | Botón del atril |
-| Finalizar | F | Botón del atril |
+| Finalizar | F | Botón del atril: **mantenerlo presionado** un momento (así no se termina sin querer) |
 | Cancelar / volver | Esc | Botón del atril (pide confirmación) |
 | Recentrar | R | Botón «Recentrar» del atril |
 | Panel de texto accesible | T | — (no aparece dentro del casco) |
-| Modo sentado | Ajustes o botón del atril | Botón «Sentado» del atril (eleva la vista) |
+| Modo sentado y altura | Ajustes o botón del atril | Botón «Sentado» del atril (eleva la vista) y «Subir/Bajar la vista» en Ajustes (±30 cm) |
+| Vibración de los controles | — | Se enciende o apaga en Ajustes |
 | Salir de VR | — | Botón «Salir de VR» del atril y el botón del sistema del casco |
 
 El **panel de texto** (HTML) es un espejo accesible del espacio 3D: mismos textos y mismas acciones, con foco
@@ -166,7 +168,8 @@ npm run test:e2e       # recorrido completo con un navegador real
 node tests/e2e/ai.mjs  # análisis con IA y cámara (API de Gemini simulada, micrófono y cámara falsos)
 node tools/bench-3d.mjs # costo de dibujo por espacio (solo para comparar versiones; no es rendimiento de casco)
 node tools/shots-3d.mjs capturas-3d # capturas con cámaras fijas, para comparar antes y después de un cambio visual
-node tests/e2e/xr.mjs  # modo inmersivo con emulador WebXR
+node tests/e2e/xr.mjs  # modo inmersivo con emulador WebXR (giro, vibración, una mano, altura, mantener presionado)
+node tests/e2e/legibilidad.mjs  # mide cuántos grados ocupa cada texto 3D; falla por debajo de 0,8°
 ```
 
 Prueba **manual** con la API real (gasta cuota de TU clave; ver el encabezado de `tests/e2e/ia-real.mjs`):
@@ -193,12 +196,14 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
 | [`docs/usuarios-hipotesis.md`](docs/usuarios-hipotesis.md) | Público objetivo como hipótesis de diseño |
 | [`docs/analisis-con-ia.md`](docs/analisis-con-ia.md) | Análisis con IA y cámara: modelo, cuota, clave, privacidad, límites |
 | [`docs/modelos-3d.md`](docs/modelos-3d.md) | Mejora de los modelos 3D (público, salas, atril), presupuesto y mediciones |
+| [`docs/auditoria-ux-xr.md`](docs/auditoria-ux-xr.md) | Revisión con la guía *UX for XR*: hallazgos, correcciones, mediciones de legibilidad y protocolo para probar con personas |
 | [`docs/evaluacion-semantica-futura.md`](docs/evaluacion-semantica-futura.md) | Qué falta validar y mejorar de la evaluación con IA |
 | [`docs/configuracion.md`](docs/configuracion.md) | Cómo editar briefs, tiempos y escenarios |
 
 ## Limitaciones conocidas
 
-- **No se probó en un casco físico.** No se afirma ninguna tasa de cuadros ni comodidad en VR. Los modelos 3D mejorados (2026-11-19) dibujan
+- **No se probó en un casco físico.** No se afirma ninguna tasa de cuadros ni comodidad en VR. Las opciones de comodidad (giro, vibración, altura,
+  mantener presionado) se verificaron con un emulador y sus valores son **estimaciones** a ajustar con personas ([`docs/auditoria-ux-xr.md`](docs/auditoria-ux-xr.md)). Los modelos 3D mejorados (2026-11-19) dibujan
   más geometría que los anteriores (ver [`docs/modelos-3d.md`](docs/modelos-3d.md)): **no se midió su costo en un casco**.
 - El reconocimiento de voz depende del navegador y de un servicio externo; puede equivocarse y omitir muletillas.
 - Los silencios solo se informan si se activó la medición de nivel de audio (y miden nivel de sonido, no habla).

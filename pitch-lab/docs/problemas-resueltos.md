@@ -178,6 +178,31 @@ error de consola**. Cada uno tiene causa, solución y comprobación. No hay prob
 - **Causa**: `core.autocrlf` en Windows convierte a CRLF al reescribir archivos.
 - **Solución**: los parches normalizan los saltos de línea. No afecta al producto.
 
+## Problemas de la revisión con «UX for XR» (2026-11-19)
+
+### 20. El texto de los paneles dentro del casco era demasiado chico
+- **Síntoma**: al medir cada texto con la geometría real, el panel bajaba hasta 0,5° de altura de mayúsculas, el recordatorio del brief
+  estaba en 0,2° y las etiquetas del reloj de la pared en 0,3°. Nadie lo había notado porque en pantalla de computadora se lee bien.
+- **Causa**: el panel achicaba todas las letras (hasta 0,58 de su tamaño) para que entrara el contenido, y los textos de las superficies lejanas
+  eran de tamaño chico.
+- **Solución**: letra mínima por superficie, contenido recortado en lugar de achicado, reloj del atril, recordatorio con solo la marca
+  (ver [`auditoria-ux-xr.md`](auditoria-ux-xr.md)).
+- **Comprobación**: `tests/e2e/legibilidad.mjs` falla si algún texto baja de 0,8°.
+
+### 21. Los avisos no se veían dentro del casco
+- **Síntoma**: avisos como «la clave no se puede escribir en VR» o los errores de entrada a VR salían en un cartel HTML que **no existe en VR**.
+- **Solución**: además del cartel, el aviso se dibuja 6 s en el atril.
+- **Comprobación**: pruebas X11 y 4b.
+
+### 22. La pantalla de revisión de la transcripción desbordaba con la letra más grande
+- **Síntoma**: con una transcripción larga, el contenido pasaba el borde del panel (1.207 px sobre 1.152). Lo detectó la prueba del temporizador real.
+- **Causa**: el título de dos líneas y el aviso largo ocupaban lugar que la transcripción necesitaba.
+- **Solución**: título en una línea y aviso corto para el casco. La auditoría de legibilidad ahora recorre también esta pantalla con un texto largo.
+
+### 23. Defectos visibles solo al mirar las capturas
+- La etiqueta del reloj del atril pisaba los números, el recuadro del indicador repetía «sin datos suficientes» y el avance de «mantené presionado»
+  se veía turbio. Se corrigieron mirando las capturas, no por una prueba: **la auditoría de legibilidad no detecta superposiciones**.
+
 ## Registro de herramientas (no son defectos del producto)
 
 - El puerto 8080 de esta computadora estaba ocupado por otra aplicación (un servidor ajeno respondía 403): las
@@ -188,5 +213,6 @@ error de consola**. Cada uno tiene causa, solución y comprobación. No hay prob
   se amplió el margen de `page.goto` a 60 s en `tools/browser.mjs`.
 
 - El emulador de WebXR (IWER) no se instala sobre el `navigator.xr` nativo de Edge sin `forceInstall: true`.
+- La guía en PDF no tenía capa de texto utilizable con el lector del entorno (faltaba `pdftoppm`): se extrajo el texto con `pdftotext`, que viene con Git para Windows.
 - En Git Bash de Windows, un argumento que empieza con `/` se convierte en una ruta de Windows; para el servidor con
   prefijo `/sitioPubliton` hay que anteponer `MSYS_NO_PATHCONV=1`.

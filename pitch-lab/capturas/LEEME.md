@@ -1,7 +1,8 @@
 # Capturas reales de la experiencia
 
-Las `01` a `41` se regeneraron el 2026-11-13 (después de agregar la función de IA) con `node tools/qa-shots.mjs capturas 1600 900` y
-`node tools/shots-datos.mjs capturas`. Las `50` a `59` (IA y cámara) salen de `tools/shots-ia.mjs` y de `tests/e2e/ia-real.mjs`.
+Las `01` a `41` se regeneraron el 2026-11-20 (después de la revisión con «UX for XR») con `node tools/qa-shots.mjs capturas 1600 900` y
+`node tools/shots-datos.mjs capturas`. Las `50`, `51`, `52`, `56`, `57` y `58` (IA y cámara, API simulada) salen de `tools/shots-ia.mjs` y también se regeneraron;
+las `53`, `54`, `55` y `59` son de **respuestas reales de Gemini** del 2026-11-13 y **no se pueden regenerar sin una clave**: muestran la interfaz **anterior** (letra más chica en el panel 3D).
 
 **Cómo se hicieron**: Microsoft Edge 156 en modo *headless*, 1600 × 900, con **WebGL por software**. Sirven para
 mostrar composición, legibilidad y recorrido. **No** representan la vista dentro de un casco ni sirven para medir
@@ -21,9 +22,20 @@ real**. Si se usan en el informe o en la exposición hay que rotularlas así.
 | `30-auditorio-*`, `31-auditorio-desde-el-publico` | Auditorio: brief, presentando, vista general, pantalla, vista desde el público |
 | `40…41-devolucion-con-datos-*` | Devolución **con datos suficientes** (sesión real de 60 s con reconocimiento simulado): indicador calculado y consejos |
 
+### Capturas de la revisión con «UX for XR» (`60` a `63`)
+
+| Archivo | Qué muestra |
+|---|---|
+| `60-ajustes-opciones-de-vr` | Ajustes en dos columnas: volumen, movimiento reducido, sentado, **giro con joystick**, **vibración**, **altura de la vista** |
+| `61-finalizar-toque-corto-aviso-en-el-atril` | Un toque corto sobre «Finalizar» no termina: el aviso aparece **en el atril** (dentro del casco no hay panel de texto). También se ve el reloj chico del atril |
+| `62-finalizar-manteniendo-avance` | A mitad de «mantené presionado»: el botón se va llenando |
+| `63-pausa-con-el-brief` | La pausa permite releer la marca y la restricción creativa |
+
+Navegador de pruebas con WebGL por software; sirven para revisar composición y legibilidad, no para medir comodidad en un casco.
+
 ### Comparación de modelos 3D (`3d/`)
 
-Pares `antes-*.png` (versión publicada el 2026-11-13) y `despues-*.png` (2026-11-19), con las **mismas cámaras** y sin paneles de interfaz
+Pares `antes-*.png` (versión publicada el 2026-11-13) y `despues-*.png` (regenerados el 2026-11-20, con el recordatorio de la marca colgado bajo el reloj del auditorio), con las **mismas cámaras** y sin paneles de interfaz
 encima, generados con `node tools/shots-3d.mjs`. Navegador de pruebas con WebGL por software: sirven para ver composición y detalle,
 no rendimiento. Detalle de lo que cambió: [`../docs/modelos-3d.md`](../docs/modelos-3d.md).
 

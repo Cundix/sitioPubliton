@@ -1,6 +1,6 @@
 # STATUS — Publitón Pitch Lab
 
-_Última actualización: 2026-11-13 (se sumó el análisis con IA y la cámara)._
+_Última actualización: 2026-11-20 (revisión con la guía «UX for XR» en la rama `pitch-lab-ux-xr`, sin publicar)._
 
 ## Publicación
 
@@ -13,15 +13,16 @@ _Última actualización: 2026-11-13 (se sumó el análisis con IA y la cámara).
 
 ## Terminado (y cómo se comprobó)
 
-- **Experiencia completa** en `pitch-lab/`: hub con maquetas, tres escenarios (Sala de ensayo 60 s, Reunión con cliente 90 s, Auditorio 120 s), once briefs ficticios de temáticas distintas (uno al azar al empezar), tutorial salteable, preparación ajustable, presentación con reloj, pausa, finalizar, cancelar con confirmación, devolución y reintento. → pruebas de navegador real (21/21).
+- **Experiencia completa** en `pitch-lab/`: hub con maquetas, tres escenarios (Sala de ensayo 60 s, Reunión con cliente 90 s, Auditorio 120 s), once briefs ficticios de temáticas distintas (uno al azar al empezar), tutorial salteable, preparación ajustable, presentación con reloj, pausa, finalizar, cancelar con confirmación, devolución y reintento. → pruebas de navegador real (22/22).
 - **Voz opcional** con alternativas (sin micrófono, permiso rechazado, reconocimiento no disponible, silencio), transcripción revisable con origen, medición de nivel de audio opcional. → pruebas con **simulaciones** de voz (voz real: pendiente).
 - **Devolución transparente**: medidas con su origen, «Indicador técnico orientativo» con fórmula visible y «Sin datos suficientes», rúbrica de autoevaluación, consejos basados en datos, revisión humana. → 77 pruebas de unidad.
-- **WebXR**: botón «Entrar en VR», rayo de controles y manos (target ray), teletransporte, recentrado, modo sentado, salida de VR. → **emulador** (8/8). **Casco físico: pendiente.**
+- **WebXR**: botón «Entrar en VR», rayo de controles y manos (target ray), teletransporte, recentrado, modo sentado, salida de VR. → **emulador** (13/13). **Casco físico: pendiente.**
 - **Accesibilidad**: panel de texto espejo, teclado completo, foco visible, `aria-live`, movimiento reducido, volumen.
 - **Documentación** (`docs/`), **informe 16:9** (`informe/informe-pitch-lab.pdf`, 21 páginas), **material para Figma** (`informe/figma/`), **guion de 5 minutos**, **guía de intervención manual**, **capturas** (`capturas/`).
 
 - **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 158 pruebas de unidad (al 2026-11-19), 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
 - **Modelos 3D mejorados y más temáticas (2026-11-19, rama `pitch-lab-3d`, NO publicado)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
+- **Revisión con la guía «UX for XR» (2026-11-19, rama `pitch-lab-ux-xr`, NO publicado)**: texto del espacio 3D medido y corregido (nada por debajo de 0,8° de altura de mayúsculas), reloj en el atril, giro por tramos con el joystick, vibración de los controles, altura de la vista, «mantené presionado» para finalizar, avisos visibles dentro del casco. → 183 pruebas de unidad, 22 de navegador real, 13 con emulador WebXR, 10 de IA y la auditoría de legibilidad. **Los valores de comodidad son estimaciones sin probar en un casco** (ver `docs/auditoria-ux-xr.md`).
 - Se descartó el tope de 5 minutos de preparación (pedido de la persona usuaria): sigue de 0 a 300 s.
 
 ## En curso
@@ -33,7 +34,7 @@ Nada abierto en el código. Ver «Falta» para lo que no puede cerrar la herrami
 0. **Revocar la clave de Gemini que se pegó en el chat** (AI Studio → API keys) y crear otra solo para las pruebas del equipo. Se usó únicamente desde la computadora de trabajo y no está en el repositorio, pero quedó en el historial de la conversación.
 0. **Consultar el límite diario (RPD)** de la clave en AI Studio → *Rate limits*: decide si alcanzan ~50 jugadas por día. Los límites por minuto/tokens los informó el equipo (15 pedidos/min, 250.000 tokens/min) y no se pudieron verificar desde aquí. Se midieron ≈2.350–2.460 tokens por jugada de 37 s.
 0. **Probar el análisis con voz humana real** y con personas expertas que comparen la devolución; probar **manos reales** ante la cámara (solo se verificó con una cámara de prueba sin manos). Ver `docs/evaluacion-semantica-futura.md`.
-1. **Probar en un casco físico** y anotar comodidad, legibilidad y altura (modo sentado). No se afirma rendimiento ni cuadros por segundo.
+1. **Probar en un casco físico** y anotar comodidad, legibilidad y altura (modo sentado). No se afirma rendimiento ni cuadros por segundo. **Ajustar con personas** la vibración, el tiempo de «mantené presionado» (0,7 s) y el giro (30°); ver el protocolo de `docs/auditoria-ux-xr.md`. Comprobar si los permisos de micrófono y cámara se pueden dar estando en VR (conviene darlos antes de entrar).
 2. **Intervención manual del equipo** (antes/después reales): guía en `docs/intervencion-manual.md`.
 3. **Informe interactivo en Figma**: armarlo con `informe/figma/` (el plugin oficial de Figma no estaba habilitado en la cuenta; está preparado `informe/figma/slides-spec.json`). El informe HTML/PDF ya refleja la función de IA (21 diapositivas).
 4. **Imágenes de los referentes** para el informe (una captura por referente, con cita).
@@ -60,11 +61,12 @@ Nada abierto en el código. Ver «Falta» para lo que no puede cerrar la herrami
 ```bash
 cd sitioPubliton/pitch-lab
 npm install                                           # solo la primera vez
-npm test                                              # 158 pruebas de unidad
+npm test                                              # 183 pruebas de unidad
 node tools/serve.mjs                                  # http://localhost:8080/pitch-lab/ (si el 8080 está ocupado: node tools/serve.mjs 8090 y PITCHLAB_URL)
 MSYS_NO_PATHCONV=1 node tools/serve.mjs 8081 /sitioPubliton   # ruta de GitHub Pages (otra terminal)
-npm run test:e2e                                      # 21 pruebas con navegador real (~2 min)
-node tests/e2e/xr.mjs                                 # 8 pruebas con emulador WebXR
+npm run test:e2e                                      # 22 pruebas con navegador real (~5 min)
+node tests/e2e/xr.mjs                                 # 13 pruebas con emulador WebXR
+node tests/e2e/legibilidad.mjs                        # mide cada texto 3D en grados; falla por debajo de 0,8°
 node tests/e2e/ai.mjs                                 # 10 pruebas de IA y cámara (API simulada, ≈5 min)
 node tools/shots-ia.mjs capturas                      # capturas de estados de IA (API simulada)
 # Manual con TU clave (gasta cuota): GEMINI_API_KEY_FILE=… PITCHLAB_FAKE_MIC=… node tests/e2e/ia-real.mjs

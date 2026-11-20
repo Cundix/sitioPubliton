@@ -281,7 +281,7 @@ Preparación que no empieza sola
 Cancelar pide confirmación y detiene el tiempo
 
 Computadora: mouse + W A S D, Enter, P, F, Esc, R, T.
-VR: rayo del control + gatillo, marcas de teletransporte, «Recentrar», «Sentado», «Salir de VR». Sin desplazamiento continuo.
+VR: rayo del control + gatillo, marcas de teletransporte, joystick para girar por tramos, «Recentrar», «Sentado», altura de la vista y vibración ajustables, «Salir de VR». «Finalizar» pide mantener presionado. Sin desplazamiento continuo.
 
 Preparación: opciones en el panel, acción principal en el atril (captura real)
 ```
@@ -360,7 +360,7 @@ INTERFAZ
 Panel, atril, reloj y botones 3D + panel de texto accesible
 ui/* · components/xr-support.js (xr-ray)
 
-A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 158 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: docs/arquitectura.md
+A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 183 pruebas de unidad, 32 de navegador real, 13 con emulador WebXR y una auditoría de legibilidad del texto 3D. Detalle: docs/arquitectura.md
 ```
 
 ## Diapositiva 16
@@ -463,13 +463,14 @@ LO PROBADO,
 LO PENDIENTE.
 VERIFICADO
 NIVEL	RESULTADO
-Pruebas de unidad	158 / 158
-Navegador real (Edge 156, mouse y teclado, 60 s reales)	21 / 21
+Pruebas de unidad	183 / 183
+Navegador real (Edge 156, mouse y teclado, 60 s reales)	22 / 22
 IA y cámara en navegador real (Gemini simulado, micrófono y cámara falsos)	10 / 10
-Modo inmersivo con emulador WebXR	8 / 8
-Rutas bajo /sitioPubliton/pitch-lab/ y sitio anterior	OK
+Modo inmersivo con emulador WebXR	13 / 13
+Texto 3D: ninguno bajo 0,8° (medido)	OK
+Rutas de GitHub Pages y sitio anterior	OK
 PENDIENTE / NO VERIFICADO
-Casco físico y comodidad en VR
+Casco físico y comodidad en VR (ajustes de VR sin probar)
 Rendimiento y cuadros por segundo (no medidos)
 Voz real: se probó con simulaciones; el servicio es del navegador
 IA con voz humana real y manos reales ante la cámara; límite diario de la clave

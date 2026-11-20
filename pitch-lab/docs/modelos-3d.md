@@ -57,3 +57,12 @@ usarlo en un casco conviene medir allí, empezando por el auditorio.
 - Rendimiento en casco: **no medido**. Si el auditorio resultara pesado, las palancas son bajar la ocupación
   (`audience.occupancy` en `config/scenarios.js`), acercar `NEAR_DIST` en `audience.js` o quitar los haces de luz (`addLightBeam`).
 - La mejora es visual: no cambia la lógica, los tiempos ni las zonas caminables (los obstáculos y límites son los mismos).
+
+## Cambios posteriores por la revisión de UX para XR (2026-11-20)
+
+Detalle en [`auditoria-ux-xr.md`](auditoria-ux-xr.md). Afectan a lo que se **lee** dentro de los espacios, no a los modelos:
+
+- El panel flotante pasó de escala 1,2 a **1,3** en los cuatro espacios.
+- El **reloj de la pared** muestra solo números (más grandes); la etiqueta y el aviso en palabras están en el reloj del atril.
+- **Recordatorio de la marca** más grande en la sala (escala 1,1) y la reunión (1,5), y **nuevo en el auditorio**: colgado bajo el reloj, con su
+  marco y dos varillas (suma un marco y dos cilindros; el presupuesto de la prueba 15 sigue cumpliéndose).

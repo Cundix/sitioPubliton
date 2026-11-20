@@ -50,6 +50,23 @@ Detalle completo en [`analisis-con-ia.md`](analisis-con-ia.md).
 | D29 | **Cada visita empieza con un brief al azar** y el botón muestra «Otro brief N/total» | Con un solo brief a la vista parecía que la herramienta tenía una única temática | `briefStart` en `session.js` y `main.js` |
 | D30 | **Largos máximos de los campos de un brief** exigidos por un test | Que un brief nuevo no desborde la pantalla de pared ni el panel | `tests/unit/briefs.test.js` |
 
+## Decisiones de la revisión con «UX for XR» (2026-11-19 y 2026-11-20)
+
+Detalle y evidencia: [`auditoria-ux-xr.md`](auditoria-ux-xr.md).
+
+| # | Decisión | Motivo | Cómo cambiarla |
+|---|---|---|---|
+| D31 | **Mínimo de legibilidad medido**: 0,8° de altura de mayúsculas (cómodo: 1,2°); la prueba falla por debajo | Dentro del casco solo se lee lo dibujado en 3D. Los valores salen de bibliografía de lectura en VR; no son un estándar único | `MIN_DEG` en `tests/e2e/legibilidad.mjs`; `MIN_FONT_*` en `panel-draw.js` |
+| D32 | **Si el texto no entra, se recorta; no se achica la letra.** Bloques secundarios `optional3D` + aviso «Más detalle: panel de texto» | Achicar fue lo que dejó textos de 0,5° | `fitPanel` en `panel-draw.js` |
+| D33 | **El panel 3D queda en escala 1,3** (≈ 69° × 40° desde el atril) y no se agranda más | La guía da una zona cómoda de ~70° × 40°; ya la ocupa | `anchors.panel.scale` en cada espacio |
+| D34 | **Reloj en el atril** (etiqueta, tiempo y aviso en palabras) y **reloj de la pared solo con números** | Lo que se mira a 5–10 m solo puede llevar texto muy grande; el estado en palabras va donde se lee | `drawLecternClock`, `drawClock` |
+| D35 | **Giro con el joystick por tramos, encendido a 30°** (15/30/45/90° o apagado) | Quien presenta sentado no puede girar el cuerpo. La guía pide tenerlo disponible; acá además empieza encendido: **a revisar con personas** | `snapTurnDeg` en `settings.js` |
+| D36 | **Vibración corta de los controles, apagable**, nunca como única señal | El tacto confirma que algo se tocó o se presionó; siempre hay también señal visual y sonido | `HAPTIC_PULSES` en `xr-support.js` |
+| D37 | **«Finalizar» pide mantener presionado 0,7 s** (solo botones 3D; F, Enter y panel de texto son inmediatos) | Es un cambio grande que no se deshace y estaba al lado de «Pausar». 0,7 s es una **estimación** | `HOLD_MS` en `hold.js`; `hold: true` en `screens.js` |
+| D38 | **Los avisos cortos también se dibujan en el atril** | Los avisos salían solo en el panel de texto, que no existe dentro del casco | `showFlash` en `pitch-ui.js` |
+| D39 | **Sin locomoción continua, a propósito** | La experiencia es de pie frente a un atril; el teletransporte con fundido ya evita el mareo por movimiento | `walk-rig.js` |
+| D40 | **Ajustes en dos columnas** (ocho opciones) | Entran las opciones nuevas con letra legible | `layout: 'grid'` en `screens.js` |
+
 ## Decisiones de diseño y alcance
 
 | # | Decisión | Motivo |

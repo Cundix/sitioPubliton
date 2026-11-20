@@ -284,7 +284,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
   <div class="cols c-shot">
     <div>
       <div class="card accent"><ul><li><b>Una acción principal</b> grande por estado; secundarias con menos énfasis</li><li>Reloj visible con aviso <b>visual (borde, ícono, texto) y sonoro</b></li><li>Preparación que <b>no empieza sola</b></li><li>Cancelar pide confirmación y <b>detiene el tiempo</b></li></ul></div>
-      <div class="card" style="margin-top:22px"><p class="small" style="margin:0"><b>Computadora</b>: mouse + W A S D, Enter, P, F, Esc, R, T.<br><b>VR</b>: rayo del control + gatillo, marcas de teletransporte, «Recentrar», «Sentado», «Salir de VR». Sin desplazamiento continuo.</p></div>
+      <div class="card" style="margin-top:22px"><p class="small" style="margin:0"><b>Computadora</b>: mouse + W A S D, Enter, P, F, Esc, R, T.<br><b>VR</b>: rayo del control + gatillo, marcas de teletransporte, joystick para girar por tramos, «Recentrar», «Sentado», altura de la vista y vibración ajustables, «Salir de VR». «Finalizar» pide mantener presionado. Sin desplazamiento continuo.</p></div>
     </div>
     <figure class="shot"><img src="../capturas/08-sala-preparacion.png" alt="Pantalla de preparación"><figcaption>Preparación: opciones en el panel, acción principal en el atril (captura real)</figcaption></figure>
   </div>
@@ -339,7 +339,7 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
     <div class="box"><b>Escenas</b>Hub, sala, cliente y auditorio; público instanciado<br><code>scenes/* · components/stage-controller.js</code></div>
     <div class="box"><b>Interfaz</b>Panel, atril, reloj y botones 3D + panel de texto accesible<br><code>ui/* · components/xr-support.js (xr-ray)</code></div>
   </div>
-  <p class="small" style="margin-top:22px">A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 158 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: <code>docs/arquitectura.md</code></p>
+  <p class="small" style="margin-top:22px">A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 183 pruebas de unidad, 32 de navegador real, 13 con emulador WebXR y una auditoría de legibilidad del texto 3D. Detalle: <code>docs/arquitectura.md</code></p>
 </section>
 
 <!-- 16. BITÁCORA -->
@@ -411,17 +411,18 @@ th{color:var(--yellow);font-size:22px;letter-spacing:.1em;text-transform:upperca
       <span class="ok-tag">Verificado</span>
       <table>
         <tr><th>Nivel</th><th>Resultado</th></tr>
-        <tr><td>Pruebas de unidad</td><td><b>158 / 158</b></td></tr>
-        <tr><td>Navegador real (Edge 156, mouse y teclado, 60 s reales)</td><td><b>21 / 21</b></td></tr>
+        <tr><td>Pruebas de unidad</td><td><b>183 / 183</b></td></tr>
+        <tr><td>Navegador real (Edge 156, mouse y teclado, 60 s reales)</td><td><b>22 / 22</b></td></tr>
         <tr><td>IA y cámara en navegador real (Gemini <b>simulado</b>, micrófono y cámara falsos)</td><td><b>10 / 10</b></td></tr>
-        <tr><td>Modo inmersivo con <b>emulador</b> WebXR</td><td><b>8 / 8</b></td></tr>
-        <tr><td>Rutas bajo <code>/sitioPubliton/pitch-lab/</code> y sitio anterior</td><td><b>OK</b></td></tr>
+        <tr><td>Modo inmersivo con <b>emulador</b> WebXR</td><td><b>13 / 13</b></td></tr>
+        <tr><td>Texto 3D: ninguno bajo 0,8° (medido)</td><td><b>OK</b></td></tr>
+        <tr><td>Rutas de GitHub Pages y sitio anterior</td><td><b>OK</b></td></tr>
       </table>
     </div>
     <div class="pending">
       <strong>Pendiente / no verificado</strong>
       <ul style="margin-top:12px">
-        <li><b>Casco físico</b> y comodidad en VR</li>
+        <li><b>Casco físico</b> y comodidad en VR (ajustes de VR sin probar)</li>
         <li><b>Rendimiento y cuadros por segundo</b> (no medidos)</li>
         <li><b>Voz real</b>: se probó con simulaciones; el servicio es del navegador</li>
         <li><b>IA con voz humana real</b> y <b>manos reales</b> ante la cámara; límite diario de la clave</li>
