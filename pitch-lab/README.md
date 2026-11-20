@@ -14,7 +14,8 @@ Complementa el evento **Publitón** (TP4 de Diseño: experiencia inmersiva VR). 
 ## Qué se puede hacer
 
 1. **Inicio → tutorial (salteable) → elegir escenario** entre tres maquetas 3D.
-2. **Brief** ficticio (3 briefs editables) → **preparación** con tiempo ajustable → **presentación** con reloj visible.
+2. **Brief** ficticio (**11 temáticas distintas**, editables; cada visita arranca con uno al azar y «Otro brief» los recorre) →
+   **preparación** con tiempo ajustable → **presentación** con reloj visible.
 3. Pausar, continuar, finalizar antes de tiempo o **cancelar con confirmación**.
 4. **Voz opcional**: reconocimiento en español del navegador, con transcripción revisable.
    Sin micrófono se practica solo con temporizador y autoevaluación.
@@ -163,6 +164,8 @@ npm test               # pruebas de unidad (no necesitan navegador)
 node tools/serve.mjs   # en otra terminal (y el de /sitioPubliton en el puerto 8081)
 npm run test:e2e       # recorrido completo con un navegador real
 node tests/e2e/ai.mjs  # análisis con IA y cámara (API de Gemini simulada, micrófono y cámara falsos)
+node tools/bench-3d.mjs # costo de dibujo por espacio (solo para comparar versiones; no es rendimiento de casco)
+node tools/shots-3d.mjs capturas-3d # capturas con cámaras fijas, para comparar antes y después de un cambio visual
 node tests/e2e/xr.mjs  # modo inmersivo con emulador WebXR
 ```
 
@@ -189,12 +192,14 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
 | [`docs/referentes.md`](docs/referentes.md) | Investigación de referentes con fuentes |
 | [`docs/usuarios-hipotesis.md`](docs/usuarios-hipotesis.md) | Público objetivo como hipótesis de diseño |
 | [`docs/analisis-con-ia.md`](docs/analisis-con-ia.md) | Análisis con IA y cámara: modelo, cuota, clave, privacidad, límites |
+| [`docs/modelos-3d.md`](docs/modelos-3d.md) | Mejora de los modelos 3D (público, salas, atril), presupuesto y mediciones |
 | [`docs/evaluacion-semantica-futura.md`](docs/evaluacion-semantica-futura.md) | Qué falta validar y mejorar de la evaluación con IA |
 | [`docs/configuracion.md`](docs/configuracion.md) | Cómo editar briefs, tiempos y escenarios |
 
 ## Limitaciones conocidas
 
-- **No se probó en un casco físico.** No se afirma ninguna tasa de cuadros ni comodidad en VR.
+- **No se probó en un casco físico.** No se afirma ninguna tasa de cuadros ni comodidad en VR. Los modelos 3D mejorados (2026-11-19) dibujan
+  más geometría que los anteriores (ver [`docs/modelos-3d.md`](docs/modelos-3d.md)): **no se midió su costo en un casco**.
 - El reconocimiento de voz depende del navegador y de un servicio externo; puede equivocarse y omitir muletillas.
 - Los silencios solo se informan si se activó la medición de nivel de audio (y miden nivel de sonido, no habla).
 - El «Indicador técnico orientativo» no evalúa contenido, creatividad ni persuasión; no hay medidas de confianza,
@@ -214,4 +219,5 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
 - **MediaPipe Tasks Vision 1.2.3** y el modelo *Hand Landmarker* (Apache-2.0, Google) en `vendor/mediapipe/`; se
   descargan solo si se activa la cámara. **Se modificó un archivo** para desactivar su envío de registros de uso
   (aviso en el propio archivo y en `vendor/mediapipe/README-mediapipe.md`).
-- Las marcas de los briefs (Yerbita Sol, Pedal Vecino, Páginas al Paso) son **ficticias**.
+- Las marcas de los briefs (Yerbita Sol, Pedal Vecino, Páginas al Paso, Gota Justa, Remendar, Feria Cerquita, Casa Memoria, Click Abuelo,
+  Plaza Viva, Cable a Tierra y Charla Tándem) son **ficticias**; los datos de cada brief son inventados para practicar.

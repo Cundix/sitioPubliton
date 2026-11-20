@@ -144,6 +144,40 @@ error de consola**. Cada uno tiene causa, solución y comprobación. No hay prob
   no tiene campos emocionales). Con el prompt reforzado, **dos respuestas reales** describieron solo rasgos audibles
   (0 de 5 observaciones omitidas). Es una muestra de 2: la capa 3 es la que garantiza el resultado.
 
+## Problemas de los modelos 3D y los briefs (2026-11-19)
+
+### 15. El cartel largo del vestíbulo se cortaba en los bordes
+- **Síntoma** (captura del vestíbulo): la franja amarilla decía «CKEANDO EL MENSA…» en lugar de «HACKEANDO EL MENSAJE».
+- **Causa**: un cartel **plano** de 9,6 m sobre una pared **curva** de radio 7,6 m: sus extremos quedaban fuera de la pared, que los ocultaba. Ya
+  pasaba antes de las mejoras (se vio al agregar costillas en la pared).
+- **Solución**: tres tramos de 3,2 m que siguen la curva, y los carteles grandes más cerca del centro.
+- **Comprobación**: capturas del vestíbulo antes y después (`capturas/3d/`).
+
+### 16. El zócalo tapaba la parte baja del ventanal; las laptops se veían de canto
+- **Síntoma** (capturas de la reunión): un panel oscuro cubría la mitad inferior del ventanal; las laptops de los costados eran una línea fina.
+- **Causa**: el zócalo recorría todas las paredes sin saber dónde hay una ventana, y las laptops estaban giradas hacia los asientos, pero las
+  personas miran hacia el atril en diagonal.
+- **Solución**: opción para omitir el zócalo en la pared del ventanal y laptops giradas ±55°.
+- **Comprobación**: capturas.
+
+### 17. Las mejoras encarecían el dibujo
+- **Síntoma**: `tools/bench-3d.mjs` mostró ~1,5–2,5× más tiempo por cuadro (con WebGL por software) y las pruebas de navegador, que dependen de
+  tiempos, empezaron a fallar de forma intermitente.
+- **Causa**: más geometría y el material PBR estándar en todo. No eran las texturas ni su filtrado (se probó).
+- **Solución**: material difuso en superficies mates, nivel de detalle del público lejano y menos haces de luz (ver `modelos-3d.md`).
+- **Comprobación**: el costo volvió a la par en vestíbulo y sala; el presupuesto de geometría quedó fijado en una prueba.
+
+### 18. Dos pruebas dependían de tiempos fijos
+- **Síntoma**: las pruebas 6 («editado por vos») y 13c (segundos activos del medidor) fallaron una vez cada una con el render por software más lento.
+- **Causa**: esperaban 450 ms fijos y un tope de 6 s fijo, y el reloj de la página se atrasa si cada cuadro tarda.
+- **Solución**: la 6 espera la condición real; la 13c compara contra la duración que mide la propia sesión.
+- **Comprobación**: ambas pasan en la corrida completa.
+
+### 19. Los archivos reescritos por git quedaron con saltos de línea CRLF
+- **Síntoma**: un parche automático con cadenas de varias líneas dejó de encontrar el texto en archivos que git había reescrito al cambiar de rama.
+- **Causa**: `core.autocrlf` en Windows convierte a CRLF al reescribir archivos.
+- **Solución**: los parches normalizan los saltos de línea. No afecta al producto.
+
 ## Registro de herramientas (no son defectos del producto)
 
 - El puerto 8080 de esta computadora estaba ocupado por otra aplicación (un servidor ajeno respondía 403): las

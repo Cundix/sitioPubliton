@@ -21,6 +21,12 @@ real**. Si se usan en el informe o en la exposición hay que rotularlas así.
 | `30-auditorio-*`, `31-auditorio-desde-el-publico` | Auditorio: brief, presentando, vista general, pantalla, vista desde el público |
 | `40…41-devolucion-con-datos-*` | Devolución **con datos suficientes** (sesión real de 60 s con reconocimiento simulado): indicador calculado y consejos |
 
+### Comparación de modelos 3D (`3d/`)
+
+Pares `antes-*.png` (versión publicada el 2026-11-13) y `despues-*.png` (2026-11-19), con las **mismas cámaras** y sin paneles de interfaz
+encima, generados con `node tools/shots-3d.mjs`. Navegador de pruebas con WebGL por software: sirven para ver composición y detalle,
+no rendimiento. Detalle de lo que cambió: [`../docs/modelos-3d.md`](../docs/modelos-3d.md).
+
 ### Capturas de la función de IA y cámara (`50` a `59`)
 
 | Archivo | Qué muestra | Origen |

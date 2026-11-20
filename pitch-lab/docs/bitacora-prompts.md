@@ -21,7 +21,8 @@ sumar acá esos prompts con su fecha y su resultado.
 | 2 | 2026-11-13 | Persona usuaria de la sesión | «armá el informe ahí y completá todo lo que haya que completar, usá la skill/plugin de Figma» (con el enlace del archivo de Figma del equipo) | El plugin oficial de Figma no estaba habilitado en la cuenta; se preparó `informe/figma/slides-spec.json` y se dejó **pendiente** el armado en Figma |
 | 3 | 2026-11-13 | Persona usuaria de la sesión | «me podés mostrar cómo está el juego sin los cositos VR» · «dónde está el link? Tipo quiero jugarlo» | Se mostró el recorrido en escritorio; se dio el enlace publicado |
 | 4 | 2026-11-13 | Persona usuaria de la sesión | **Análisis real del audio con IA y cámara**, con 50 jugadas por día y sin tope de 5 minutos: [`prompts/02-analisis-con-ia.md`](prompts/02-analisis-con-ia.md) (la clave pegada en el chat se omite) | Función opcional con Gemini (`gemini-3.5-flash-lite`), gestos con MediaPipe, pruebas y documentación: [`analisis-con-ia.md`](analisis-con-ia.md) |
-| 5 | *(pendiente)* | *(equipo)* | *(agregar los prompts que el equipo use para la intervención manual u otras tareas)* | — |
+| 5 | 2026-11-19 | Persona usuaria de la sesión | «yes push, also make the 3D models better» · «dame el link para jugarlo» · «también quiero que añadas más temáticas de problemas, no solo la de Yerbita Sol» | Publicación de la versión con IA (verificada), mejora de los modelos 3D ([`modelos-3d.md`](modelos-3d.md)) y 8 briefs nuevos (11 en total) |
+| 6 | *(pendiente)* | *(equipo)* | *(agregar los prompts que el equipo use para la intervención manual u otras tareas)* | — |
 
 ## Resumen del prompt 1
 

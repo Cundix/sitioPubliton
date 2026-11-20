@@ -39,6 +39,17 @@ Detalle completo en [`analisis-con-ia.md`](analisis-con-ia.md).
 | D23 | **Se mantiene el tiempo de preparación ajustable de 0 a 300 s** (no se agregó un tope de 5 minutos) | El equipo lo descartó expresamente: «cada uno maneja su tiempo» | — |
 | D24 | **Se eliminó el módulo vacío `semantic-evaluator.js`** | La función ahora existe con otro diseño; dejar la interfaz vacía confundiría | — |
 
+## Decisiones de modelos 3D y briefs (2026-11-19)
+
+| # | Decisión | Motivo | Cómo cambiarla |
+|---|---|---|---|
+| D25 | **Mejorar los modelos sin cambiar de técnica**: todo procedural, sin descargas | El requisito de no depender de modelos remotos sigue valiendo; se mantiene el estilo de la marca | `js/scenes/*` |
+| D26 | **Lotes de geometría** (`Kit.batch()`) para detalles repetidos y **nivel de detalle** del público lejano | Más detalle sin subir proporcionalmente las llamadas de dibujo | `scene-kit.js`, `audience.js` (`NEAR_DIST`) |
+| D27 | **Material difuso (Lambert) por defecto** en superficies mates; PBR solo con brillo o metal | Midió ~1,5–2× menos costo de dibujo por software con diferencia visual mínima | `Kit.mat` en `scene-kit.js` |
+| D28 | **Presupuesto de geometría en una prueba** (< 200 llamadas y < 80.000 triángulos por espacio) | Que un cambio visual futuro no infle los espacios sin que se note. No es una medida de rendimiento en casco | prueba 15 de `tests/e2e/run.mjs` |
+| D29 | **Cada visita empieza con un brief al azar** y el botón muestra «Otro brief N/total» | Con un solo brief a la vista parecía que la herramienta tenía una única temática | `briefStart` en `session.js` y `main.js` |
+| D30 | **Largos máximos de los campos de un brief** exigidos por un test | Que un brief nuevo no desborde la pantalla de pared ni el panel | `tests/unit/briefs.test.js` |
+
 ## Decisiones de diseño y alcance
 
 | # | Decisión | Motivo |

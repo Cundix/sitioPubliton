@@ -151,6 +151,12 @@ Session ──► AnalysisService ──┬─► AudioCapture   MediaRecorder �
 - **Límites**: `walk-rig` limita el movimiento a zonas rectangulares con obstáculos (`constrainMove`, probado en
   `layouts.test.js`). En VR solo hay teletransporte a marcas fijas y botón «Recentrar».
 
+### Modelos y ambientación
+
+`scenes/audience.js` (público humano instanciado), `scenes/dressing.js` (pisos con textura, ventanas, puertas, afiches, zócalos, techo, parlantes,
+haces de luz), `scenes/furniture.js` (atril, plantas, estantes) y `Kit.batch()` en `scene-kit.js` (funde detalles repetidos en una malla).
+Detalle, presupuesto y mediciones: [`modelos-3d.md`](modelos-3d.md).
+
 ## Componentes de A-Frame
 
 | Componente | Archivo | Función |

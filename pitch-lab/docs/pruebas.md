@@ -11,14 +11,14 @@ Se separan **tres niveles** que no deben confundirse:
 | **E. API real de Gemini** | Llamadas reales con una clave del equipo, **solo manual y desde una computadora de trabajo** | `tests/e2e/ia-real.mjs` y scripts de verificación |
 | **D. Casco físico / voz real / personas usuarias** | **No realizado** | — |
 
-Última ejecución de A, B y C: **2026-11-13** (B ya se había corrido el 2026-11-04). Salidas guardadas en `tests/e2e/ultimo-resultado.json` y
+Última ejecución de A, B, B2 y C: **2026-11-19**, con los modelos 3D mejorados y los briefs nuevos (B ya se había corrido el 2026-11-04 y el 2026-11-13). Salidas guardadas en `tests/e2e/ultimo-resultado.json` y
 `tests/e2e/ultimo-resultado-xr.json`; mediciones de recursos 3D en `tests/e2e/recursos-3d.json`.
 
 ## Resumen
 
 | Nivel | Resultado |
 |---|---|
-| A. Pruebas de unidad | **150 / 150** correctas (76 previas + 74 de IA y cámara; se eliminó 1 de una interfaz vacía) |
+| A. Pruebas de unidad | **158 / 158** correctas (76 previas + 74 de IA y cámara + 2 de ambientación 3D + 6 de briefs; se eliminó 1 de una interfaz vacía) |
 | B. Navegador real | **21 / 21** correctas (incluye una sesión real de 60 s), repetidas el 2026-11-13 con la función de IA presente |
 | B2. IA y cámara en navegador real | **10 / 10** correctas (Gemini simulado) |
 | C. Emulador WebXR | **8 / 8** correctas |
@@ -46,6 +46,17 @@ Leyenda: ✅ verificado con el nivel indicado · ⚠️ verificado parcialmente 
 | 14 | Rutas y recursos desde la carpeta de GitHub Pages | ✅ B + sitio publicado | Prueba 16 sirviendo bajo **`/sitioPubliton/pitch-lab/`**: todos los recursos salen de `/sitioPubliton/` (incluida `../assets/Anton-Regular.ttf`). **Verificado además en el sitio publicado** (sección siguiente) |
 | 15 | Controles espaciales preparados para VR | ⚠️ C (emulador) | Sesión inmersiva emulada: entra y sale; los controles tienen rayo y cursor; un control emulado **apunta al botón del atril y el gatillo lo activa**; teletransporte; modo sentado solo en VR. **Casco físico: pendiente** |
 | 16 | Acceso al sitio anterior sin regresiones | ✅ B | Prueba 17: carga el sitio original (título, h1 y diálogo de reserva funcionan); `git status` solo muestra `pitch-lab/` como contenido nuevo (ningún archivo existente modificado) |
+
+## Modelos 3D y briefs (2026-11-19)
+
+| Qué se verificó | Estado | Con qué y qué se observó |
+|---|---|---|
+| Los tres espacios y el vestíbulo se construyen y se liberan sin errores de consola ni fugas | ✅ B | Pruebas 2, 11, 12 y 15 de `tests/e2e/run.mjs` (geometrías y texturas del vestíbulo no crecen al ir y volver) |
+| **Presupuesto de geometría** (< 200 llamadas y < 80.000 triángulos por espacio) | ✅ B | Prueba 15: vestíbulo 104 / 14 mil, sala 102 / 3,8 mil, reunión 124 / 6,4 mil, auditorio 131 / 42 mil (llamadas / triángulos) |
+| Modo inmersivo con los modelos nuevos | ✅ C (emulador) | `tests/e2e/xr.mjs` 8 / 8 |
+| Aspecto: público, salas, atril, auditorio y vestíbulo | ✅ capturas | Comparación antes/después con cámaras fijas en [`../capturas/3d/`](../capturas/3d/) |
+| Briefs: 11 completos, ficticios, únicos, con largos que entran en pantalla; sorteo inicial y recorrido | ✅ A | `tests/unit/briefs.test.js` (6) y revisión visual de los 11 en el panel y en la pantalla de pared |
+| **Rendimiento en un casco** con los modelos nuevos | ⏳ **No medido** | Con WebGL por software la versión nueva costó más; se recortó (ver `modelos-3d.md`) y quedó cerca de la anterior en vestíbulo y sala. No equivale a un casco |
 
 ## Análisis con IA y cámara (2026-11-13)
 

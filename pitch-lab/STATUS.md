@@ -13,14 +13,15 @@ _Última actualización: 2026-11-13 (se sumó el análisis con IA y la cámara).
 
 ## Terminado (y cómo se comprobó)
 
-- **Experiencia completa** en `pitch-lab/`: hub con maquetas, tres escenarios (Sala de ensayo 60 s, Reunión con cliente 90 s, Auditorio 120 s), tres briefs ficticios, tutorial salteable, preparación ajustable, presentación con reloj, pausa, finalizar, cancelar con confirmación, devolución y reintento. → pruebas de navegador real (21/21).
+- **Experiencia completa** en `pitch-lab/`: hub con maquetas, tres escenarios (Sala de ensayo 60 s, Reunión con cliente 90 s, Auditorio 120 s), once briefs ficticios de temáticas distintas (uno al azar al empezar), tutorial salteable, preparación ajustable, presentación con reloj, pausa, finalizar, cancelar con confirmación, devolución y reintento. → pruebas de navegador real (21/21).
 - **Voz opcional** con alternativas (sin micrófono, permiso rechazado, reconocimiento no disponible, silencio), transcripción revisable con origen, medición de nivel de audio opcional. → pruebas con **simulaciones** de voz (voz real: pendiente).
 - **Devolución transparente**: medidas con su origen, «Indicador técnico orientativo» con fórmula visible y «Sin datos suficientes», rúbrica de autoevaluación, consejos basados en datos, revisión humana. → 77 pruebas de unidad.
 - **WebXR**: botón «Entrar en VR», rayo de controles y manos (target ray), teletransporte, recentrado, modo sentado, salida de VR. → **emulador** (8/8). **Casco físico: pendiente.**
 - **Accesibilidad**: panel de texto espejo, teclado completo, foco visible, `aria-live`, movimiento reducido, volumen.
 - **Documentación** (`docs/`), **informe 16:9** (`informe/informe-pitch-lab.pdf`, 21 páginas), **material para Figma** (`informe/figma/`), **guion de 5 minutos**, **guía de intervención manual**, **capturas** (`capturas/`).
 
-- **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 150 pruebas de unidad, 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
+- **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 158 pruebas de unidad (al 2026-11-19), 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
+- **Modelos 3D mejorados y más temáticas (2026-11-19, rama `pitch-lab-3d`, NO publicado)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
 - Se descartó el tope de 5 minutos de preparación (pedido de la persona usuaria): sigue de 0 a 300 s.
 
 ## En curso
@@ -59,7 +60,7 @@ Nada abierto en el código. Ver «Falta» para lo que no puede cerrar la herrami
 ```bash
 cd sitioPubliton/pitch-lab
 npm install                                           # solo la primera vez
-npm test                                              # 150 pruebas de unidad
+npm test                                              # 158 pruebas de unidad
 node tools/serve.mjs                                  # http://localhost:8080/pitch-lab/ (si el 8080 está ocupado: node tools/serve.mjs 8090 y PITCHLAB_URL)
 MSYS_NO_PATHCONV=1 node tools/serve.mjs 8081 /sitioPubliton   # ruta de GitHub Pages (otra terminal)
 npm run test:e2e                                      # 21 pruebas con navegador real (~2 min)

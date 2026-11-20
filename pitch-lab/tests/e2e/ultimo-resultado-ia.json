@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-13",
+  "fecha": "2026-11-19",
   "total": 10,
   "fallaron": 0,
   "pruebas": [
@@ -7,61 +7,61 @@
       "name": "IA 1. Sin clave: la experiencia no cambia y no se contacta a Google",
       "status": "ok",
       "detail": "",
-      "secs": 21.4
+      "secs": 18.5
     },
     {
       "name": "IA 2. La clave se carga en el panel de texto, se prueba y se guarda solo donde corresponde",
       "status": "ok",
       "detail": "",
-      "secs": 27.7
+      "secs": 39.1
     },
     {
       "name": "IA 3. Recorrido completo: micrófono → WAV 16 kHz → Gemini (simulado) → devolución",
       "status": "ok",
       "detail": "",
-      "secs": 22.1
+      "secs": 29.5
     },
     {
       "name": "IA 4. Cuota agotada en todos los modelos: error claro y reintento con la grabación en memoria",
       "status": "ok",
       "detail": "",
-      "secs": 31.8
+      "secs": 27.8
     },
     {
       "name": "IA 5. Si el modelo principal falla, se usa el de respaldo y se informa cuál",
       "status": "ok",
       "detail": "",
-      "secs": 47.8
+      "secs": 23.7
     },
     {
       "name": "IA 6. Clave rechazada por Google: un solo intento, mensaje claro y sin filtrar la clave",
       "status": "ok",
       "detail": "",
-      "secs": 26.9
+      "secs": 22.1
     },
     {
       "name": "IA 7. Cámara: el modelo de manos se carga del mismo sitio, mide en el dispositivo y se libera",
       "status": "ok",
       "detail": "",
-      "secs": 71.8
+      "secs": 74.7
     },
     {
       "name": "IA 8. Cancelar libera micrófono y cámara y no envía nada",
       "status": "ok",
       "detail": "",
-      "secs": 39.6
+      "secs": 35.7
     },
     {
       "name": "IA 9. Cancelar mientras se esperan los permisos no deja nada abierto",
       "status": "ok",
       "detail": "",
-      "secs": 19.8
+      "secs": 16.9
     },
     {
       "name": "IA 10. El navegador solo deja conectar con el propio sitio y con la API de Gemini",
       "status": "ok",
       "detail": "",
-      "secs": 7.7
+      "secs": 7.9
     }
   ]
 }

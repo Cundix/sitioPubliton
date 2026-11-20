@@ -1,32 +1,32 @@
 {
   "hub": {
-    "calls": 87,
-    "triangles": 10734,
-    "geometries": 84,
-    "textures": 18
+    "calls": 104,
+    "triangles": 14076,
+    "geometries": 101,
+    "textures": 22
   },
   "sala": {
-    "calls": 79,
-    "triangles": 1790,
-    "geometries": 61,
-    "textures": 16
+    "calls": 102,
+    "triangles": 3787,
+    "geometries": 96,
+    "textures": 21
   },
   "cliente": {
-    "calls": 98,
-    "triangles": 2884,
-    "geometries": 68,
-    "textures": 15
+    "calls": 124,
+    "triangles": 6399,
+    "geometries": 116,
+    "textures": 20
   },
   "auditorio": {
-    "calls": 96,
-    "triangles": 21798,
-    "geometries": 65,
-    "textures": 17
+    "calls": 131,
+    "triangles": 42404,
+    "geometries": 97,
+    "textures": 20
   },
   "hub-de-nuevo": {
-    "calls": 88,
-    "triangles": 10902,
-    "geometries": 85,
-    "textures": 18
+    "calls": 105,
+    "triangles": 14244,
+    "geometries": 102,
+    "textures": 22
   }
 }

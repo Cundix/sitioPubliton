@@ -78,7 +78,7 @@ ELEGÍS, TE PREPARÁS,
 PRESENTÁS Y MEJORÁS.
 QUÉ ES
 Tres espacios: Sala de ensayo (60 s), Reunión con cliente (90 s) y Auditorio (120 s)
-Tres briefs ficticios editables
+Once briefs ficticios de temáticas distintas, editables
 Voz opcional en español, con alternativa sin micrófono
 Opcional: la IA (Gemini, con tu clave) interpreta el audio y la cámara mide las manos en el dispositivo
 Devolución transparente: qué se midió, de dónde sale y qué requiere revisión humana
@@ -360,7 +360,7 @@ INTERFAZ
 Panel, atril, reloj y botones 3D + panel de texto accesible
 ui/* · components/xr-support.js (xr-ray)
 
-A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 150 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: docs/arquitectura.md
+A-Frame 1.8.0 incluido (sin CDN) · sitio estático para GitHub Pages · 158 pruebas de unidad, 31 de navegador real y 8 con emulador WebXR. Detalle: docs/arquitectura.md
 ```
 
 ## Diapositiva 16
@@ -463,7 +463,7 @@ LO PROBADO,
 LO PENDIENTE.
 VERIFICADO
 NIVEL	RESULTADO
-Pruebas de unidad	150 / 150
+Pruebas de unidad	158 / 158
 Navegador real (Edge 156, mouse y teclado, 60 s reales)	21 / 21
 IA y cámara en navegador real (Gemini simulado, micrófono y cámara falsos)	10 / 10
 Modo inmersivo con emulador WebXR	8 / 8

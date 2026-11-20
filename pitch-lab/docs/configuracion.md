@@ -5,7 +5,10 @@ Todo lo editable está en `js/config/`. No hace falta tocar la lógica. Después
 
 ## Briefs — `js/config/briefs.js`
 
-Cada brief es un objeto. Se pueden **agregar más** al arreglo `BRIEFS` (el botón «Otro brief» los recorre).
+Cada brief es un objeto. Se pueden **agregar más** al arreglo `BRIEFS` (el botón «Otro brief N/total» los recorre; al cargar la página
+la experiencia **sortea** con cuál empezar). Hoy hay **11** de temáticas distintas: bienestar en la oficina, movilidad de barrio, lectura
+en la parada, vasos descartables, arreglo de ropa, feria de productores, museo barrial, tecnología para mayores, actividades en plazas,
+aparatos viejos y práctica de idiomas.
 
 ```js
 {
@@ -20,8 +23,11 @@ Cada brief es un objeto. Se pueden **agregar más** al arreglo `BRIEFS` (el bot�
 }
 ```
 
-Reglas del encargo (y de un test): marcas ficticias y rotuladas, sin afirmaciones médicas, sin estadísticas
-inventadas, campañas inofensivas. El test `layouts.test.js` exige 7 campos completos y la palabra «ficticia».
+Reglas del encargo (y de tests): marcas ficticias y rotuladas, sin afirmaciones médicas, sin estadísticas inventadas, campañas
+inofensivas. Los tests `layouts.test.js` y `briefs.test.js` exigen 7 campos completos, la nota «Marca ficticia · », ids y marcas únicos,
+y **largos máximos** para que el texto entre en la pantalla del brief: marca ≤ 16 caracteres, problema ≤ 125, público ≤ 85, objetivo ≤ 95,
+restricción ≤ 95 y guía ≤ 100 (la guía se corta con «…» en la pantalla de pared si es más larga). Cada brief debería tener una
+**restricción creativa propia**: es lo que más cambia la presentación.
 
 ## Escenarios y tiempos — `js/config/scenarios.js`
 
