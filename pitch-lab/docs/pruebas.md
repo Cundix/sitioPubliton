@@ -67,6 +67,8 @@ Detalle: [`modelos-3d.md`](modelos-3d.md) y [`../assets/personas/LEEME.md`](../a
 | **Costo en un casco** y **cómo se ve con la resolución del casco** | ⏳ **No medido** | Necesita casco |
 | **Consentimiento** de las personas representadas y **licencia** de los modelos | ⏳ **Pendiente del equipo** | No se puede verificar desde acá; ver `assets/personas/LEEME.md` |
 
+**Publicado el 2026-11-20** (`2ba9f1e..84b62f6`, sin `--force`; Pages «built»). Contra el enlace real: los GLB y `personas.js` responden 200 y pasan las pruebas 1, 2b, 2c y 4b. La suite completa se corrió en local.
+
 Ajuste de una prueba existente: las pruebas de IA 3 y 7 cuentan los «hosts» a los que se conecta la página; ahora ignoran las direcciones internas del navegador (`blob:`, `data:`), que
 aparecen al decodificar la textura embebida de cada persona y no salen a ningún servidor. Siguen exigiendo que solo haya pedidos al propio sitio y a la API de Gemini.
 
