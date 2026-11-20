@@ -119,6 +119,93 @@ await test('2. Acceso a los tres escenarios y sus espacios', async ({ page }) =>
   }
 }, { browser });
 
+await test('2b. Personas del equipo en el público: cargan, se eligen al azar (30 %), se dibujan instanciadas y se liberan', async ({ page }) => {
+  const models = await page.evaluate(async () => (await window.pitchLab.personas.ready()).length);
+  assert.equal(models, 6, 'los seis modelos cargaron');
+  await dispatch(page, 'START'); await dispatch(page, 'SKIP');
+  const enter = async (id) => { await dispatch(page, 'PICK_SCENARIO', { id }); await dispatch(page, 'ENTER'); await page.waitForFunction((k) => window.pitchLab.stage.key === k, id); };
+  const leave = () => dispatch(page, 'CHANGE_SCENARIO');
+  const stats = () => page.evaluate(() => {
+    const a = window.pitchLab.stage.env.audience;
+    const meshes = [];
+    a.group.traverse((o) => { if (/^persona-/.test(o.name)) meshes.push({ name: o.name, count: o.count, tris: o.geometry.index.count / 3, map: !!o.material.map, colors: !!o.geometry.attributes.color }); });
+    return { count: a.count, cameos: a.cameos, porModelo: a.cameoModels, lejos: a.cameosLejos, meshes };
+  });
+
+  // Azar fijo en 0: todas las personas del público son del equipo
+  await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0));
+  await enter('auditorio');
+  const all = await stats();
+  assert.equal(all.cameos, all.count, 'con el azar en 0 todas son del equipo');
+  assert.equal(all.porModelo.reduce((a, b) => a + b, 0), all.cameos);
+  assert.ok(Math.max(...all.porModelo) - Math.min(...all.porModelo) <= 1, `reparto parejo entre los modelos: ${all.porModelo}`);
+  assert.ok(all.lejos > 0 && all.lejos < all.cameos, `hay butacas cercanas y lejanas: ${all.lejos}/${all.cameos}`);
+  const near = all.meshes.filter((m) => !/lejos/.test(m.name));
+  const far = all.meshes.filter((m) => /lejos/.test(m.name));
+  assert.ok(near.length > 0 && far.length > 0);
+  assert.ok(near.every((m) => m.map && !m.colors), 'las cercanas llevan textura');
+  assert.ok(far.every((m) => !m.map && m.colors), 'las lejanas llevan color por vértice');
+  assert.ok(Math.max(...far.map((m) => m.tris)) < Math.min(...near.map((m) => m.tris)), 'la versión lejana tiene menos triángulos');
+  assert.ok(all.meshes.length <= 12, `como mucho una malla por modelo y nivel de detalle: ${all.meshes.length}`);
+  assert.equal(all.meshes.reduce((a, m) => a + m.count, 0), all.cameos, 'cada persona del equipo es una instancia');
+  await leave();
+
+  // Azar fijo en 0,99: ninguna es del equipo y el público queda como antes
+  await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0.99));
+  await enter('sala');
+  const none = await stats();
+  assert.equal(none.cameos, 0);
+  assert.equal(none.meshes.length, 0);
+  assert.equal(none.count, 3);
+  await leave();
+
+  // Azar de verdad: el público mezcla figuras genéricas y personas del equipo (proporción amplia para no depender del azar)
+  await page.evaluate(() => { let a = 20261120; window.pitchLab.personas.setRandom(() => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }); });
+  await enter('auditorio');
+  const mixed = await stats();
+  assert.ok(mixed.cameos > 0 && mixed.cameos < mixed.count, `mezcla: ${mixed.cameos}/${mixed.count}`);
+  assert.ok(mixed.cameos / mixed.count > 0.1 && mixed.cameos / mixed.count < 0.5, `proporción ${mixed.cameos / mixed.count}`);
+  // el balanceo ambiental se detiene con movimiento reducido: dos poses seguidas con amount 0 son idénticas
+  const same = await page.evaluate(() => {
+    const a = window.pitchLab.stage.env.audience;
+    const m = [];
+    a.group.traverse((o) => { if (/^persona-/.test(o.name)) m.push(o); });
+    a.pose(1.0, 0); const first = Array.from(m[0].instanceMatrix.array);
+    a.pose(5.0, 0); const second = Array.from(m[0].instanceMatrix.array);
+    a.pose(5.0, 1); const moving = Array.from(m[0].instanceMatrix.array);
+    return { still: JSON.stringify(first) === JSON.stringify(second), moves: JSON.stringify(second) !== JSON.stringify(moving) };
+  });
+  assert.ok(same.still, 'con movimiento reducido las personas del equipo quedan quietas');
+  assert.ok(same.moves, 'con movimiento normal se balancean apenas');
+  await leave();
+}, { browser });
+
+await test('2c. Si los modelos de las personas no cargan, el público queda con figuras genéricas y todo funciona', async ({ page, problems }) => {
+  const models = await page.evaluate(async () => (await window.pitchLab.personas.ready()).length);
+  assert.equal(models, 0, 'ningún modelo cargó (la prueba los bloquea)');
+  await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0)); // aunque el azar elija a todas, no hay modelos
+  await dispatch(page, 'START'); await dispatch(page, 'SKIP');
+  for (const id of ['sala', 'auditorio']) {
+    await dispatch(page, 'PICK_SCENARIO', { id }); await dispatch(page, 'ENTER');
+    await page.waitForFunction((k) => window.pitchLab.stage.key === k, id);
+    const a = await page.evaluate(() => { const x = window.pitchLab.stage.env.audience; return { count: x.count, cameos: x.cameos }; });
+    assert.equal(a.cameos, 0);
+    assert.ok(a.count >= 3);
+    await dispatch(page, 'CHANGE_SCENARIO');
+  }
+  assert.equal(problems.length, 0, problems.join(' | '));
+}, {
+  browser,
+  opts: {
+    init: () => {
+      const original = window.fetch.bind(window);
+      window.fetch = (input, ...rest) => (/assets\/personas\//.test(String(input?.url || input))
+        ? Promise.reject(new TypeError('bloqueado por la prueba'))
+        : original(input, ...rest));
+    },
+  },
+});
+
 await test('3. Tutorial con clics 3D reales y navegación con teclado dentro de los límites', async ({ page }) => {
   await click3D(page, 'start');
   await waitState(page, 'tutorial');
@@ -543,6 +630,12 @@ await test('14. Pausa automática si la pestaña pasa a segundo plano', async ({
 await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader)', async ({ page }) => {
   const info = {};
   await dispatch(page, 'START'); await dispatch(page, 'SKIP');
+  // Las personas del equipo del público se eligen al azar (30 %): se fija el azar para que la medición sea repetible
+  await page.evaluate(async () => {
+    await window.pitchLab.personas.ready();
+    let a = 20261120;
+    window.pitchLab.personas.setRandom(() => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; });
+  });
   const snap = async (key, stageKey = key) => {
     // Con render por software el espacio nuevo puede tardar en dibujarse: se espera a que cambie el espacio y a que
     // se completen 3 cuadros antes de leer el renderizador (antes era una espera fija de 700 ms y a veces leía datos viejos).
@@ -559,11 +652,21 @@ await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader
     await dispatch(page, 'CHANGE_SCENARIO');
   }
   await snap('hub-de-nuevo', 'hub');
-  console.log('    recursos:', JSON.stringify(info));
+  // Caso extremo SOLO informativo: todo el auditorio son personas del equipo (con el 30 % por persona es prácticamente imposible).
+  // No entra en el presupuesto de abajo; se registra para saber cuánto costaría.
+  await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0));
+  await dispatch(page, 'PICK_SCENARIO', { id: 'auditorio' }); await dispatch(page, 'ENTER');
+  await snap('auditorio-todo-del-equipo (extremo)', 'auditorio');
+  const extreme = info['auditorio-todo-del-equipo (extremo)'];
+  delete info['auditorio-todo-del-equipo (extremo)'];
+  await dispatch(page, 'CHANGE_SCENARIO');
+  console.log('    recursos:', JSON.stringify(info), '· extremo (todo el auditorio del equipo):', JSON.stringify(extreme));
+  info.extremo = { auditorioTodoDelEquipo: extreme };
   await fs.writeFile(path.join(here, 'recursos-3d.json'), JSON.stringify(info, null, 2));
   // Presupuesto de geometría (decidido el 2026-11-13 al mejorar los modelos): que un cambio visual futuro no lo infle sin que se note.
   // Son límites sobre lo que se dibuja, NO una medida de rendimiento en casco (que no se midió).
   for (const [k, v] of Object.entries(info)) {
+    if (k === 'extremo') continue;
     assert.ok(v.calls < 200, `${k}: ${v.calls} llamadas de dibujo (presupuesto: 200)`);
     assert.ok(v.triangles < 80000, `${k}: ${v.triangles} triángulos (presupuesto: 80 000)`);
   }

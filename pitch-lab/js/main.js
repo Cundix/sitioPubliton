@@ -22,6 +22,7 @@ import { AiKeyStore } from './ai/key-store.js';
 import { AnalysisService } from './ai/analysis-service.js';
 import { AiSettingsUI } from './ui/ai-settings.js';
 import { isTypingTarget } from './components/walk-rig.js';
+import { loadPersonas, whenPersonasReady, setPersonasRandom } from './scenes/personas.js';
 import './components/stage-controller.js';
 import './components/xr-support.js';
 import { setupXR, enterVR, exitVR } from './components/xr-support.js';
@@ -90,6 +91,7 @@ async function main() {
   const hub = new UIHub({ session, settings, env: { speech: caps.speech, meter: !!meter, vr: false } });
   const cues = new AudioCues(settings);
   Object.assign(app, { session, settings, hub, caps, cues, ai, keyStore });
+  app.personas = { ready: whenPersonasReady, setRandom: setPersonasRandom };
 
   // ----- Acciones (las usan los botones 3D, el panel de texto y el teclado) -----
   const runUi = (name) => {
@@ -197,6 +199,9 @@ async function main() {
     return;
   }
 
+  // Las personas del equipo del público (modelos 3D) se cargan al abrir la página, sin bloquear nada: si todavía no están
+  // listas cuando se arma un espacio, ese público queda con figuras genéricas.
+  loadPersonas();
   await waitForFonts();
   document.getElementById('stage').innerHTML = SCENE_HTML;
   const scene = document.getElementById('scene');

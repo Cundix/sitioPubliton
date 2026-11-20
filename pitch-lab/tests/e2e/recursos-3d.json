@@ -12,21 +12,29 @@
     "textures": 21
   },
   "cliente": {
-    "calls": 124,
-    "triangles": 6399,
-    "geometries": 116,
-    "textures": 20
+    "calls": 126,
+    "triangles": 12235,
+    "geometries": 118,
+    "textures": 22
   },
   "auditorio": {
-    "calls": 136,
-    "triangles": 42478,
-    "geometries": 101,
-    "textures": 21
+    "calls": 148,
+    "triangles": 62038,
+    "geometries": 113,
+    "textures": 27
   },
   "hub-de-nuevo": {
     "calls": 105,
     "triangles": 14244,
     "geometries": 102,
     "textures": 22
+  },
+  "extremo": {
+    "auditorioTodoDelEquipo": {
+      "calls": 136,
+      "triangles": 107264,
+      "geometries": 101,
+      "textures": 27
+    }
   }
 }

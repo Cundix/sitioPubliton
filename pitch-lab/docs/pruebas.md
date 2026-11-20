@@ -18,10 +18,10 @@ Se separan **tres niveles** que no deben confundirse:
 
 | Nivel | Resultado |
 |---|---|
-| A. Pruebas de unidad | **183 / 183** correctas (158 previas + 24 de la revisión con «UX for XR»: preferencias, pulsación sostenida, vibración y pantallas) |
-| B. Navegador real | **22 / 22** correctas (incluye una sesión real de 60 s y la prueba 4b de «mantener presionado») |
+| A. Pruebas de unidad | **190 / 190** correctas (183 previas + 7 de la elección de las personas del equipo en el público) |
+| B. Navegador real | **24 / 24** correctas (incluye una sesión real de 60 s, la prueba 4b de «mantener presionado» y las nuevas 2b y 2c de las personas del equipo) |
 | B2. IA y cámara en navegador real | **10 / 10** correctas (Gemini simulado) |
-| C. Emulador WebXR | **13 / 13** correctas (suma giro con el joystick, vibración, una sola mano, altura y mantener presionado) |
+| C. Emulador WebXR | **13 / 13** correctas (giro con el joystick, vibración, una sola mano, altura y mantener presionado; repetidas con el público nuevo) |
 | F. Auditoría de legibilidad del texto 3D | **Sin textos por debajo de 0,8°** (39 pantallas con la geometría real) |
 | D. Casco físico | **PENDIENTE** (sin casco disponible) |
 
@@ -47,6 +47,28 @@ Leyenda: ✅ verificado con el nivel indicado · ⚠️ verificado parcialmente 
 | 14 | Rutas y recursos desde la carpeta de GitHub Pages | ✅ B + sitio publicado | Prueba 16 sirviendo bajo **`/sitioPubliton/pitch-lab/`**: todos los recursos salen de `/sitioPubliton/` (incluida `../assets/Anton-Regular.ttf`). **Verificado además en el sitio publicado** (sección siguiente) |
 | 15 | Controles espaciales preparados para VR | ⚠️ C (emulador) | Sesión inmersiva emulada: entra y sale; los controles tienen rayo y cursor; un control emulado **apunta al botón del atril y el gatillo lo activa**; teletransporte; modo sentado solo en VR. **Casco físico: pendiente** |
 | 16 | Acceso al sitio anterior sin regresiones | ✅ B | Prueba 17: carga el sitio original (título, h1 y diálogo de reserva funcionan); `git status` solo muestra `pitch-lab/` como contenido nuevo (ningún archivo existente modificado) |
+
+## Personas del equipo en el público (2026-11-20)
+
+Detalle: [`modelos-3d.md`](modelos-3d.md) y [`../assets/personas/LEEME.md`](../assets/personas/LEEME.md).
+
+| Qué se verificó | Estado | Con qué y qué se observó |
+|---|---|---|
+| Cada persona del público tiene un 30 % de ser una del equipo | ✅ A | `tests/unit/personas.test.js`: con 30 000 personas la proporción da entre 0,29 y 0,31; la decisión no depende de la persona anterior |
+| Reparto parejo de los seis modelos | ✅ A | «De a bolsa»: ninguno se repite hasta haber salido todos; con ~20 elegidas cada modelo sale 3 o 4 veces |
+| Casos límite (sin modelos, 0 %, 100 %, público vacío, mismo azar = misma elección) | ✅ A | Mismo archivo de pruebas |
+| Los seis modelos cargan y se dibujan instanciados, con versión cercana (textura) y lejana (color por vértice) | ✅ B | Prueba 2b: con el azar forzado, todas las del auditorio son del equipo, a lo sumo 12 mallas, la lejana tiene menos triángulos, cada persona es una instancia |
+| Sin personas del equipo el público queda como antes | ✅ B | Prueba 2b (azar forzado en 0,99: ninguna) |
+| Si los modelos no cargan, todo funciona con figuras genéricas | ✅ B | Prueba 2c (se bloquea la descarga): sala y auditorio se arman, sin errores |
+| Quietas con «movimiento reducido» y balanceo apenas perceptible con movimiento normal | ✅ B | Prueba 2b (la pose con `amount` 0 es idéntica en dos instantes; con 1 cambia) |
+| Presupuesto de dibujo con el azar fijo | ✅ B | Prueba 15: auditorio 148 llamadas y 62,0 mil triángulos (límite 200 y 80 mil); sala 3,8 mil; reunión 12,2 mil. El caso extremo (las 64 del equipo) da 107 mil y **supera** el presupuesto: solo informativo, no ocurre con el 30 % |
+| Liberación de recursos al cambiar de espacio | ✅ B | Prueba 15: las geometrías y texturas vuelven a los valores del vestíbulo |
+| Las pruebas de WebXR (13) y de IA (10) siguen pasando con el público nuevo | ✅ B2 y C | `tests/e2e/xr.mjs` y `tests/e2e/ai.mjs` |
+| **Costo en un casco** y **cómo se ve con la resolución del casco** | ⏳ **No medido** | Necesita casco |
+| **Consentimiento** de las personas representadas y **licencia** de los modelos | ⏳ **Pendiente del equipo** | No se puede verificar desde acá; ver `assets/personas/LEEME.md` |
+
+Ajuste de una prueba existente: las pruebas de IA 3 y 7 cuentan los «hosts» a los que se conecta la página; ahora ignoran las direcciones internas del navegador (`blob:`, `data:`), que
+aparecen al decodificar la textura embebida de cada persona y no salen a ningún servidor. Siguen exigiendo que solo haya pedidos al propio sitio y a la API de Gemini.
 
 ## Revisión con «UX for XR» (2026-11-19)
 

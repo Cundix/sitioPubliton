@@ -66,3 +66,45 @@ Detalle en [`auditoria-ux-xr.md`](auditoria-ux-xr.md). Afectan a lo que se **lee
 - El **reloj de la pared** muestra solo números (más grandes); la etiqueta y el aviso en palabras están en el reloj del atril.
 - **Recordatorio de la marca** más grande en la sala (escala 1,1) y la reunión (1,5), y **nuevo en el auditorio**: colgado bajo el reloj, con su
   marco y dos varillas (suma un marco y dos cilindros; el presupuesto de la prueba 15 sigue cumpliéndose).
+
+## Personas del equipo en el público (2026-11-20)
+
+La persona usuaria aportó seis modelos 3D de personas (un `.zip` con un `.fbx` con esqueleto y una textura de 2048 × 2048 por persona) y pidió que
+**cada persona del público tenga un 30 % de probabilidad de ser una de ellas** (el resto sigue siendo la figura genérica de siempre). Origen, licencia y
+consentimiento: [`../assets/personas/LEEME.md`](../assets/personas/LEEME.md). Decisiones D41–D47: [`decisiones-y-supuestos.md`](decisiones-y-supuestos.md).
+
+**Cómo funciona**
+
+- Al llenar un espacio, a cada persona del público se le tira un 30 %; las que salen elegidas reciben uno de los seis modelos, repartidos «de a bolsa»
+  (ninguno se repite hasta haber salido todos; en un auditorio con ~20 elegidas cada modelo aparece 3 o 4 veces). El azar cambia en cada visita. La regla
+  está en `pickCameos()` (`js/scenes/personas.js`) y tiene pruebas de unidad (proporción del 30 %, independencia entre personas, reparto parejo).
+- Los modelos originales **no se usan tal cual**: tienen 13 000–15 600 triángulos, un esqueleto de 28–52 huesos y piernas cortas. Con
+  [`tools/preparar-personas/`](../tools/preparar-personas/) se sentó cada figura con su esqueleto (manos en el regazo, pies en el piso), se la escaló a 1,70 m de pie
+  alargando solo la pantorrilla para que la cadera quede a la altura de la butaca (0,495 m), se «horneó» la pose (sin esqueleto) y se bajó la cantidad de triángulos.
+- Cada archivo (`assets/personas/persona-0N.glb`, 250–450 KB) trae **dos versiones**: `cerca`, con textura de 1024 px (3 000 a 4 400 triángulos), y `lejos`,
+  sin textura y con color por vértice (~800 triángulos). Las butacas a menos de 11 m del atril usan la primera; las demás, la segunda (a esa distancia no se distinguen).
+- Se dibujan **instanciadas**: una malla por modelo y por nivel de detalle (a lo sumo 12 llamadas de dibujo más por espacio). Se cargan una sola vez al abrir
+  la página, sin bloquear; si no cargan (o aún no cargaron), el público queda con figuras genéricas. Al salir del espacio se libera su copia en la tarjeta gráfica.
+- Se mueven apenas (un balanceo de ~0,7° y una respiración de ~0,4 %) y se quedan quietas con «movimiento reducido». **No giran la cabeza** como las genéricas
+  (son una malla fija) y **no reaccionan** a lo que se dice ni al puntaje.
+
+**Costo** (navegador de pruebas, lo que se dibuja con un azar fijo; `tests/e2e/run.mjs`, prueba 15; **no es rendimiento en casco**):
+
+| Espacio | Llamadas de dibujo | Triángulos | Sin las personas del equipo |
+|---|---|---|---|
+| Sala de ensayo (3 personas) | 102 | 3,8 mil | 3,8 mil |
+| Reunión con cliente (5 personas, 2 del equipo en esta medición) | 126 | 12,2 mil | 6,4 mil |
+| Auditorio (64 personas, 13 del equipo en esta medición) | 148 | 62,0 mil | 42,5 mil |
+| *Extremo, solo informativo: las 64 del auditorio son del equipo* | 136 | 107,3 mil | — |
+
+- El presupuesto de la prueba 15 (< 200 llamadas y < 80 000 triángulos por espacio) se cumple con el azar fijo. Con el 30 % por persona, el auditorio
+  llega al límite solo si salen muchas más de las esperadas (unas 30 de 64 o más, cuando lo esperable son ~19: alrededor de 1 en mil). El caso extremo (todas) **supera** el presupuesto: no ocurre con el 30 %.
+- Una versión de una sola malla de ~4 500 triángulos por persona dejaba el auditorio en **122 mil** triángulos; por eso se hicieron los dos niveles de detalle.
+- Los tres modelos con más costuras de textura (01, 05 y 06) no bajan de ~3 300–4 400 triángulos en la versión cercana sin deformar la textura; la lejana sí llega a ~800.
+
+**Límites**
+
+- Una sola pose por persona (manos en el regazo): con las seis aparecen repetidas varias veces en un auditorio.
+- Las seis figuras tienen un estilo (textura detallada, proporciones de personaje estilizado) distinto al del resto del público (colores planos): es lo que se pidió, y se nota el contraste.
+- La pose se calculó automáticamente (esqueleto + geometría); la unión de la pierna con el muslo puede verse algo deformada de cerca.
+- Costo en casco: **no medido**. Palancas si fuera pesado: bajar `CAMEO_PROBABILITY`, acercar `NEAR_DIST`, bajar `TRIS`/`TRIS_LEJOS` en la herramienta o usar solo la versión liviana.

@@ -6,12 +6,16 @@
 // Costo: ≈ 17 llamadas de dibujo por espacio y ≈ 560 triángulos por persona cercana (≈ 450 si está lejos del atril).
 // Material difuso (Lambert): más barato que el PBR estándar y suficiente para figuras de colores planos.
 //
+// Personas del equipo: cada persona del público tiene un 30 % de ser, en vez de esta figura genérica, un modelo 3D con textura
+// (personas.js, ≈ 4 500 triángulos). Se dibujan instanciados: hasta 6 llamadas de dibujo más por espacio, una por modelo.
+//
 // IMPORTANTE (honestidad de diseño): las animaciones son un movimiento ambiental suave
 // (respiración, leve giro de cabeza). NO dependen de lo que se diga ni del puntaje, y no
 // representan una reacción real al argumento.
 
 import { COLORS } from '../ui/draw.js';
 import { mulberry32 } from '../core/layouts.js';
+import { getLoadedPersonas, pickCameos, personasRandom } from './personas.js';
 
 const SHIRT_COLORS = ['#0047FF', '#FFC94A', '#FF006E', '#E9E4D4', '#7C9070', '#3E5CC8', '#C9A24A', '#2B6F6A', '#B04A2E', '#5B4B8A'];
 const SKIN_TONES = ['#E9C9A6', '#C69C74', '#8D5F3C', '#F3D9C0', '#A97B55', '#6B452B'];
@@ -36,11 +40,19 @@ function radialShadowTexture(T) {
 /**
  * @param {Kit} kit
  * @param {Array} seats  resultado de resolveScenario().seats
- * @param {object} opts  { seatColor, accent, style: 'chair' | 'theater' }
+ * @param {object} opts  { seatColor, accent, style: 'chair' | 'theater', personas, random }
+ *   `personas`: modelos de las personas del equipo ya cargados (personas.js); sin ellos todo el público son figuras genéricas.
+ *   `random`: origen de azar con el que cada persona decide si es una del equipo (30 %).
  */
-export function buildAudience(kit, seats, { seatColor = '#2A3225', accent = '#0047FF', style = 'chair' } = {}) {
+export function buildAudience(kit, seats, {
+  seatColor = '#2A3225', accent = '#0047FF', style = 'chair', personas = getLoadedPersonas(), random = personasRandom(),
+} = {}) {
   const T = kit.T;
-  const people = seats.filter((s) => s.occupied);
+  const occupied = seats.filter((s) => s.occupied);
+  // Cada persona del público tiene un 30 % de ser una de las personas del equipo (modelo 3D) en vez de una figura genérica.
+  const cameoOf = pickCameos(occupied.length, { models: personas ? personas.length : 0, random });
+  const people = occupied.filter((_, i) => cameoOf[i] < 0); // figuras genéricas
+  const cameos = occupied.map((seat, i) => ({ seat, model: cameoOf[i] })).filter((c) => c.model >= 0);
   const n = people.length;
   const group = new T.Group();
   group.name = 'audience';
@@ -266,6 +278,47 @@ export function buildAudience(kit, seats, { seatColor = '#2A3225', accent = '#00
   [thighs, shins, shoes, uppers, lowers, hands].forEach((m) => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
   [torsos, yokes, necks, heads, hairs, hairBacks].forEach((m) => { if (m.instanceColor) m.instanceColor.needsUpdate = true; });
 
+  // --- Personas del equipo (modelos 3D ya sentados) -----------------------------------------------------------------
+  // Una malla instanciada por modelo y por nivel de detalle (≤ 12 llamadas de dibujo en total). Las butacas a más de NEAR_DIST del
+  // atril usan la versión liviana (~800 triángulos, con color por vértice); las cercanas, la versión con textura (~3 000 a 4 400).
+  // Se mueven apenas: balanceo y respiración.
+  const farMaterial = new T.MeshLambertMaterial({ vertexColors: true });
+  mats.push(farMaterial);
+  const cameoGroups = []; // { model, far, list, mesh }
+  (personas || []).forEach((persona, m) => {
+    [false, true].forEach((isFar) => {
+      const list = cameos.filter((c) => c.model === m && (Math.hypot(c.seat.x, c.seat.z) > NEAR_DIST) === isFar);
+      if (!list.length) return;
+      const useFar = isFar && persona.far;
+      const material = useFar ? farMaterial : new T.MeshLambertMaterial({ map: persona.map });
+      if (!useFar) mats.push(material); // se libera el material; las geometrías y la textura son compartidas y no se liberan
+      const mesh = new T.InstancedMesh(useFar ? persona.far : persona.near, material, list.length);
+      mesh.count = list.length;
+      mesh.name = `persona-${m + 1}${isFar ? '-lejos' : ''}`;
+      meshes.push(mesh);
+      group.add(mesh);
+      cameoGroups.push({ model: m, far: isFar, list, mesh });
+    });
+  });
+  const cameoRand = mulberry32(11);
+  cameoGroups.forEach((g) => { g.info = g.list.map((_, j) => ({ hs: 0.97 + cameoRand() * 0.06, phase: (j * 2.399963 + 1.1) % (Math.PI * 2) })); });
+  const zAxis = new T.Vector3(0, 0, 1);
+  const rollQ = new T.Quaternion();
+  const poseCameos = (timeSec, amount) => {
+    cameoGroups.forEach(({ list, mesh, info }) => {
+      list.forEach((c, j) => {
+        const d = info[j];
+        const s = c.seat;
+        const sway = Math.sin(timeSec * 0.45 + d.phase) * 0.012 * amount;
+        const breath = 1 + Math.sin(timeSec * 0.9 + d.phase) * 0.004 * amount;
+        quat.setFromAxisAngle(up, s.yaw).multiply(rollQ.setFromAxisAngle(zAxis, sway));
+        local.compose(pos.set(s.x, s.y, s.z), quat, scl.set(d.hs, d.hs * breath, d.hs));
+        mesh.setMatrixAt(j, local);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+    });
+  };
+
   const hairBackOffset = new T.Matrix4().makeTranslation(0, -0.04, 0.07);
   const headLocal = new T.Matrix4();
 
@@ -305,6 +358,7 @@ export function buildAudience(kit, seats, { seatColor = '#2A3225', accent = '#00
       }
     }
     [torsos, yokes, necks, heads, hairs, hairBacks].forEach((m) => { m.instanceMatrix.needsUpdate = true; });
+    poseCameos(timeSec, amount);
   }
   pose(0, 0);
 
@@ -314,11 +368,22 @@ export function buildAudience(kit, seats, { seatColor = '#2A3225', accent = '#00
       mats.forEach((m) => m.dispose());
       shadowTex.dispose();
       meshes.forEach((m) => m.dispose());
+      // Las geometrías y texturas de las personas del equipo se comparten entre espacios (se cargan una sola vez), así que no se
+      // destruyen: solo se libera su copia en la tarjeta gráfica; si se vuelven a usar, se vuelven a subir solas.
+      (personas || []).forEach((persona) => { persona.near.dispose(); persona.far?.dispose(); persona.map.dispose(); });
     },
   };
   kit.track(disposable);
 
-  return { pose, count: n, group, drawCalls: meshes.length };
+  return {
+    pose,
+    count: occupied.length,           // todas las personas del público (genéricas + del equipo)
+    cameos: cameos.length,            // cuántas son personas del equipo
+    cameoModels: (personas || []).map((_, m) => cameos.filter((c) => c.model === m).length), // cuántas veces aparece cada modelo
+    cameosLejos: cameos.filter((c) => Math.hypot(c.seat.x, c.seat.z) > NEAR_DIST).length, // cuántas usan la versión liviana
+    group,
+    drawCalls: meshes.length,
+  };
 }
 
 export { COLORS };

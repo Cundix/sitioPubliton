@@ -67,6 +67,20 @@ Detalle y evidencia: [`auditoria-ux-xr.md`](auditoria-ux-xr.md).
 | D39 | **Sin locomoción continua, a propósito** | La experiencia es de pie frente a un atril; el teletransporte con fundido ya evita el mareo por movimiento | `walk-rig.js` |
 | D40 | **Ajustes en dos columnas** (ocho opciones) | Entran las opciones nuevas con letra legible | `layout: 'grid'` en `screens.js` |
 
+## Decisiones de las personas del equipo en el público (2026-11-20)
+
+Detalle y datos técnicos: [`../assets/personas/LEEME.md`](../assets/personas/LEEME.md) y [`modelos-3d.md`](modelos-3d.md).
+
+| # | Decisión | Motivo | Cómo cambiarla |
+|---|---|---|---|
+| D41 | **Cada persona del público tiene un 30 % de ser una de las seis personas del equipo** (el resto, figuras genéricas) | Pedido de la persona usuaria («que cada persona tenga un 30 % de chance de ser uno de esos»). El 30 % es la probabilidad de **cada** persona, no un cupo: en un auditorio de ~70 personas salen unas 21 ± 4 | `CAMEO_PROBABILITY` en `scenes/personas.js` |
+| D42 | **Los modelos se sientan y se «hornean» una sola vez, fuera de la página**: queda una malla fija, sin esqueleto | Un modelo con esqueleto (52 huesos, 15 000 triángulos) no se puede instanciar: 20 personas serían 20 llamadas de dibujo con deformación de huesos, demasiado para un casco. Como malla fija se dibuja una vez por modelo | `tools/preparar-personas/` |
+| D43 | **Dos niveles de detalle por persona**: «cerca» con textura (3 000–4 400 triángulos) para butacas a menos de 11 m del atril y «lejos» con color por vértice (~800 triángulos) | Con una sola versión el auditorio pasaba de 42 mil a 122 mil triángulos y rompía el presupuesto de 80 mil; así queda en ~62 mil. A más de 11 m no se distingue la textura | `NEAR_DIST` en `audience.js`; `TRIS`/`TRIS_LEJOS` en la herramienta |
+| D44 | **Altura de 1,70 m y pantorrilla alargada** | Los modelos tienen piernas cortas (personaje estilizado): sentarlos a 0,495 m (la butaca) los agrandaba hasta 2,2 m. Se escalan a una altura humana y se alarga solo la pantorrilla | `STAND_HEIGHT` y `MAX_SHIN_EXTRA` en la herramienta |
+| D45 | **Se cargan una sola vez al abrir la página y sin bloquear**; si no cargaron al armar un espacio, ese público queda con figuras genéricas | La carga son ~2 MB; bloquear el inicio por algo decorativo no se justifica y un fallo de red no debe romper la práctica (prueba 2c) | `loadPersonas()` en `personas.js` |
+| D46 | **Nombres neutros** (`persona-01.glb`…) y el original no se sube; **consentimiento y licencia quedan pendientes del equipo** | Los modelos parecen retratos de personas con nombre: no se publican sus nombres y hay que confirmar que están de acuerdo en aparecer en un sitio público y con qué licencia se generaron | `assets/personas/LEEME.md` |
+| D47 | **Son decorativas, como el resto del público**: balanceo y respiración apenas perceptibles, se detienen con «movimiento reducido»; no giran la cabeza ni reaccionan | Son mallas fijas (D42). Mantiene la regla de que el público no reacciona a lo dicho ni al puntaje | `poseCameos` en `audience.js` |
+
 ## Decisiones de diseño y alcance
 
 | # | Decisión | Motivo |

@@ -110,7 +110,9 @@ async function test(name, fn, { browser, opts = {}, allow = [] } = {}) {
   const { page, problems, context } = ctx;
   const hosts = new Set();
   const logs = [];
-  page.on('request', (r) => hosts.add(new URL(r.url()).host));
+  // Solo pedidos de red: las direcciones `blob:` y `data:` (por ejemplo, la textura embebida de cada persona del público al
+  // decodificarse) son internas del navegador y no salen a ningún servidor.
+  page.on('request', (r) => { if (/^https?:/.test(r.url())) hosts.add(new URL(r.url()).host); });
   page.on('console', (m) => logs.push(m.text()));
   let status = 'ok';
   let detail = '';

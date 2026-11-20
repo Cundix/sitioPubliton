@@ -155,6 +155,9 @@ Session ──► AnalysisService ──┬─► AudioCapture   MediaRecorder �
 
 `scenes/audience.js` (público humano instanciado), `scenes/dressing.js` (pisos con textura, ventanas, puertas, afiches, zócalos, techo, parlantes,
 haces de luz), `scenes/furniture.js` (atril, plantas, estantes) y `Kit.batch()` en `scene-kit.js` (funde detalles repetidos en una malla).
+`scenes/personas.js` carga una sola vez, al abrir la página, los seis modelos de `assets/personas/` (GLB con dos mallas: «cerca» con textura y «lejos»
+con color por vértice) y elige al azar, con un 30 % por persona, quiénes del público son una de ellas; `audience.js` las dibuja instanciadas (una
+malla por modelo y nivel de detalle) en las butacas elegidas. Los GLB los genera `tools/preparar-personas/` a partir de los FBX originales (no es parte de la página).
 Detalle, presupuesto y mediciones: [`modelos-3d.md`](modelos-3d.md).
 
 ## Componentes de A-Frame

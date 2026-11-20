@@ -1,0 +1,12 @@
+{
+  "name": "publiton-preparar-personas",
+  "private": true,
+  "type": "module",
+  "description": "Herramienta de una sola vez: convierte los modelos FBX de personas en figuras sentadas y livianas (GLB) para el público del Pitch Lab. No es parte de la página.",
+  "dependencies": {
+    "assimpjs": "0.0.10",
+    "meshoptimizer": "0.22.0",
+    "sharp": "0.33.5",
+    "three": "0.173.0"
+  }
+}

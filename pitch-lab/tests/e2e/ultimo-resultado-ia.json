@@ -7,61 +7,61 @@
       "name": "IA 1. Sin clave: la experiencia no cambia y no se contacta a Google",
       "status": "ok",
       "detail": "",
-      "secs": 11.7
+      "secs": 12.4
     },
     {
       "name": "IA 2. La clave se carga en el panel de texto, se prueba y se guarda solo donde corresponde",
       "status": "ok",
       "detail": "",
-      "secs": 7.9
+      "secs": 10.1
     },
     {
       "name": "IA 3. Recorrido completo: micrófono → WAV 16 kHz → Gemini (simulado) → devolución",
       "status": "ok",
       "detail": "",
-      "secs": 17.7
+      "secs": 19.5
     },
     {
       "name": "IA 4. Cuota agotada en todos los modelos: error claro y reintento con la grabación en memoria",
       "status": "ok",
       "detail": "",
-      "secs": 14.8
+      "secs": 15.9
     },
     {
       "name": "IA 5. Si el modelo principal falla, se usa el de respaldo y se informa cuál",
       "status": "ok",
       "detail": "",
-      "secs": 12.7
+      "secs": 13.8
     },
     {
       "name": "IA 6. Clave rechazada por Google: un solo intento, mensaje claro y sin filtrar la clave",
       "status": "ok",
       "detail": "",
-      "secs": 12.7
+      "secs": 14.4
     },
     {
       "name": "IA 7. Cámara: el modelo de manos se carga del mismo sitio, mide en el dispositivo y se libera",
       "status": "ok",
       "detail": "",
-      "secs": 19
+      "secs": 20.2
     },
     {
       "name": "IA 8. Cancelar libera micrófono y cámara y no envía nada",
       "status": "ok",
       "detail": "",
-      "secs": 13.1
+      "secs": 13.3
     },
     {
       "name": "IA 9. Cancelar mientras se esperan los permisos no deja nada abierto",
       "status": "ok",
       "detail": "",
-      "secs": 9.9
+      "secs": 10
     },
     {
       "name": "IA 10. El navegador solo deja conectar con el propio sitio y con la API de Gemini",
       "status": "ok",
       "detail": "",
-      "secs": 2.1
+      "secs": 2.7
     }
   ]
 }

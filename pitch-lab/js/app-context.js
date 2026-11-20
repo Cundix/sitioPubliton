@@ -9,6 +9,7 @@ export const app = {
   cues: null,        // avisos sonoros
   scene: null,       // <a-scene>
   haptics: null,     // vibración de los controles (Haptics)
+  personas: null,    // personas del equipo en el público: { ready(): Promise, setRandom(fn) } (para pruebas y capturas)
   walk: null,        // componente walk-rig
   stage: null,       // componente stage-controller (entorno vigente)
   overlay: null,     // panel de texto accesible (HtmlOverlay)

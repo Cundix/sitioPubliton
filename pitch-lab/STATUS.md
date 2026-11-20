@@ -1,6 +1,6 @@
 # STATUS — Publitón Pitch Lab
 
-_Última actualización: 2026-11-20 (revisión con la guía «UX for XR» y modelos 3D publicados en `main`)._
+_Última actualización: 2026-11-20 (personas del equipo en el público, además de la revisión con «UX for XR» y los modelos 3D)._
 
 ## Publicación
 
@@ -24,6 +24,7 @@ _Última actualización: 2026-11-20 (revisión con la guía «UX for XR» y mode
 - **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 158 pruebas de unidad (al 2026-11-19), 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
 - **Modelos 3D mejorados y más temáticas (2026-11-19; **publicado el 2026-11-20** junto con la revisión de UX for XR)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
 - **Revisión con la guía «UX for XR» (2026-11-19; **publicada el 2026-11-20**)**: texto del espacio 3D medido y corregido (nada por debajo de 0,8° de altura de mayúsculas), reloj en el atril, giro por tramos con el joystick, vibración de los controles, altura de la vista, «mantené presionado» para finalizar, avisos visibles dentro del casco. → 183 pruebas de unidad, 22 de navegador real, 13 con emulador WebXR, 10 de IA y la auditoría de legibilidad. **Los valores de comodidad son estimaciones sin probar en un casco** (ver `docs/auditoria-ux-xr.md`).
+- **Personas del equipo en el público (2026-11-20)**: cada persona del público tiene un 30 % de probabilidad de ser una de seis personas del equipo (modelos 3D con textura, sentadas, con versión cercana y lejana). Costo en el navegador de pruebas: auditorio ≈ 62 mil triángulos (presupuesto 80 mil). → 190 pruebas de unidad, 24 de navegador real, 13 con emulador WebXR y 10 de IA. **Costo en casco no medido; consentimiento de las personas representadas y licencia de los modelos pendientes del equipo** (ver `assets/personas/LEEME.md` y `docs/modelos-3d.md`).
 - Se descartó el tope de 5 minutos de preparación (pedido de la persona usuaria): sigue de 0 a 300 s.
 
 ## En curso
