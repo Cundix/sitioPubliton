@@ -2,6 +2,7 @@
 // controles y se elige un escenario entre tres maquetas sobre pedestales.
 
 import { addLectern, makeSign, addGlow } from './furniture.js';
+import { radialFloorMaterial } from './dressing.js';
 import { Maquette } from './maquette.js';
 import { DEG } from './scene-kit.js';
 import { resolveScenario } from '../core/layouts.js';
@@ -15,7 +16,7 @@ export function buildHub(kit, { onPick, onHover }) {
   const H = 5.4;
 
   // Piso: disco oscuro con anillos amarillos y marca de inicio
-  const floor = new T.Mesh(new T.CircleGeometry(R, 56), kit.mat('#12160F', { rough: 0.9, flat: false }));
+  const floor = new T.Mesh(new T.CircleGeometry(R, 56), radialFloorMaterial(kit));
   floor.rotation.x = -Math.PI / 2;
   kit.group.add(floor);
   kit.track({ dispose: () => floor.geometry.dispose() });
@@ -38,6 +39,18 @@ export function buildHub(kit, { onPick, onHover }) {
   ceil.position.y = H;
   kit.group.add(ceil);
   kit.track({ dispose: () => ceil.geometry.dispose() });
+  // Costillas verticales en la pared curva (un solo lote) y un óculo luminoso en el techo
+  const ribs = kit.batch();
+  for (let i = 0; i < 56; i++) {
+    const a = (i / 56) * Math.PI * 2;
+    ribs.box([0.14, 3.7, 0.07], [Math.sin(a) * (R - 0.045), 2.15, -Math.cos(a) * (R - 0.045)], i % 4 === 0 ? '#3A4533' : '#2A3225', { rotY: -a * (180 / Math.PI), rough: 0.85 });
+  }
+  ribs.flush();
+  const oculus = new T.Mesh(new T.CircleGeometry(1.35, 40), kit.basic('#FFF1C9'));
+  oculus.rotation.x = Math.PI / 2;
+  oculus.position.y = H - 0.02;
+  kit.group.add(oculus);
+  kit.track({ dispose: () => oculus.geometry.dispose() });
   const lamp = new T.Mesh(new T.TorusGeometry(3.4, 0.05, 6, 64), kit.basic('#FFF1C9'));
   lamp.rotation.x = Math.PI / 2;
   lamp.position.y = H - 0.06;
@@ -50,16 +63,21 @@ export function buildHub(kit, { onPick, onHover }) {
   [['PITCH', -1], ['LAB', 1]].forEach(([word, side]) => {
     const big = makeSign({ text: word, sub: side < 0 ? 'Publitón' : 'Tu idea merece un buen pitch', w: 3.8, h: 1.9, bg: null, fg: side < 0 ? '#FFFFFF' : '#FFC94A', accent: '#C5CABF', size: 0.78, px: 260 });
     const a = side * 62 * DEG;
-    big.el.object3D.position.set(Math.sin(a) * (R - 0.2), 3.2, -Math.cos(a) * (R - 0.2));
+    big.el.object3D.position.set(Math.sin(a) * (R - 0.34), 3.2, -Math.cos(a) * (R - 0.34)); // un poco más cerca: el cartel es plano y la pared, curva
     big.el.object3D.rotation.y = -a;
     entities.push(big.el);
     disposers.push(() => big.dispose());
   });
 
-  const ticker = makeSign({ text: 'MENOS RUIDO. MÁS IDEAS.   //   HACKEANDO EL MENSAJE.   //   MENOS RUIDO. MÁS IDEAS.', w: 9.6, h: 0.5, bg: '#FFC94A', fg: '#181D16', size: 0.7, px: 220 });
-  ticker.el.object3D.position.set(0, 1.55, -R + 0.12);
-  entities.push(ticker.el);
-  disposers.push(() => ticker.dispose());
+  // Franja amarilla en tres tramos que siguen la curva de la pared (un solo cartel plano de 9,6 m se salía de la pared y se cortaba)
+  [['MENOS RUIDO. MÁS IDEAS.', -25.5], ['HACKEANDO EL MENSAJE.', 0], ['MENOS RUIDO. MÁS IDEAS.', 25.5]].forEach(([text, deg]) => {
+    const tick = makeSign({ text, w: 3.2, h: 0.5, bg: '#FFC94A', fg: '#181D16', size: 0.56, px: 260 });
+    const ang = deg * DEG;
+    tick.el.object3D.position.set(Math.sin(ang) * (R - 0.27), 1.55, -Math.cos(ang) * (R - 0.27));
+    tick.el.object3D.rotation.y = -ang;
+    entities.push(tick.el);
+    disposers.push(() => tick.dispose());
+  });
 
   // Pilares de luz (marcan el contorno del espacio)
   for (let i = 0; i < 8; i++) {

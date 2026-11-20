@@ -46,6 +46,9 @@ export class Maquette {
     stand(new THREE.CylinderGeometry(0.46, 0.52, 0.12, 24), '#11160E', [0, 0.06, 0]);
     stand(new THREE.CylinderGeometry(0.34, 0.4, this.baseY - 0.2, 20), '#2A3225', [0, 0.12 + (this.baseY - 0.2) / 2, 0]);
     stand(new THREE.CylinderGeometry(0.5, 0.5, 0.08, 28), '#11160E', [0, this.baseY - 0.04, 0]);
+    const glow = stand(new THREE.TorusGeometry(0.53, 0.012, 6, 40), '#FFC94A', [0, 0.13, 0]);
+    glow.rotation.x = Math.PI / 2;
+    glow.material = kit.basic('#FFC94A');                                    // anillo luminoso al pie del pedestal
     this.rim = stand(new THREE.TorusGeometry(0.5, 0.012, 8, 40), '#FFC94A', [0, this.baseY, 0]);
     this.rim.rotation.x = Math.PI / 2;
     this.rim.material = new THREE.MeshBasicMaterial({ color: '#FFC94A', transparent: true, opacity: 0.35, toneMapped: false });
@@ -96,23 +99,32 @@ export class Maquette {
       box(3.4, 0.04, 2.0, [0, 0.02, -2.5], '#0B2A8A');
     }
 
-    // Personas: esferas instanciadas
+    // Personas: figuras chicas (cuerpo cónico + cabeza), instanciadas. El tamaño está exagerado para que se vean.
     const people = sc.seats.filter((p) => p.occupied);
-    const dotGeo = new THREE.SphereGeometry(Math.max(0.045, (sc.id === 'auditorio' ? 0.5 : 0.24) * s * 1.1), 8, 6);
-    const dots = new THREE.InstancedMesh(dotGeo, kit.mat('#FFFFFF', { flat: true }), Math.max(1, people.length));
-    const colors = ['#0047FF', '#FFC94A', '#FF006E', '#E9E4D4'];
+    const dot = Math.max(0.045, (sc.id === 'auditorio' ? 0.5 : 0.24) * s * 1.1);
+    const bodyGeo = new THREE.ConeGeometry(dot * 0.8, dot * 2.0, 7);
+    const headGeo = new THREE.SphereGeometry(dot * 0.52, 8, 6);
+    const bodies = new THREE.InstancedMesh(bodyGeo, kit.mat('#FFFFFF', { flat: true }), Math.max(1, people.length));
+    const heads = new THREE.InstancedMesh(headGeo, kit.mat('#FFFFFF', { flat: true }), Math.max(1, people.length));
+    const colors = ['#0047FF', '#FFC94A', '#FF006E', '#E9E4D4', '#7C9070'];
+    const skins = ['#E9C9A6', '#C69C74', '#8D5F3C', '#F3D9C0'];
     const dummy = new THREE.Object3D();
     const c = new THREE.Color();
     people.forEach((p, i) => {
       const pos = at(p.x, p.y + 1.1, p.z);
+      dummy.position.set(pos[0], pos[1] - dot * 1.5, pos[2]);
+      dummy.updateMatrix();
+      bodies.setMatrixAt(i, dummy.matrix);
+      bodies.setColorAt(i, c.set(colors[i % colors.length]));
       dummy.position.set(...pos);
       dummy.updateMatrix();
-      dots.setMatrixAt(i, dummy.matrix);
-      dots.setColorAt(i, c.set(colors[i % colors.length]));
+      heads.setMatrixAt(i, dummy.matrix);
+      heads.setColorAt(i, c.set(skins[(i * 3) % skins.length]));
     });
-    dots.count = people.length;
-    m.add(dots);
-    kit.track({ dispose: () => { dotGeo.dispose(); dots.dispose(); } });
+    bodies.count = people.length;
+    heads.count = people.length;
+    m.add(bodies, heads);
+    kit.track({ dispose: () => { bodyGeo.dispose(); headGeo.dispose(); bodies.dispose(); heads.dispose(); } });
 
     // --- Zona de impacto ---
     const hitGeo = new THREE.CylinderGeometry(0.58, 0.58, 1.55, 16);

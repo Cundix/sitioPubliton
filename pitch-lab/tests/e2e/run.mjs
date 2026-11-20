@@ -258,7 +258,9 @@ await test('6. Micrófono aceptado: transcripción revisable, edición con orige
   assert.equal(box.value, 'hola equipo presentamos una idea');
   assert.match(box.source, /Reconocimiento de voz del navegador/);
   await page.fill('#transcript-text', 'hola equipo, presentamos una idea corregida a mano');
-  await wait(450);
+  // Se espera la condición (el origen pasa a «editado por vos» tras el retardo de 200 ms de la edición) en vez de un tiempo fijo:
+  // con el render por software cada cuadro tarda y 450 ms a veces no alcanzaban.
+  await page.waitForFunction(() => /editado por vos/.test(document.getElementById('transcript-source').textContent), null, { timeout: 8000 });
   assert.match(await page.evaluate(() => document.getElementById('transcript-source').textContent), /editado por vos/);
   await click3D(page, 'continue');
   await waitState(page, 'feedback');
@@ -460,9 +462,11 @@ await test('13c. Medición opcional de nivel de audio: permiso aparte, medición
   await wait(4500);
   await dispatch(page, 'FINISH'); await waitState(page, 'review');
   await dispatch(page, 'CONTINUE'); await waitState(page, 'feedback');
-  const audio = await page.evaluate(() => window.pitchLab.session.getFeedback().metrics.audio);
+  const { audio, durationSec } = await page.evaluate(() => { const m = window.pitchLab.session.getFeedback().metrics; return { audio: m.audio, durationSec: m.duration.value }; });
   assert.equal(audio.available, true, JSON.stringify(audio));
-  assert.ok(audio.activeSec > 3 && audio.activeSec < 6, `segundos activos ${audio.activeSec}`);
+  // Los segundos activos del medidor deben coincidir con la duración que mide la propia sesión (con un margen de 1 s), en vez de
+  // un tope fijo: con el render por software el reloj de la página se atrasa y un tope fijo daba falsos fallos.
+  assert.ok(audio.activeSec > 3 && audio.activeSec <= durationSec + 1, `segundos activos ${audio.activeSec} (duración de la sesión: ${durationSec})`);
   assert.ok(audio.soundSec >= 0 && audio.soundSec <= audio.activeSec);
   const live = await page.evaluate(() => window.__tracks.filter((t) => t.readyState === 'live').length);
   assert.equal(live, 0, 'todas las pistas de audio se liberaron');
@@ -506,7 +510,12 @@ await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader
   await snap('hub-de-nuevo', 'hub');
   console.log('    recursos:', JSON.stringify(info));
   await fs.writeFile(path.join(here, 'recursos-3d.json'), JSON.stringify(info, null, 2));
-  for (const [k, v] of Object.entries(info)) assert.ok(v.calls < 400, `${k}: ${v.calls} llamadas de dibujo`);
+  // Presupuesto de geometría (decidido el 2026-11-13 al mejorar los modelos): que un cambio visual futuro no lo infle sin que se note.
+  // Son límites sobre lo que se dibuja, NO una medida de rendimiento en casco (que no se midió).
+  for (const [k, v] of Object.entries(info)) {
+    assert.ok(v.calls < 200, `${k}: ${v.calls} llamadas de dibujo (presupuesto: 200)`);
+    assert.ok(v.triangles < 80000, `${k}: ${v.triangles} triángulos (presupuesto: 80 000)`);
+  }
   // Al cambiar de espacio no deben acumularse geometrías (liberación de recursos)
   assert.ok(info['hub-de-nuevo'].geometries <= info.hub.geometries + 4, `geometrías ${info.hub.geometries} -> ${info['hub-de-nuevo'].geometries}`);
   assert.ok(info['hub-de-nuevo'].textures <= info.hub.textures + 2, `texturas ${info.hub.textures} -> ${info['hub-de-nuevo'].textures}`);

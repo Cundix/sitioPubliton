@@ -16,21 +16,20 @@ export class Kit {
     this._extras = []; // objetos con dispose() propio (texturas, instancias)
   }
 
-  /** Material estándar con sombreado plano, reutilizado por color/opciones. */
+  /**
+   * Material con sombreado plano, reutilizado por color/opciones. Para superficies mates (rugosidad ≥ 0,6 y sin metal, que son
+   * casi todas) se usa un material DIFUSO (Lambert), más barato de dibujar que el PBR estándar y sin diferencia visible a esta
+   * escala; con metal o brillo (rough < 0,6) se mantiene el estándar.
+   */
   mat(color, { rough = 0.85, metal = 0, emissive = null, emissiveIntensity = 1, opacity = 1, side = 'front', flat = true } = {}) {
     const key = JSON.stringify([color, rough, metal, emissive, emissiveIntensity, opacity, side, flat]);
     let m = this._materials.get(key);
     if (!m) {
       const T = this.T;
-      m = new T.MeshStandardMaterial({
-        color,
-        roughness: rough,
-        metalness: metal,
-        flatShading: flat,
-        transparent: opacity < 1,
-        opacity,
-        side: side === 'back' ? T.BackSide : side === 'double' ? T.DoubleSide : T.FrontSide,
-      });
+      const common = { color, flatShading: flat, transparent: opacity < 1, opacity, side: side === 'back' ? T.BackSide : side === 'double' ? T.DoubleSide : T.FrontSide };
+      m = metal === 0 && rough >= 0.6
+        ? new T.MeshLambertMaterial(common)
+        : new T.MeshStandardMaterial({ ...common, roughness: rough, metalness: metal });
       if (emissive) { m.emissive = new T.Color(emissive); m.emissiveIntensity = emissiveIntensity; }
       this._materials.set(key, m);
     }
@@ -113,6 +112,44 @@ export class Kit {
     l.position.set(pos[0], pos[1], pos[2]);
     this.group.add(l);
     return l;
+  }
+
+  /**
+   * Lote de piezas: junta muchas cajas/cilindros del MISMO material en una sola malla (una llamada de dibujo en vez de
+   * decenas). Sirve para detalles repetidos (listones, libros, vigas del techo, patas). Llamar a flush() al terminar.
+   */
+  batch() {
+    const kit = this;
+    const T = this.T;
+    const groups = new Map();
+    const tmp = { p: new T.Vector3(), q: new T.Quaternion(), e: new T.Euler(), s: new T.Vector3(1, 1, 1), m: new T.Matrix4() };
+    const add = (geometry, pos, color, opts) => {
+      // opts.quat (Quaternion) reemplaza a los ángulos rotX/rotY/rotZ; opts.scale = [sx, sy, sz] achata o estira la pieza.
+      if (opts.quat) tmp.q.copy(opts.quat);
+      else { tmp.e.set((opts.rotX || 0) * DEG, (opts.rotY || 0) * DEG, (opts.rotZ || 0) * DEG, 'YXZ'); tmp.q.setFromEuler(tmp.e); } // orden YXZ: primero la inclinación local y después el giro
+      if (opts.scale) tmp.s.set(opts.scale[0], opts.scale[1], opts.scale[2]); else tmp.s.set(1, 1, 1);
+      tmp.m.compose(tmp.p.set(pos[0], pos[1], pos[2]), tmp.q, tmp.s);
+      geometry.applyMatrix4(tmp.m);
+      const material = opts.material || kit.mat(color, opts);
+      if (!groups.has(material.uuid)) groups.set(material.uuid, { material, geometries: [] });
+      groups.get(material.uuid).geometries.push(geometry);
+    };
+    return {
+      box(size, pos, color, opts = {}) { add(new T.BoxGeometry(size[0], size[1], size[2]), pos, color, opts); },
+      cyl(rTop, rBottom, h, pos, color, opts = {}) { add(new T.CylinderGeometry(rTop, rBottom, h, opts.seg || 10), pos, color, opts); },
+      sphere(r, pos, color, opts = {}) { add(new T.SphereGeometry(r, opts.seg || 10, opts.segH || 7), pos, color, opts); },
+      /** Crea las mallas (una por material) dentro de `parent` y libera las geometrías de origen. */
+      flush(parent = kit.group) {
+        const utils = T.BufferGeometryUtils;
+        for (const { material, geometries } of groups.values()) {
+          const merged = utils.mergeGeometries(geometries, false);
+          geometries.forEach((g) => g.dispose());
+          kit.track({ dispose: () => merged.dispose() });
+          parent.add(new T.Mesh(merged, material));
+        }
+        groups.clear();
+      },
+    };
   }
 
   track(disposable) {

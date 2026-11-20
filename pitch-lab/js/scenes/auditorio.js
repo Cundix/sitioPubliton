@@ -2,6 +2,7 @@
 // La escala es lo que cambia la experiencia: el público está lejos y repartido en cuatro zonas.
 
 import { addLectern, makeSign, addBezel, addGlow } from './furniture.js';
+import { addFloor, addCeilingDetail, addSpeaker, addMonitorWedge, addLightBeam } from './dressing.js';
 import { buildAudience } from './audience.js';
 import { FloatingButton } from './interactives.js';
 
@@ -27,9 +28,16 @@ export function buildAuditorio(kit, sc, { onPress }) {
   kit.box([0.1, H + 1, D], [room.maxX + 0.05, (H - 1) / 2, cz], '#1B2018');
   kit.box([W, H + 1, 0.1], [cx, (H - 1) / 2, room.maxZ + 0.05], '#10140D');
 
+  addFloor(kit, 'carpet', { x: cx, y: HALL_FLOOR + 0.003, z: cz, w: W, d: D, base: '#12160F', tile: 1.4 });
+  addCeilingDetail(kit, room, H, { beams: false, cove: '#7F9BFF' });
+
   // --- Escenario elevado ---
   kit.box([15, 0.6, 7.2], [0, -0.3, 1.4], '#1E241A', { rough: 0.7 });
   kit.box([15, 0.03, 7.2], [0, 0.015, 1.4], '#171C13', { rough: 0.5 });
+  addFloor(kit, 'stage', { x: 0, y: 0.032, z: 1.4, w: 15, d: 7.2, base: '#161B12', tile: 1.6 });
+  // Parlantes a los lados y monitores en el borde del escenario
+  [-1, 1].forEach((side) => addSpeaker(kit, { x: side * 6.5, y: 0.03, z: 0.4, rotY: 180, scale: 1.25 }));
+  [-3.4, 0, 3.4].forEach((x) => addMonitorWedge(kit, { x, y: 0.03, z: stageFront - 0.12 + 0.0 }));
   kit.box([15, 0.06, 0.1], [0, 0.03, stageFront], '#FFC94A');                               // borde amarillo del escenario
   kit.box([4.4, 0.2, 0.9], [0, -0.5, stageFront - 0.45], '#20261C');                         // escalones
   kit.box([4.4, 0.4, 0.9], [0, -0.4, stageFront - 0.9 + 0.45], '#20261C');
@@ -48,6 +56,8 @@ export function buildAuditorio(kit, sc, { onPress }) {
     kit.cyl(0.18, 0.12, 0.34, [x, 7.1, 1.0], '#11160E', { seg: 10, rotX: 20 });
     addGlow(kit, [0.2, 0.04, 0.2], [x, 6.93, 0.9], '#FFF1C9');
   });
+
+  [-3.5, 0, 3.5].forEach((x) => addLightBeam(kit, { from: [x, 6.93, 0.9], to: [x * 0.5, 0.03, 0.2], radius: 1.2, opacity: 0.04 }));
 
   // --- Tribunas con rake: filas escalonadas por zona ---
   const seatsByZone = sc.audience.zones;
@@ -76,7 +86,14 @@ export function buildAuditorio(kit, sc, { onPress }) {
     }
   });
 
-  // --- Paredes laterales: columnas de luz ---
+  // --- Paredes laterales: listones acústicos y columnas de luz ---
+  const slats = kit.batch();
+  for (let z = 3.6, i = 0; z > room.minZ + 1; z -= 0.42, i++) {
+    const color = i % 3 === 0 ? '#2F3A2B' : '#232B1E';
+    slats.box([0.07, 5.6, 0.17], [room.minX + 0.08, 3.1, z], color, { rough: 0.8 });
+    slats.box([0.07, 5.6, 0.17], [room.maxX - 0.08, 3.1, z], color, { rough: 0.8 });
+  }
+  slats.flush();
   for (let i = 0; i < 6; i++) {
     const z = 2 - i * 5;
     [room.minX + 0.3, room.maxX - 0.3].forEach((x) => addGlow(kit, [0.12, 6.0, 0.12], [x, 3.4, z], i % 2 ? '#0047FF' : '#FFC94A'));
@@ -101,7 +118,7 @@ export function buildAuditorio(kit, sc, { onPress }) {
   disposers.push(() => name.dispose());
 
   addLectern(kit);
-  const audience = buildAudience(kit, sc.seats, { seatColor: '#20261C', accent: theme.accent });
+  const audience = buildAudience(kit, sc.seats, { seatColor: '#20261C', accent: theme.accent, style: 'theater' });
 
   // Botón de regreso junto al asiento de observación
   const view = sc.seats.find((s) => s.view);
