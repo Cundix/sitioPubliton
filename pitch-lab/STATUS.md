@@ -1,6 +1,6 @@
 # STATUS — Publitón Pitch Lab
 
-_Última actualización: 2026-11-20 (revisión con la guía «UX for XR» en la rama `pitch-lab-ux-xr`, sin publicar)._
+_Última actualización: 2026-11-20 (revisión con la guía «UX for XR» y modelos 3D publicados en `main`)._
 
 ## Publicación
 
@@ -9,6 +9,7 @@ _Última actualización: 2026-11-20 (revisión con la guía «UX for XR» en la 
 | Código en el repositorio (`main`) | **Subido** a `main` sin `--force`; Pages construyó los commits subidos («built»). La verificación se hizo sobre `df6fd36` y sobre el último commit (`6316c7f`) |
 | Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **publicado y verificado el 2026-11-04** (HTTP 200 en los recursos, 8/8 pruebas e2e contra el enlace real, sitio anterior intacto) |
 | **Versión con IA y cámara (2026-11-13)** | **Publicada** (push a `main` sin `--force`, commit `05013f3`; Pages «built»). Verificado: HTTP 200 con el tipo correcto en los archivos nuevos (incluidos `hand_landmarker.task` y `vision_wasm_internal.wasm`) y 3 pruebas de navegador real contra el enlace publicado (recorrido de grabación y análisis con API simulada, cámara con MediaPipe servido desde Pages, política de conexiones). **No** se probó la API real desde el dominio publicado (la clave temporal ya se borró); el CORS desde `cundix.github.io` se había verificado antes con llamadas reales |
+| **Modelos 3D, 11 briefs y revisión UX for XR (2026-11-20)** | **Publicados** (avance rápido de `main`, `2eec995..94126c2`, sin `--force`; Pages «built»). Verificado contra el enlace real: archivos nuevos con HTTP 200, **22/22** pruebas de navegador y **13/13** con el emulador WebXR (resultados en `tests/e2e/ultimo-resultado-publicado-2026-11-20.json` y `ultimo-resultado-xr-publicado-2026-11-20.json`). No se repitieron en vivo las pruebas de IA ni la auditoría de legibilidad (pasaron en local sobre el mismo código) |
 | Qué NO está verificado | Uso en un casco físico y voz real (ver «Falta») |
 
 ## Terminado (y cómo se comprobó)
@@ -21,8 +22,8 @@ _Última actualización: 2026-11-20 (revisión con la guía «UX for XR» en la 
 - **Documentación** (`docs/`), **informe 16:9** (`informe/informe-pitch-lab.pdf`, 21 páginas), **material para Figma** (`informe/figma/`), **guion de 5 minutos**, **guía de intervención manual**, **capturas** (`capturas/`).
 
 - **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 158 pruebas de unidad (al 2026-11-19), 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
-- **Modelos 3D mejorados y más temáticas (2026-11-19, rama `pitch-lab-3d`, NO publicado)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
-- **Revisión con la guía «UX for XR» (2026-11-19, rama `pitch-lab-ux-xr`, NO publicado)**: texto del espacio 3D medido y corregido (nada por debajo de 0,8° de altura de mayúsculas), reloj en el atril, giro por tramos con el joystick, vibración de los controles, altura de la vista, «mantené presionado» para finalizar, avisos visibles dentro del casco. → 183 pruebas de unidad, 22 de navegador real, 13 con emulador WebXR, 10 de IA y la auditoría de legibilidad. **Los valores de comodidad son estimaciones sin probar en un casco** (ver `docs/auditoria-ux-xr.md`).
+- **Modelos 3D mejorados y más temáticas (2026-11-19; **publicado el 2026-11-20** junto con la revisión de UX for XR)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
+- **Revisión con la guía «UX for XR» (2026-11-19; **publicada el 2026-11-20**)**: texto del espacio 3D medido y corregido (nada por debajo de 0,8° de altura de mayúsculas), reloj en el atril, giro por tramos con el joystick, vibración de los controles, altura de la vista, «mantené presionado» para finalizar, avisos visibles dentro del casco. → 183 pruebas de unidad, 22 de navegador real, 13 con emulador WebXR, 10 de IA y la auditoría de legibilidad. **Los valores de comodidad son estimaciones sin probar en un casco** (ver `docs/auditoria-ux-xr.md`).
 - Se descartó el tope de 5 minutos de preparación (pedido de la persona usuaria): sigue de 0 a 300 s.
 
 ## En curso

@@ -126,6 +126,23 @@ Se subió a `main` sin `--force` (`39471ed..05013f3`, encima del rediseño del s
 No se probó la API real de Gemini **desde el dominio publicado** (la clave temporal se borró); el CORS desde `cundix.github.io` se verificó
 antes con llamadas reales. Para hacerlo: abrir el enlace, cargar una clave propia y presentar con la IA activada.
 
+### Publicación de los modelos 3D, los 11 briefs y la revisión con UX for XR (2026-11-20)
+
+Se integraron las ramas `pitch-lab-3d` y `pitch-lab-ux-xr` en `main` con avance rápido (sin merge commit) y se subieron sin `--force`
+(`2eec995..94126c2`, 5 commits). Antes de subir: 183 pruebas de unidad sobre `main` y búsqueda de claves reales en lo que se publica
+(solo aparecen los valores falsos de las pruebas de unidad). Pages construyó el commit `94126c2` («built»). Verificado contra el enlace real:
+
+| Comprobación | Resultado |
+|---|---|
+| Archivos nuevos servidos (`js/ui/hold.js`, `js/ui/panel-draw.js`, `js/core/settings.js`, `js/config/briefs.js`, `docs/auditoria-ux-xr.md`, una captura nueva y el informe PDF) | **200**; `settings.js` publicado contiene `snapTurnDeg` e `index.html` los controles `pref-snap` |
+| Las **22 pruebas de navegador** (incluida la 4b de «mantené presionado») contra `https://cundix.github.io/sitioPubliton/pitch-lab/` | **22 / 22** correctas (`tests/e2e/ultimo-resultado-publicado-2026-11-20.json`) |
+| Las **13 pruebas con el emulador WebXR** (giro por tramos, vibración, altura, una sola mano, finalizar manteniendo) contra el enlace real | **13 / 13** correctas (`tests/e2e/ultimo-resultado-xr-publicado-2026-11-20.json`) |
+| Sitio principal `https://cundix.github.io/sitioPubliton/` | **200** |
+
+No se repitieron contra el enlace real las pruebas de IA ni la auditoría de legibilidad (ya pasaron en local sobre el mismo código; la auditoría
+depende de la geometría local y no del servidor). La prueba 15 (recursos 3D) mide con SwiftShader y no representa el rendimiento de un casco.
+Sigue pendiente todo lo que exige un casco físico y personas (ver «Pendiente»).
+
 ## Otras verificaciones realizadas
 
 | Tema | Resultado |

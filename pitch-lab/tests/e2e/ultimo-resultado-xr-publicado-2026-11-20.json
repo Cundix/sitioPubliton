@@ -1,0 +1,58 @@
+{
+  "fecha": "2026-11-20T13:23:45.806Z",
+  "nota": "Emulación con IWER (Meta Quest 3 simulado). No reemplaza una prueba en casco físico.",
+  "resultados": [
+    {
+      "name": "X1. Se detecta el modo inmersivo y aparece el botón \"Entrar en VR\"",
+      "status": "ok"
+    },
+    {
+      "name": "X2. Entrar en VR desde el botón: sesión inmersiva activa y vista de casco",
+      "status": "ok"
+    },
+    {
+      "name": "X3. Los controles aparecen con raycaster y cursor sobre los elementos interactivos",
+      "status": "ok"
+    },
+    {
+      "name": "X4. Un control emulado apunta al botón del atril y el gatillo lo activa",
+      "status": "ok"
+    },
+    {
+      "name": "X5. Control emulado: \"Ver desde el público\" teletransporta a la grada y \"Recentrar\" vuelve",
+      "status": "ok"
+    },
+    {
+      "name": "X6. Modo sentado eleva la vista solo en VR",
+      "status": "ok"
+    },
+    {
+      "name": "X7. Altura de la vista: la corrección de a 5 cm se aplica en VR y tiene tope",
+      "status": "ok"
+    },
+    {
+      "name": "X8. Giro por tramos con el joystick: gira sobre la cabeza, no repite al mantener y respeta el ángulo elegido",
+      "status": "ok"
+    },
+    {
+      "name": "X9. Vibración de los controles: al apuntar y al presionar, y se puede apagar",
+      "status": "ok"
+    },
+    {
+      "name": "X10. Una sola mano alcanza: todo se puede hacer solo con el control izquierdo (y solo con el derecho)",
+      "status": "ok"
+    },
+    {
+      "name": "X11. «Mantené presionado» para finalizar: un toque corto no termina y avisa dentro del casco; mantener sí termina",
+      "status": "ok"
+    },
+    {
+      "name": "X12. Salir de VR: la sesión termina y vuelve la interfaz de escritorio",
+      "status": "ok"
+    },
+    {
+      "name": "X13. Sin errores de consola durante la sesión inmersiva emulada",
+      "status": "ok"
+    }
+  ]
+}
