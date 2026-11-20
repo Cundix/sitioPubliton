@@ -11,6 +11,7 @@
 
 import { S, TUTORIAL_STEPS, usesSpeech } from './state-machine.js';
 import { SCENARIOS } from '../config/scenarios.js';
+import { BRIEFS } from '../config/briefs.js';
 import { APP_CONFIG } from '../config/app-config.js';
 import { RUBRIC_QUESTIONS, answerInfo } from './rubric.js';
 import { formatClock, firstSentence, AI_DISCLAIMER } from './feedback.js';
@@ -298,7 +299,7 @@ export function buildScreen(session, settings, env = {}) {
       lectern.hint = brief.guide;
       lectern.actions = [
         act('prepare', 'Preparar presentación', 'primary', ev('PREPARE')),
-        act('other-brief', 'Otro brief', 'secondary', ev('NEXT_BRIEF')),
+        act('other-brief', `Otro brief ${(data.briefIndex % BRIEFS.length) + 1}/${BRIEFS.length}`, 'secondary', ev('NEXT_BRIEF')),
         act('change-scenario', 'Cambiar escenario', 'secondary', ev('CHANGE_SCENARIO')),
         act('settings', 'Ajustes', 'secondary', ev('OPEN_SETTINGS')),
       ];

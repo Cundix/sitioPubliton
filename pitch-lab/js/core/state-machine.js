@@ -50,7 +50,7 @@ export function createInitialData(overrides = {}) {
     settingsReturn: S.HOME,
     aiReturn: S.PREP,
     scenarioId: null,
-    briefIndex: 0,
+    briefIndex: overrides.briefIndex ?? 0,   // la app lo sortea al cargar; las pruebas parten del primero
     options: {
       inputMode: overrides.capabilities?.speech ? 'voice' : 'timer',
       unlimited: false,

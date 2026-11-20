@@ -11,6 +11,7 @@ import { Settings } from './core/settings.js';
 import { Session } from './core/session.js';
 import { S, allowedEvents } from './core/state-machine.js';
 import { APP_CONFIG } from './config/app-config.js';
+import { BRIEFS } from './config/briefs.js';
 import { UIHub } from './ui/ui-hub.js';
 import { HtmlOverlay } from './ui/html-overlay.js';
 import { AudioCues } from './ui/audio-cues.js';
@@ -77,7 +78,9 @@ async function main() {
   // Análisis con IA (opcional): la clave es de cada persona y solo vive en su navegador.
   const keyStore = new AiKeyStore({ session: safeSessionStorage(), local: safeStorage() });
   const ai = new AnalysisService({ keyStore, getVideoEl: () => document.getElementById('cam-preview') });
-  const session = new Session({ voice, meter, ai, capabilities: { speech: caps.speech, ai: false, camera: false }, tutorialSeen: settings.get('tutorialSeen') });
+  // Cada visita empieza con un brief distinto (con «Otro brief» se recorren todos).
+  const briefStart = Math.floor(Math.random() * BRIEFS.length);
+  const session = new Session({ voice, meter, ai, capabilities: { speech: caps.speech, ai: false, camera: false }, tutorialSeen: settings.get('tutorialSeen'), briefStart });
   voice?.setHandlers({
     final: (text) => session.pushFinal(text),
     interim: (text) => session.pushInterim(text),

@@ -51,7 +51,7 @@ export class Session extends Emitter {
    * @param {object} deps.capabilities { speech: boolean }
    * @param {boolean} deps.tutorialSeen
    */
-  constructor({ clock = realClock, voice = null, meter = null, ai = null, capabilities = {}, tutorialSeen = false, config = APP_CONFIG } = {}) {
+  constructor({ clock = realClock, voice = null, meter = null, ai = null, capabilities = {}, tutorialSeen = false, briefStart = 0, config = APP_CONFIG } = {}) {
     super();
     this.clock = clock;
     this.voice = voice;
@@ -59,7 +59,8 @@ export class Session extends Emitter {
     this.ai = ai;
     this.config = config;
     this.state = S.LOADING;
-    this.data = createInitialData({ capabilities, tutorialSeen });
+    this._briefStart = briefStart;  // brief con el que arranca la experiencia (la app lo sortea)
+    this.data = createInitialData({ capabilities, tutorialSeen, briefIndex: briefStart });
     this.capture = freshCapture();
     this._ticker = null;
     this._prepEndsAt = null;
@@ -244,7 +245,7 @@ export class Session extends Emitter {
     const prev = this.state;
     this._onExit(prev, S.HOME);
     this._teardownMedia();
-    const keep = { capabilities: this.data.capabilities, tutorialSeen: this.data.tutorialSeen };
+    const keep = { capabilities: this.data.capabilities, tutorialSeen: this.data.tutorialSeen, briefIndex: this._briefStart };
     this.data = createInitialData(keep);
     this.capture = freshCapture();
     this._feedbackCache = null;

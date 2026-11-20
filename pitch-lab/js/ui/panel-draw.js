@@ -389,7 +389,9 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
   ctx.textBaseline = 'alphabetic';
 
   // Marca
-  ctx.font = `400 190px ${FONT.display}`;
+  let brandSize = 190;
+  ctx.font = `400 ${brandSize}px ${FONT.display}`;
+  while (ctx.measureText(brief.brand.toUpperCase()).width > W - m * 2 && brandSize > 90) { brandSize -= 6; ctx.font = `400 ${brandSize}px ${FONT.display}`; }
   ctx.fillStyle = COLORS.white;
   ctx.fillText(brief.brand.toUpperCase(), m, 300);
   ctx.font = `400 40px ${FONT.body}`;
@@ -437,7 +439,9 @@ export function drawBriefCompact(ctx, W, H, brief) {
   ctx.font = `700 30px ${FONT.body}`;
   ctx.fillStyle = COLORS.yellow;
   drawSpaced(ctx, 'TU BRIEF · MARCA FICTICIA', 40, 62, 4);
-  ctx.font = `400 96px ${FONT.display}`;
+  let compactSize = 96;
+  ctx.font = `400 ${compactSize}px ${FONT.display}`;
+  while (ctx.measureText(brief.brand.toUpperCase()).width > W - 80 && compactSize > 50) { compactSize -= 4; ctx.font = `400 ${compactSize}px ${FONT.display}`; }
   ctx.fillStyle = COLORS.white;
   ctx.fillText(brief.brand.toUpperCase(), 40, 170);
   drawParagraph(ctx, `Restricción: ${brief.constraint}`, 40, 196, W - 80, { size: 34, lineHeight: 1.2, maxLines: 2, color: COLORS.muted });
