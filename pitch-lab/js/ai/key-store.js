@@ -30,12 +30,21 @@ export class AiKeyStore extends Emitter {
     else if (fromLocal) { this._key = fromLocal; this._remembered = true; }
   }
 
+  /** La clave está en el servidor (modo `start:ia`): el navegador usa un marcador en memoria y nunca ve la clave real. */
+  useServerKey() {
+    this._key = `AIza${'s'.repeat(35)}`;
+    this._server = true;
+    this._remembered = false;
+    this.emit('change', { hasKey: true });
+  }
+
+  get serverKey() { return !!this._server; }
   get hasKey() { return this._key.length > 0; }
   get remembered() { return this._remembered; }
   get value() { return this._key; }
 
   /** Últimos 4 caracteres, para mostrar «…ab12» sin revelar la clave. */
-  get masked() { return this._key ? `…${this._key.slice(-4)}` : ''; }
+  get masked() { return this._server ? 'del servidor' : this._key ? `…${this._key.slice(-4)}` : ''; }
 
   /** Valida el formato básico (no garantiza que la API la acepte). */
   static looksValid(candidate) {

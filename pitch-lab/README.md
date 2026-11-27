@@ -242,3 +242,8 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
   Meshy AI (licencia y atribución por confirmar, ver `assets/personas/LEEME.md`). Se convirtieron con `tools/preparar-personas/` (assimpjs, meshoptimizer, sharp y three.js, solo como herramienta).
 - Las marcas de los briefs (Yerbita Sol, Pedal Vecino, Páginas al Paso, Gota Justa, Remendar, Feria Cerquita, Casa Memoria, Click Abuelo,
   Plaza Viva, Cable a Tierra y Charla Tándem) son **ficticias**; los datos de cada brief son inventados para practicar.
+
+## IA siempre activa (en tu máquina)
+
+Poné `GEMINI_API_KEY=tu-clave` en `pitch-lab/.env` (está en `.gitignore`: no se sube) y corré `npm run start:ia`. El servidor le agrega la clave a los pedidos a Gemini,
+el navegador nunca la ve y la IA queda activada sin pedir nada. En GitHub Pages no hay servidor: ahí cada persona carga su propia clave.

@@ -3,3 +3,4 @@ node_modules/
 .cache/
 tests/e2e/fallo-*.png
 probe.png
+.env

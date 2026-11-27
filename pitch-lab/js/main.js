@@ -78,7 +78,17 @@ async function main() {
   const meter = meterCandidate.available ? meterCandidate : null;
   // Análisis con IA (opcional): la clave es de cada persona y solo vive en su navegador.
   const keyStore = new AiKeyStore({ session: safeSessionStorage(), local: safeStorage() });
-  const ai = new AnalysisService({ keyStore, getVideoEl: () => document.getElementById('cam-preview') });
+  // Si el sitio se sirve con `npm run start:ia`, la clave está en el servidor (.env) y la IA queda siempre activa, sin pedir nada.
+  let aiConfig = APP_CONFIG.ai;
+  try {
+    if (!['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('solo en local');
+    const probe = await fetch('./ia-proxy/estado', { cache: 'no-store' });
+    if (probe.ok && (await probe.json()).ok) {
+      aiConfig = { ...APP_CONFIG.ai, endpoint: new URL('./ia-proxy/v1beta', document.baseURI).href };
+      keyStore.useServerKey();
+    }
+  } catch { /* sin proxy: la IA usa la clave de la persona */ }
+  const ai = new AnalysisService({ keyStore, config: aiConfig, getVideoEl: () => document.getElementById('cam-preview') });
   // Cada visita empieza con un brief distinto (con «Otro brief» se recorren todos).
   const briefStart = Math.floor(Math.random() * BRIEFS.length);
   const session = new Session({ voice, meter, ai, capabilities: { speech: caps.speech, ai: false, camera: false }, tutorialSeen: settings.get('tutorialSeen'), briefStart });
@@ -188,6 +198,11 @@ async function main() {
   });
   app.overlay = overlay;
   app.aiSettings = new AiSettingsUI({ keyStore, service: ai, session, overlay, onNotice: (text, kind) => overlay.toast(text, kind) });
+  if (keyStore.serverKey && session.data.capabilities.ai) {
+    session.data.options.aiAnalysis = true;
+    session.data.options.inputMode = 'voice';
+    session.emit('change');
+  }
 
   // ----- Escena -----
   const hasGL = webglAvailable();
