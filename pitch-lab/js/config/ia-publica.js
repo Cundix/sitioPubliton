@@ -1,3 +1,4 @@
-// Clave de Gemini incluida en el sitio publicado (decisión de la persona usuaria, 2026-11-27): cuenta de plan gratuito, sin facturación.
-// Es visible para cualquiera que abra el sitio; lo peor que puede pasar es agotar la cuota gratuita. Solo se usa fuera de localhost.
-export const IA_PUBLICA = 'AIzaSyC-ipJX4R6WZt545rhcsg1JplOBL-R9c7k';
+// Clave incluida en el sitio publicado: VACÍA a propósito.
+// Google revoca sola cualquier clave que aparezca en un repositorio público (probado el 2026-11-27: «reported as leaked»),
+// así que la clave no puede ir acá. Para que la IA ande sola en el sitio publicado hace falta un servidor intermediario.
+export const IA_PUBLICA = '';
