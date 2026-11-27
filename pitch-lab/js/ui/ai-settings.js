@@ -83,7 +83,7 @@ export class AiSettingsUI {
   async save() {
     const value = this.input.value.trim();
     if (!value) { this.setStatus('Pegá tu clave en el campo y volvé a guardar.', 'bad'); return; }
-    if (!AiKeyStore.looksValid(value)) { this.setStatus('La clave no tiene el formato esperado (empieza con «AIza» y no lleva espacios).', 'bad'); return; }
+    if (!AiKeyStore.looksValid(value)) { this.setStatus('La clave no tiene el formato esperado (empieza con «AIza» o «AQ.» y no lleva espacios).', 'bad'); return; }
     this.keyStore.set(value, { remember: this.remember.checked });
     await this.testKey();
   }

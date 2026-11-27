@@ -56,7 +56,7 @@ export class AiKeyStore extends Emitter {
 
   /** Valida el formato básico (no garantiza que la API la acepte). */
   static looksValid(candidate) {
-    return /^AIza[0-9A-Za-z_-]{30,60}$/.test(String(candidate || '').trim());
+    return /^(AIza[0-9A-Za-z_-]{30,60}|AQ\.[0-9A-Za-z_.-]{30,100})$/.test(String(candidate || '').trim());
   }
 
   set(candidate, { remember = false } = {}) {
