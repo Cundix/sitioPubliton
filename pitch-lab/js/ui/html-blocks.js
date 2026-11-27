@@ -112,7 +112,10 @@ function renderFreeAi({ ai, part, gestures, foot }) {
     ? `<p class="notice notice-warn" role="note"><strong>SIN CALIFICAR</strong> La IA no pudo calificar esta presentación (poca voz, no se entendió o el contenido no se puede calificar). ${a.limitations.length ? esc(a.limitations.join(' ')) : ''}</p>`
     : '';
   const item = (r) => `<div class="ai-item"><dt>${esc(r.label)}: <strong>${esc(r.display)}</strong>${r.level ? ` <span class="muted">· ${esc(r.level)}</span>` : ''}</dt>
-      <dd><span class="muted">${esc(r.question)}</span> ${esc(r.note)}${r.quote ? `<blockquote class="quote">«${esc(r.quote)}»</blockquote>` : ''}</dd></div>`;
+      <dd><span class="muted">${esc(r.question)}</span> ${esc(r.note)}${r.quote ? `<blockquote class="quote">«${esc(r.quote)}»</blockquote>` : ''}${r.tip ? `<p class="tip-up"><strong>Para subir la nota:</strong> ${esc(r.tip)}</p>` : ''}</dd></div>`;
+  const fillers = f.fillers && f.fillers.count != null
+    ? `<h3>Muletillas</h3><p><strong>${esc(f.fillers.count)}</strong> en total${f.fillers.examples.length ? ` (${esc(f.fillers.examples.join(', '))})` : ''} <span class="muted">· cuenta de la IA sobre el audio: puede no detectar todas</span></p>`
+    : '';
 
   if (part === 'content') {
     return `<section class="ai-report" aria-label="Calificación de la idea">
@@ -133,6 +136,7 @@ function renderFreeAi({ ai, part, gestures, foot }) {
     <p class="indicator-line"><strong>Cómo la vendiste: ${esc(f.selling.display)}</strong> <span class="muted">(promedio de 6 aspectos, calculado por la aplicación)</span></p>
     ${f.selling.rationale ? `<p>${esc(f.selling.rationale)}</p>` : ''}
     <dl class="ai-list">${f.selling.rows.map(item).join('')}</dl>
+    ${fillers}
     <p class="muted small-text">Ritmo, claridad, entonación y pausas describen cómo se oye la voz; no evalúan emociones ni personalidad.</p>
     ${g}
     ${a.limitations.length ? `<h3>Límites de este análisis</h3>${li(a.limitations)}` : ''}

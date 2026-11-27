@@ -22,7 +22,7 @@ export async function launch({ fakeMic = true, headless = true, fakeAudioFile = 
 }
 
 /** Abre una página y junta errores de consola y de página. */
-export async function openPage(browser, { width = 1280, height = 720, url = BASE_URL, permissions = [], init } = {}) {
+export async function openPage(browser, { width = 1280, height = 720, url = BASE_URL, permissions = [], init, ui2d = true } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, permissions, deviceScaleFactor: 1 });
   if (init) await context.addInitScript(init);
   const page = await context.newPage();
@@ -34,6 +34,8 @@ export async function openPage(browser, { width = 1280, height = 720, url = BASE
   page.on('pageerror', (error) => problems.push(`pageerror: ${error.message} :: ${(error.stack || '').split('\n').slice(0, 5).join(' | ')}`));
   page.on('requestfailed', (req) => problems.push(`requestfailed: ${req.url()} ${req.failure()?.errorText}`));
   page.on('response', (res) => { if (res.status() >= 400) problems.push(`http ${res.status()}: ${res.url()}`); });
+  // Las pruebas usan la interfaz 2D (el modo solo-VR la esconde): se pide con ?2d=1.
+  if (ui2d && !/[?&]2d/.test(url)) url += `${url.includes('?') ? '&' : '?'}2d=1`;
   await page.goto(url, { waitUntil: 'load', timeout: 60000 }); // holgado: el render por software es lento si hay dos navegadores a la vez
   return { context, page, problems };
 }

@@ -204,3 +204,5 @@ Ver [`pruebas.md`](pruebas.md), sección «Análisis con IA». Resumen:
 | «No se pudo conectar…» | Sin internet o red que bloquea Google | Revisar la conexión |
 | «La IA devolvió una respuesta que no se pudo leer» | Respuesta fuera del esquema | Reintentar el análisis |
 | «No se pudo grabar el audio para la IA» | Permiso de micrófono denegado | La práctica sigue sin IA; dar el permiso y reintentar |
+
+**Consejos y muletillas (2026-11-27).** Cada criterio y aspecto trae un `tip` para subir esa nota (página 6 en VR; en el panel de texto, junto a cada nota) y `selling.fillers` cuenta las muletillas. **Limitación:** la transcripción de un modelo de audio tiende a «limpiar» los «eeeh»; con un audio sintético (voz en inglés) no detectó ninguna, así que **la detección de muletillas no está verificada con voz humana real**.

@@ -39,7 +39,7 @@ export const S = Object.freeze({
 export const ACTIVE_STATES = Object.freeze([S.STARTING, S.PRESENTING, S.PAUSED, S.CONFIRM_CANCEL]);
 
 export const TUTORIAL_STEPS = 3;
-export const FEEDBACK_PAGES = 5; // 1 medidas · 2 autoevaluación · 3 consejos · 4 IA contenido · 5 IA entrega
+export const FEEDBACK_PAGES = 6; // 1 medidas · 2 autoevaluación · 3 consejos · 4 IA contenido · 5 IA entrega · 6 IA para subir las notas (solo pitch libre)
 
 export function createInitialData(overrides = {}) {
   return {

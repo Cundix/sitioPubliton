@@ -43,6 +43,9 @@ const SAMPLE = normalizeFreeAnalysis({
   limitations: ['Solo se evaluó el audio.'],
 });
 
+for (const g of [SAMPLE.idea.criteria, SAMPLE.selling.aspects]) for (const v of Object.values(g)) v.tip = v.tip || 'Sumá un ejemplo concreto y un cierre con el siguiente paso.';
+SAMPLE.selling.fillers = { count: 6, examples: ['eeeh ×4', 'o sea ×2'] };
+
 const browser = await launch();
 const { page, context } = await openPage(browser, { width: 1600, height: 900 });
 try {

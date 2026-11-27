@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-27T11:51:53.699Z",
+  "fecha": "2026-11-27T13:46:27.053Z",
   "nota": "Medición con la geometría real en un navegador de pruebas. No reemplaza una prueba en casco físico.",
   "minimoGrados": 0.8,
   "comodoGrados": 1.2,
@@ -78,7 +78,7 @@
     },
     {
       "pantalla": "sala · brief",
-      "textos": 187,
+      "textos": 184,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -198,7 +198,7 @@
     },
     {
       "pantalla": "sala · devolución 1 con IA (pitch libre)",
-      "textos": 189,
+      "textos": 190,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -210,7 +210,7 @@
     },
     {
       "pantalla": "sala · devolución 3 con IA (pitch libre)",
-      "textos": 187,
+      "textos": 188,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -222,7 +222,7 @@
     },
     {
       "pantalla": "sala · devolución 4 con IA (pitch libre)",
-      "textos": 170,
+      "textos": 171,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -234,7 +234,19 @@
     },
     {
       "pantalla": "sala · devolución 5 con IA (pitch libre)",
-      "textos": 171,
+      "textos": 172,
+      "peor": {
+        "kind": "brief (pared)",
+        "text": "Q",
+        "size": 38,
+        "dist": 2.21,
+        "cos": 0.96,
+        "deg": 0.83
+      }
+    },
+    {
+      "pantalla": "sala · devolución 6 con IA (pitch libre)",
+      "textos": 191,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -258,7 +270,7 @@
     },
     {
       "pantalla": "cliente · brief (pitch libre)",
-      "textos": 197,
+      "textos": 194,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "MARCA FICTICIA",
@@ -366,7 +378,7 @@
     },
     {
       "pantalla": "cliente · devolución 1 con IA",
-      "textos": 199,
+      "textos": 200,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "SIN BRIEF",
@@ -378,7 +390,7 @@
     },
     {
       "pantalla": "cliente · devolución 3 con IA",
-      "textos": 197,
+      "textos": 198,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "SIN BRIEF",
@@ -390,7 +402,7 @@
     },
     {
       "pantalla": "cliente · devolución 4 con IA",
-      "textos": 177,
+      "textos": 178,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "SIN BRIEF",
@@ -402,7 +414,7 @@
     },
     {
       "pantalla": "cliente · devolución 5 con IA",
-      "textos": 208,
+      "textos": 209,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "SIN BRIEF",
@@ -426,7 +438,7 @@
     },
     {
       "pantalla": "auditorio · brief (pitch libre)",
-      "textos": 183,
+      "textos": 180,
       "peor": {
         "kind": "brief (pared)",
         "text": "B",

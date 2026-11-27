@@ -560,7 +560,7 @@ await test('IA 11. Pitch libre: sin brief, el pedido lo dice y la IA devuelve ca
   assert.ok(schema.properties.selling.properties.pace);
 
   const tabs = await page.evaluate(() => window.pitchLab.hub.model.panel.options.filter((o) => o.kind === 'tab').map((o) => o.label));
-  assert.deepEqual(tabs, ['1 · Qué se midió', '2 · Autoevaluación', '3 · Consejos', '4 · IA: tu idea', '5 · IA: cómo la vendiste']);
+  assert.deepEqual(tabs, ['1 · Qué se midió', '2 · Autoevaluación', '3 · Consejos', '4 · IA: tu idea', '5 · IA: cómo la vendiste', '6 · IA: subir tus notas']);
   await click3D(page, 'tab-3');
   assert.equal(await page.evaluate(() => window.pitchLab.hub.model.panel.title.join(' ')), 'IA: TU IDEA');
   // promedio: 4 + 3 (el 5 sin cita baja a 3) + 3 + 3 + 2 = 15 / 5 = 3

@@ -85,3 +85,6 @@ escrito a mano (un pitch ficticio sobre una app para repartir gastos). **Las cal
 | `69-pitch-libre-ia-tu-idea` | «IA: tu idea» con el promedio calculado por la aplicación (resultado de ejemplo inyectado) |
 | `70-pitch-libre-ia-como-la-vendiste` | «IA: cómo la vendiste» (resultado de ejemplo inyectado) |
 | `71-pitch-libre-panel-de-texto` | El mismo resultado en el panel de texto accesible |
+
+| `73-solo-vr-boton-entrar` | Modo solo VR (por defecto): sin panel de texto, solo el botón «Entrar en VR» (con `?2d` vuelve la interfaz 2D) |
+| `74-pitch-libre-subir-notas` | Pitch libre, página «IA: subí tus notas»: consejo por nota, de la más baja a la más alta, y conteo de muletillas (resultado de ejemplo inyectado, no real) |

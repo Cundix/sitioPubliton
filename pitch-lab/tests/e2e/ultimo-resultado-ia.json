@@ -7,7 +7,7 @@
       "name": "IA 1. Sin clave: la experiencia no cambia y no se contacta a Google",
       "status": "ok",
       "detail": "",
-      "secs": 18.1
+      "secs": 11.4
     },
     {
       "name": "IA 2. La clave se carga en el panel de texto, se prueba y se guarda solo donde corresponde",
@@ -19,19 +19,19 @@
       "name": "IA 3. Recorrido completo: micrófono → WAV 16 kHz → Gemini (simulado) → devolución",
       "status": "ok",
       "detail": "",
-      "secs": 18.5
+      "secs": 17.9
     },
     {
       "name": "IA 4. Cuota agotada en todos los modelos: error claro y reintento con la grabación en memoria",
       "status": "ok",
       "detail": "",
-      "secs": 16.3
+      "secs": 15.9
     },
     {
       "name": "IA 5. Si el modelo principal falla, se usa el de respaldo y se informa cuál",
       "status": "ok",
       "detail": "",
-      "secs": 13.2
+      "secs": 14
     },
     {
       "name": "IA 6. Clave rechazada por Google: un solo intento, mensaje claro y sin filtrar la clave",
@@ -43,37 +43,37 @@
       "name": "IA 7. Cámara: el modelo de manos se carga del mismo sitio, mide en el dispositivo y se libera",
       "status": "ok",
       "detail": "",
-      "secs": 19.9
+      "secs": 19.7
     },
     {
       "name": "IA 8. Cancelar libera micrófono y cámara y no envía nada",
       "status": "ok",
       "detail": "",
-      "secs": 12.6
+      "secs": 24.4
     },
     {
       "name": "IA 9. Cancelar mientras se esperan los permisos no deja nada abierto",
       "status": "ok",
       "detail": "",
-      "secs": 10.1
+      "secs": 17.8
     },
     {
       "name": "IA 10. El navegador solo deja conectar con el propio sitio y con la API de Gemini",
       "status": "ok",
       "detail": "",
-      "secs": 2.3
+      "secs": 5.4
     },
     {
       "name": "IA 11. Pitch libre: sin brief, el pedido lo dice y la IA devuelve calificaciones de 1 a 5 con el promedio calculado por la aplicación",
       "status": "ok",
       "detail": "",
-      "secs": 17.9
+      "secs": 28.9
     },
     {
       "name": "IA 12. Pitch libre sin IA: se practica igual y la devolución avisa que la calificación necesita la IA (opcional)",
       "status": "ok",
       "detail": "",
-      "secs": 4.7
+      "secs": 9.1
     }
   ]
 }

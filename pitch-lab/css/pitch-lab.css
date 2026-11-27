@@ -176,3 +176,7 @@ body.drawer-open .keyhint{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 .reduce-motion *{transition:none!important;animation:none!important}
 body.in-vr #overlay{display:none}
+
+/* Modo solo VR (por defecto; con ?2d se ve la interfaz 2D): nada de panel de texto, solo el botón «Entrar en VR». */
+html[data-vr="solo"] #btn-drawer, html[data-vr="solo"] .skip-link, html[data-vr="solo"] #status-line, html[data-vr="solo"] #timer-chip { display: none !important; }
+html[data-vr="solo"] #btn-vr { display: inline-flex !important; font-size: 1.15rem; padding: 0.7rem 1.6rem; }

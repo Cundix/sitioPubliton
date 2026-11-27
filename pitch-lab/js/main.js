@@ -68,6 +68,9 @@ function webglAvailable() {
 }
 
 async function main() {
+  // Modo solo VR (por defecto): se esconde la interfaz 2D (panel de texto, atajo T) y queda un único botón «Entrar en VR». Con ?2d se ve todo.
+  const soloVR = !new URLSearchParams(location.search).has('2d');
+  if (soloVR) document.documentElement.dataset.vr = 'solo';
   const caps = detectCapabilities(window);
   const settings = new Settings({
     storage: safeStorage(),
@@ -183,7 +186,7 @@ async function main() {
       else if (allowed.includes('CANCEL')) session.dispatch('CANCEL');
     } else if (key === 'r') {
       app.walk?.recenter();
-    } else if (key === 't') {
+    } else if (key === 't' && !soloVR) {
       app.overlay.toggleDrawer();
     }
   });

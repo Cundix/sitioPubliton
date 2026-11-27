@@ -504,6 +504,7 @@ export function buildScreen(session, settings, env = {}) {
         ...(fb.ai.status !== 'off' ? [
           act('tab-3', fb.free ? '4 · IA: tu idea' : '4 · IA: contenido', 'tab', { ...ev('SET_PAGE', { page: 3 }), on: page === 3 }),
           act('tab-4', fb.free ? '5 · IA: cómo la vendiste' : '5 · IA: entrega', 'tab', { ...ev('SET_PAGE', { page: 4 }), on: page === 4 }),
+          ...(fb.free && fb.ai.status === 'done' ? [act('tab-5', '6 · IA: subir tus notas', 'tab', { ...ev('SET_PAGE', { page: 5 }), on: page === 5 })] : []),
         ] : []),
       ];
       if (page === 0) {
@@ -556,6 +557,17 @@ export function buildScreen(session, settings, env = {}) {
               ...(f.topic ? [{ t: 'fields', small: true, only3D: true, optional3D: true, rows: [{ k: 'Vendiste', v: firstSentence(f.topic, 78) }] }] : []),
               { t: 'measures', only3D: true, rows: [row('Tu idea (promedio)', f.idea.display, f.idea.average != null), ...rowsOf(f.idea.rows)] },
               { t: 'aifull', ai: fb.ai, part: 'content', htmlOnly: true },
+            ];
+          } else if (page === 5) {
+            panel.title = ['IA: SUBÍ TUS NOTAS'];
+            // Los consejos de las notas más bajas primero; en 3D entran los cuatro primeros, y el panel de texto los trae todos.
+            const tips = [...f.idea.rows, ...f.selling.rows].filter((r) => r.rating != null && r.tip).sort((x, y) => x.rating - y.rating);
+            const line = (r, max) => `${r.label} (${r.display}): ${firstSentence(r.tip, max)}`;
+            panel.blocks = [
+              { t: 'notice', kind: 'info', label: 'CALIFICACIÓN ORIENTATIVA', text: AI_DISCLAIMER_FREE, text3D: 'Consejos orientativos de la IA.' },
+              ...(f.fillers && f.fillers.count != null ? [{ t: 'fields', small: true, only3D: true, rows: [{ k: 'Muletillas', v: `${f.fillers.count} en total (cuenta de la IA)` }] }] : []),
+              { t: 'bullets', heading: 'Para subir cada nota', items: tips.slice(0, 3).map((r) => line(r, 60)), only3D: true },
+              { t: 'bullets', heading: 'Para subir cada nota', items: tips.map((r) => line(r, 240)), htmlOnly: true },
             ];
           } else {
             panel.title = ['IA: CÓMO LA VENDISTE'];

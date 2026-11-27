@@ -20,8 +20,8 @@ import { FakeClock, FakeVoice, flush, GOOD_ANALYSIS } from './helpers.js';
 
 const LIMITS = { brand: 16, problem: 125, audience: 85, objective: 95, constraint: 95, guide: 100 };
 
-const crit = (rating, quote = 'cita corta', note = 'nota') => ({ rating, quote, note });
-const asp = (rating, note = 'se percibe parejo') => ({ rating, note });
+const crit = (rating, quote = 'cita corta', note = 'nota') => ({ rating, quote, note, tip: 'Sumá un ejemplo concreto para subir esta nota.' });
+const asp = (rating, note = 'se percibe parejo') => ({ rating, note, tip: 'Hacé una pausa corta entre ideas.' });
 /** Respuesta cruda tal como la devolvería el modelo en el pitch libre. */
 const RAW = () => ({
   audible: true,
@@ -34,6 +34,7 @@ const RAW = () => ({
     rationale: 'La propuesta se entiende; falta el cierre.',
   },
   selling: {
+    fillers: { count: 7, examples: ['eeeh ×5', 'o sea ×2'] },
     structure: asp(3, 'tiene principio y desarrollo'), persuasion: asp(2, 'no usa ejemplos'), pace: asp(4), clarity: asp(4), voice: asp(3), pauses: asp(3),
     rationale: 'Se entiende, pero falta apoyar con ejemplos.',
   },
@@ -289,7 +290,7 @@ test('Pitch libre: la devolución muestra las pestañas «tu idea» y «cómo la
   const session = await freeSessionWithResult();
   const settings = new Settings();
   const tabs = buildScreen(session, settings, {}).panel.options.filter((o) => o.kind === 'tab').map((o) => o.label);
-  assert.deepEqual(tabs, ['1 · Qué se midió', '2 · Autoevaluación', '3 · Consejos', '4 · IA: tu idea', '5 · IA: cómo la vendiste']);
+  assert.deepEqual(tabs, ['1 · Qué se midió', '2 · Autoevaluación', '3 · Consejos', '4 · IA: tu idea', '5 · IA: cómo la vendiste', '6 · IA: subir tus notas']);
 
   session.dispatch('SET_PAGE', { page: 3 });
   const idea = buildScreen(session, settings, {});
@@ -350,4 +351,28 @@ test('Pitch libre: los consejos usan la revisión humana del pitch libre, no la 
   session.dispatch('SET_PAGE', { page: 2 });
   const tips = buildScreen(session, new Settings(), {}).panel.blocks.find((b) => b.only3D && b.heading === 'Requiere revisión humana');
   assert.match(tips.items[0], /viable/);
+});
+
+test('Pitch libre: cada nota trae un consejo para subirla y se cuentan las muletillas', async () => {
+  const a = normalizeFreeAnalysis(RAW());
+  assert.equal(a.idea.criteria.problem.tip, 'Sumá un ejemplo concreto para subir esta nota.');
+  assert.equal(a.selling.aspects.pauses.tip, 'Hacé una pausa corta entre ideas.');
+  assert.deepEqual(a.selling.fillers, { count: 7, examples: ['eeeh ×5', 'o sea ×2'] });
+  const bad = RAW();
+  bad.selling.voice.tip = 'Hablá con más entusiasmo y seguridad.'; // las emociones en la voz se reemplazan
+  assert.equal(normalizeFreeAnalysis(bad).selling.aspects.voice.tip, OMITTED_EMOTION_NOTE);
+  const none = RAW(); delete none.selling.fillers;
+  assert.equal(normalizeFreeAnalysis(none).selling.fillers.count, null, 'sin dato no se inventa un conteo');
+  for (const { id } of FREE_IDEA_CRITERIA) assert.ok(FREE_RESPONSE_SCHEMA.properties.idea.required.includes(id) && FREE_RESPONSE_SCHEMA.properties.idea.properties[id].required.includes('tip'));
+  assert.match(FREE_SYSTEM_INSTRUCTION, /PALABRA POR PALABRA/);
+  assert.match(FREE_SYSTEM_INSTRUCTION, /eeeh/);
+
+  const session = await freeSessionWithResult();
+  session.dispatch('SET_PAGE', { page: 5 });
+  const page = buildScreen(session, new Settings(), {}).panel;
+  assert.deepEqual(page.title, ['IA: SUBÍ TUS NOTAS']);
+  assert.ok(page.blocks.some((b) => b.t === 'fields' && b.rows[0].k === 'Muletillas' && /7 en total/.test(b.rows[0].v)));
+  const tips3D = page.blocks.find((b) => b.t === 'bullets' && b.only3D);
+  assert.ok(tips3D.items.length > 0 && tips3D.items.length <= 3);
+  assert.ok(tips3D.items[0].startsWith('Cierre (2 / 5)'), 'primero el consejo de la nota más baja');
 });

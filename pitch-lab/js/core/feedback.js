@@ -231,6 +231,7 @@ function buildFreeSection(analysis) {
       display: item.rating == null ? 'Sin calificar' : `${item.rating} / 5`,
       level: item.rating == null ? null : RATING_LABELS[item.rating],
       note: item.note,
+      tip: item.tip || '',
       quote: withQuote ? item.quote : '',
       voice: !!d.voice,
     };
@@ -239,6 +240,7 @@ function buildFreeSection(analysis) {
     rated: analysis.rated,
     topic: analysis.topic,
     idea: { average: analysis.idea.average, display: ratingText(analysis.idea.average), rationale: analysis.idea.rationale, rows: rows(FREE_IDEA_CRITERIA, analysis.idea.criteria, true) },
+    fillers: analysis.selling.fillers,
     selling: { average: analysis.selling.average, display: ratingText(analysis.selling.average), rationale: analysis.selling.rationale, rows: rows(FREE_SELLING_ASPECTS, analysis.selling.aspects, false) },
   };
 }

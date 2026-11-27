@@ -127,6 +127,8 @@ const FREE_RAW = {
   improvements: [{ advice: 'Cerrá con un paso concreto: cómo se consigue la aplicación y qué hacer mañana.', why: 'El cierre no aparece.' }],
   limitations: ['Solo se evaluó el audio.'],
 };
+for (const group of [FREE_RAW.idea, FREE_RAW.selling]) for (const v of Object.values(group)) if (v && typeof v === 'object' && 'rating' in v) v.tip = 'Consejo largo de ejemplo para subir esta nota: sumá un ejemplo concreto, un dato y una frase de cierre que diga qué hacer después.';
+FREE_RAW.selling.fillers = { count: 9, examples: ['eeeh ×6', 'o sea ×3'] };
 const FREE_AI_RESULT = { model: 'gemini-de-prueba', attempts: [], analysis: normalizeFreeAnalysis(FREE_RAW) };
 
 const AI_RESULT = {
@@ -212,7 +214,7 @@ for (const id of SCENARIOS_TO_CHECK) {
       session.data.ai = { status: 'done', error: null, model: result.model };
       session.emit('change');
     }, result);
-    for (const p of [0, 2, 3, 4]) { await dispatch(page, 'SET_PAGE', { page: p }); await snap(page, `${id} · devolución ${p + 1} con IA${stayFree ? ' (pitch libre)' : ''}`); }
+    for (const p of stayFree ? [0, 2, 3, 4, 5] : [0, 2, 3, 4]) { await dispatch(page, 'SET_PAGE', { page: p }); await snap(page, `${id} · devolución ${p + 1} con IA${stayFree ? ' (pitch libre)' : ''}`); }
   }
   await dispatch(page, 'CHANGE_SCENARIO');
   await page.waitForFunction(() => ['select', 'home'].includes(window.pitchLab.session.state), null, { timeout: 8000 });
