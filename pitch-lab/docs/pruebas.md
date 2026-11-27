@@ -215,3 +215,16 @@ Nota sobre `tests/e2e/recursos-3d.json`: es una medición **informativa**. Se co
 (que esperaba 700 ms fijos) dio en dos corridas valores atrasados por una carrera de tiempos con el render por software (el espacio
 nuevo no se había dibujado); se corrigió esperando a que cambie el espacio y se completen 3 cuadros, y tres corridas posteriores
 coincidieron con la medición original.
+
+## Pitch libre (2026-11-27): qué se probó y qué no
+
+| Prueba | Resultado |
+|---|---|
+| Unitarias (`npm test`, incluye `tests/unit/free-pitch.test.js`, 17 pruebas) | 207/207 |
+| IA con API **simulada** (`tests/e2e/ai.mjs`, IA 11 y 12) | 12/12 |
+| Auditoría de legibilidad (con las pantallas del pitch libre) | 0 textos por debajo de 0,8° |
+| Suite e2e completa | 23/24: la 15 (recursos) agotó el tiempo con la máquina cargada y **pasa corrida sola** |
+| Suite WebXR (emulador) | 12/13: falla **X11** («Mantené presionado»). Falla **también en `main` y en el commit `94126c2`** (que antes pasaba), así que no es del pitch libre; **la causa no está diagnosticada** (probablemente tiempos del emulador en esta máquina) |
+
+**No se probó con la API real de Gemini:** el esquema y el prompt del pitch libre solo se verificaron con respuestas simuladas. Falta una corrida real
+con una clave propia. Tampoco se contrastaron las calificaciones con personas ni se calibraron.

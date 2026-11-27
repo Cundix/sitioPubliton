@@ -72,3 +72,16 @@ una presentación **sintética** (voz generada por un sistema de texto a voz); n
 
 Para actualizarlas después de un cambio visual: levantar el servidor (`node tools/serve.mjs`) y volver a correr los
 dos comandos de arriba.
+
+### Capturas del pitch libre (`68` a `72`)
+
+Se sacan con `node tools/shots-libre.mjs capturas`. **No llaman a ninguna API**: la devolución de la IA se **inyecta** con un resultado de ejemplo
+escrito a mano (un pitch ficticio sobre una app para repartir gastos). **Las calificaciones que se ven no son una respuesta real de Gemini.**
+
+| Archivo | Qué muestra |
+|---|---|
+| `68-pitch-libre-brief` | Paso del brief con «Pitch libre: SÍ» en el atril y la pantalla «SIN BRIEF» |
+| `72-pitch-libre-sin-ia` | Devolución del pitch libre sin IA: avisa que la calificación necesita la IA (opcional) |
+| `69-pitch-libre-ia-tu-idea` | «IA: tu idea» con el promedio calculado por la aplicación (resultado de ejemplo inyectado) |
+| `70-pitch-libre-ia-como-la-vendiste` | «IA: cómo la vendiste» (resultado de ejemplo inyectado) |
+| `71-pitch-libre-panel-de-texto` | El mismo resultado en el panel de texto accesible |

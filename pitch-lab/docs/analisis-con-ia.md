@@ -5,8 +5,9 @@ Esta función es **opcional**: sin clave y sin cámara, Pitch Lab funciona exact
 **interprete la idea frente al brief y cómo se escucha la entrega**, y que mida los gestos de las manos con la cámara.
 
 > **Es una interpretación, no una medición.** Lo que devuelve la IA puede equivocarse y se muestra siempre con esa
-> advertencia. No hay puntaje numérico, ni «confianza», ni «ansiedad», ni «emociones»: está prohibido en el prompt y
-> el esquema de respuesta no tiene lugar para eso (hay una prueba automática que lo verifica).
+> advertencia. No hay «confianza», ni «ansiedad», ni «emociones»: está prohibido en el prompt y el esquema de respuesta no tiene lugar
+> para eso (hay una prueba automática que lo verifica). **Con un brief tampoco hay puntaje numérico.** La única excepción es el
+> **pitch libre** (desde 2026-11-27, a pedido de la persona usuaria): ahí la IA califica de 1 a 5, con las reglas de la sección «Pitch libre».
 
 ## Qué hace
 
@@ -128,8 +129,43 @@ js/ai/
 - **Prohibido** inferir emociones, ánimo, ansiedad, personalidad, salud, edad, género u origen. Solo la entrega, con
   rasgos que se oyen; **ni siquiera como elogio** («tono entusiasta»). Además, la validación reemplaza por un aviso
   cualquier observación de la entrega que nombre una emoción o actitud (`EMOTION_PATTERN`).
-- **Sin puntajes numéricos.** Rúbrica en tres niveles (claro / parcial / falta) con cita y nota.
+- **Sin puntajes numéricos con un brief.** Rúbrica en tres niveles (claro / parcial / falta) con cita y nota. (El pitch libre califica de 1 a 5: ver abajo.)
 - Si casi no hay voz: `audible=false` y se explica en `limitations`.
+
+## Pitch libre: la IA califica la idea y cómo la vendés (desde 2026-11-27)
+
+**Qué es.** Un modo sin brief: la persona elige qué vender (un producto, un servicio, un proyecto o una idea, real o inventado) y, si activó la IA,
+esta califica **la idea** y **la forma de venderla**. Se activa en el paso del brief con el botón **«Pitch libre: NO/SÍ»** del atril (en el lugar de
+«Ajustes», porque el atril admite como máximo cuatro botones); «Usar un brief» o «Otro brief» vuelven a los briefs ficticios. Sin IA se practica igual
+(temporizador, medidas, autoevaluación), pero la preparación y la devolución avisan que **la calificación necesita la IA, que es opcional**.
+
+**Qué se califica** (escala entera de 1 a 5 por criterio; 1 = no aparece, 3 = se entiende pero es general, 5 = claro, concreto y bien sostenido):
+
+| Dimensión | Criterios |
+|---|---|
+| **Tu idea** (lo que se dice) | Problema o necesidad · Propuesta · Público · Beneficio o diferencial · Cierre. Cada uno con una **cita textual** corta y una nota |
+| **Cómo la vendiste** | Orden y hilo · Recursos para convencer (ejemplos, datos, comparaciones, una historia) · Ritmo · Claridad al hablar · Entonación y volumen · Pausas y muletillas |
+
+**Reglas de diseño (para que no sea una caja negra):**
+
+- **El promedio de cada dimensión lo calcula la aplicación** (una cifra decimal, p. ej. «3,2 / 5»); la IA **no inventa un puntaje total**. En la devolución
+  se dice «promedio de 5 criterios, calculado por la aplicación».
+- **Sin evidencia no hay 4 ni 5** en los criterios de la idea: si la IA no trae una cita textual, la aplicación baja la nota a 3 (`normalizeFreeAnalysis`).
+- Se califica **cómo está planteada y explicada** la idea, **no si funcionaría** ni si es un buen negocio (lo dice el aviso y lo exige el prompt).
+- Si hay muy poca voz, no se entiende o lo que se vende promueve daño, la IA devuelve `rated = false` y **no se muestra ninguna nota**: queda «Sin calificar» y el motivo.
+- Todo se rotula **«Calificación orientativa de la IA: interpretación del audio, no una medición ni una nota oficial. Puede equivocarse»**.
+- Siguen todas las reglas anteriores: el audio es **dato y no instrucciones**; no se evalúan emociones, ánimo ni personalidad; las observaciones de la **voz** (ritmo,
+  claridad, entonación, pausas) que nombren una emoción o actitud se reemplazan por un aviso (`EMOTION_PATTERN`; en el contenido no se aplica, porque «genera confianza»
+  puede ser parte del mensaje que se vende).
+- **No se envía ningún brief**: el pedido solo dice «pitch libre», el escenario, la duración medida y, si se activó, los números de la cámara.
+
+**Honestidad sobre los límites.** Una calificación de un modelo de lenguaje **no es una medición validada**: puede variar entre dos corridas con el mismo audio, depende de lo que el
+modelo entienda del audio y de cómo interprete la escala, y **no se contrastó con la opinión de personas ni se calibró**. La escala y los criterios son una propuesta de diseño del equipo.
+Por eso la devolución del pitch libre pide una revisión humana (si la idea es viable, si las calificaciones son justas, si la transcripción es fiel).
+
+**Cómo está en el código:** `FREE_BRIEF` (`config/briefs.js`), evento `TOGGLE_FREE_PITCH` (`core/state-machine.js`), `FREE_SYSTEM_INSTRUCTION`, `FREE_RESPONSE_SCHEMA`,
+`normalizeFreeAnalysis` y `analysisSetupFor` (`ai/analysis-prompt.js`), `buildAiSection` (`core/feedback.js`), pantallas en `core/screens.js` y detalle en `ui/html-blocks.js`.
+Pruebas: `tests/unit/free-pitch.test.js`, `tests/e2e/ai.mjs` (IA 11 y 12) y la auditoría de legibilidad.
 
 ## Gestos con la cámara: qué se mide y qué no
 

@@ -4,6 +4,7 @@
 import { APP_CONFIG, PRACTICE_QUESTIONS } from '../config/app-config.js';
 import { SOURCES, SOURCE_LABELS, computeMetrics, computeIndicator } from './metrics.js';
 import { summarizeRubric } from './rubric.js';
+import { FREE_IDEA_CRITERIA, FREE_SELLING_ASPECTS, RATING_LABELS } from '../ai/analysis-prompt.js';
 
 export function formatClock(totalSeconds) {
   const s = Math.max(0, Math.round(totalSeconds));
@@ -200,6 +201,48 @@ export const AI_DISCLAIMER_3D = 'Interpretación automática: puede equivocarse.
 /** Resumen de lo que no puede juzgar una herramienta, en una frase (versión 3D de HUMAN_REVIEW_ITEMS). */
 export const HUMAN_REVIEW_3D = 'Una persona debe revisar si el problema, la idea, el beneficio y el cierre se entienden.';
 
+/** Aviso del pitch libre, donde la IA SÍ califica (con escala de 1 a 5): sigue siendo una interpretación, no una medición. */
+export const AI_DISCLAIMER_FREE =
+  'Calificación orientativa de la IA: es una interpretación del audio, no una medición ni una nota oficial. Puede equivocarse. Evalúa cómo está planteada y explicada la idea, no si funcionaría.';
+export const AI_DISCLAIMER_FREE_3D = 'Orientativa: puede equivocarse. No dice si funcionaría.';
+export const HUMAN_REVIEW_FREE_3D = 'Una persona debe revisar si la idea es viable y si las calificaciones son justas.';
+export const HUMAN_REVIEW_FREE_ITEMS = [
+  'Si la idea es viable o buena como negocio: la IA no lo evalúa.',
+  'Si lo que dijiste es verdad y se puede cumplir.',
+  'Si las calificaciones te parecen justas: conviene pedir una segunda opinión.',
+  'Si la transcripción refleja lo que dijiste: el reconocimiento puede equivocarse.',
+];
+
+/** «3,4 / 5» (coma decimal, sin decimales si es entero) o «Sin calificar». */
+export function ratingText(value) {
+  if (value == null) return 'Sin calificar';
+  return `${String(value).replace('.', ',')} / 5`;
+}
+
+/** Filas de calificaciones del pitch libre. */
+function buildFreeSection(analysis) {
+  const rows = (defs, source, withQuote) => defs.map((d) => {
+    const item = source[d.id];
+    return {
+      id: d.id,
+      label: d.label,
+      question: d.question,
+      rating: item.rating,
+      display: item.rating == null ? 'Sin calificar' : `${item.rating} / 5`,
+      level: item.rating == null ? null : RATING_LABELS[item.rating],
+      note: item.note,
+      quote: withQuote ? item.quote : '',
+      voice: !!d.voice,
+    };
+  });
+  return {
+    rated: analysis.rated,
+    topic: analysis.topic,
+    idea: { average: analysis.idea.average, display: ratingText(analysis.idea.average), rationale: analysis.idea.rationale, rows: rows(FREE_IDEA_CRITERIA, analysis.idea.criteria, true) },
+    selling: { average: analysis.selling.average, display: ratingText(analysis.selling.average), rationale: analysis.selling.rationale, rows: rows(FREE_SELLING_ASPECTS, analysis.selling.aspects, false) },
+  };
+}
+
 /** Primera oración (acotada) de un texto, para mostrar en espacios chicos. */
 export function firstSentence(text, max = 120) {
   const clean = String(text || '').replace(/\s+/g, ' ').trim();
@@ -215,10 +258,14 @@ export function buildAiSection(ai) {
   if (ai.status === 'error') return { status: 'error', error: ai.error };
   const analysis = ai.result?.analysis;
   if (!analysis) return { status: 'error', error: { code: 'bad-response', message: 'No hay resultado del análisis.' } };
+  const failedBefore = (ai.result.attempts || []).map((a) => `${a.model} (${ATTEMPT_LABELS[a.code] || 'falló'})`);
+  if (analysis.mode === 'free') {
+    return { status: 'done', mode: 'free', model: ai.result.model, failedBefore, analysis, free: buildFreeSection(analysis), disclaimer: AI_DISCLAIMER_FREE };
+  }
   return {
     status: 'done',
     model: ai.result.model,
-    failedBefore: (ai.result.attempts || []).map((a) => `${a.model} (${ATTEMPT_LABELS[a.code] || 'falló'})`),
+    failedBefore,
     analysis,
     rubricRows: AI_RUBRIC_QUESTIONS.map((q) => ({
       id: q.id,
@@ -307,7 +354,8 @@ export function buildFeedback(capture, context, config = APP_CONFIG) {
     ai: buildAiSection(capture.ai),
     tips: buildTips(metrics, config),
     banners: buildBanners(metrics),
-    humanReview: HUMAN_REVIEW_ITEMS,
+    humanReview: context.free ? HUMAN_REVIEW_FREE_ITEMS : HUMAN_REVIEW_ITEMS,
+    free: !!context.free,
     rubricSummary: summarizeRubric(context.rubric || {}),
     questions: PRACTICE_QUESTIONS,
     sourceLabel: SOURCE_LABELS[capture.source] || SOURCE_LABELS.none,

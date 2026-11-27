@@ -26,6 +26,10 @@ Complementa el evento **Publitón** (TP4 de Diseño: experiencia inmersiva VR). 
    **gestos de las manos en tu dispositivo**. Es una *interpretación*, no una medición. Detalle, cuota y privacidad:
    [`docs/analisis-con-ia.md`](docs/analisis-con-ia.md).
 
+7. **Pitch libre (desde 2026-11-27)**: en el paso del brief, el botón **«Pitch libre»** del atril saca el brief ficticio y vos **vendés lo que quieras**. Si activaste la
+   IA, esta **califica de 1 a 5 la idea y la forma de venderla** (con cita, y con el promedio calculado por la aplicación). Es una calificación **orientativa**, no
+   una medición ni una nota oficial, y no dice si la idea funcionaría. Sin IA se practica igual, sin calificación. Detalle: [`docs/analisis-con-ia.md`](docs/analisis-con-ia.md).
+
 Los tres escenarios comparten la lógica y se diferencian en el **espacio**:
 
 | Escenario | Tiempo | Espacio | Público |

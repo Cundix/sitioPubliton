@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { launch, openPage, waitReady } from '../../tools/browser.mjs';
 import { wait, dispatch, state, words } from './helpers.mjs';
 import { MOCK_SPEECH_OK } from './mocks.mjs';
+import { normalizeFreeAnalysis } from '../../js/ai/analysis-prompt.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const MIN_DEG = 0.8;
@@ -98,6 +99,36 @@ function measure() {
 }
 
 // Resultado de IA de ejemplo con textos del largo que devuelve el modelo (para medir las pantallas «IA»).
+// Resultado de ejemplo del PITCH LIBRE (con textos largos para llevar las pantallas al límite).
+const FREE_RAW = {
+  audible: true,
+  rated: true,
+  transcript: 'Hoy les vendo una aplicación para repartir los gastos entre amigos cuando salen de viaje juntos.',
+  summary: 'Presenta una aplicación para repartir gastos entre amigos que viajan juntos.',
+  topic: 'Una aplicación para repartir los gastos de un viaje entre amigos sin discusiones ni planillas',
+  idea: {
+    problem: { rating: 4, quote: 'repartir los gastos entre amigos', note: 'Se entiende el problema: nadie sabe quién debe cuánto al final del viaje y eso genera discusiones.' },
+    proposal: { rating: 4, quote: 'una aplicación para repartir', note: 'Queda claro qué se vende y cómo se usaría, aunque falta mostrar un ejemplo del uso.' },
+    audience: { rating: 3, quote: '', note: 'Se nombra a los amigos que viajan, pero no se aclara qué edades o tipos de viaje.' },
+    value: { rating: 3, quote: '', note: 'El beneficio se menciona (evitar discusiones) sin comparar con las planillas que ya se usan.' },
+    close: { rating: 2, quote: '', note: 'No hay un cierre con un siguiente paso: falta decir cómo conseguir la aplicación.' },
+    rationale: 'La propuesta se entiende y el problema es cercano; falta mostrar la diferencia con lo que ya existe y cerrar con un paso concreto.',
+  },
+  selling: {
+    structure: { rating: 3, note: 'Tiene un principio claro y un desarrollo, pero el final queda abierto sin una frase de cierre.' },
+    persuasion: { rating: 2, note: 'No usa ejemplos, datos ni una historia que apoyen lo que dice.' },
+    pace: { rating: 4, note: 'Se percibe un ritmo parejo que permite seguir las ideas.' },
+    clarity: { rating: 4, note: 'Se entiende casi todo; algunas palabras se pierden al final de las frases.' },
+    voice: { rating: 3, note: 'La entonación varía poco y el volumen es parejo durante toda la presentación.' },
+    pauses: { rating: 3, note: 'Hay pausas cortas entre ideas y dos «eh» a lo largo del discurso.' },
+    rationale: 'Se entiende y se sigue bien, pero faltan ejemplos que hagan creíble el beneficio y una voz con más variación.',
+  },
+  strengths: ['Problema cercano y claro', 'Ritmo parejo'],
+  improvements: [{ advice: 'Cerrá con un paso concreto: cómo se consigue la aplicación y qué hacer mañana.', why: 'El cierre no aparece.' }],
+  limitations: ['Solo se evaluó el audio.'],
+};
+const FREE_AI_RESULT = { model: 'gemini-de-prueba', attempts: [], analysis: normalizeFreeAnalysis(FREE_RAW) };
+
 const AI_RESULT = {
   model: 'gemini-de-prueba',
   attempts: [],
@@ -153,6 +184,12 @@ for (const id of SCENARIOS_TO_CHECK) {
   await dispatch(page, 'ENTER');
   await wait(500);
   await snap(page, `${id} · brief`);
+  // Pitch libre: se mide también su pantalla del brief. En el primer espacio se sigue en pitch libre hasta el final (preparación, pausa,
+  // devolución con la calificación de la IA); en los demás se vuelve al brief ficticio para medir también ese recorrido.
+  await dispatch(page, 'TOGGLE_FREE_PITCH'); await wait(300);
+  await snap(page, `${id} · brief (pitch libre)`);
+  const stayFree = id === SCENARIOS_TO_CHECK[0];
+  if (!stayFree) await dispatch(page, 'TOGGLE_FREE_PITCH');
   await dispatch(page, 'PREPARE'); await dispatch(page, 'SET_INPUT_MODE', { mode: 'timer' });
   await snap(page, `${id} · preparación`);
   await dispatch(page, 'OPEN_AI'); await snap(page, `${id} · IA y cámara`); await dispatch(page, 'CLOSE');
@@ -166,15 +203,16 @@ for (const id of SCENARIOS_TO_CHECK) {
   await page.waitForFunction(() => ['feedback', 'review'].includes(window.pitchLab.session.state), null, { timeout: 8000 });
   if ((await state(page)) === 'review') { await dispatch(page, 'LOAD_DEMO'); await snap(page, `${id} · revisión`); await dispatch(page, 'CONTINUE'); }
   for (const p of [0, 1, 2]) { await dispatch(page, 'SET_PAGE', { page: p }); await snap(page, `${id} · devolución ${p + 1}`); }
-  if (id === SCENARIOS_TO_CHECK[0]) {
-    // Pantallas de la IA: se inyecta un resultado de ejemplo (no se llama a ninguna API).
+  if (stayFree || id === SCENARIOS_TO_CHECK[1]) {
+    // Pantallas de la IA: se inyecta un resultado de ejemplo (no se llama a ninguna API): con calificación en el pitch libre, con rúbrica en el otro.
+    const result = stayFree ? FREE_AI_RESULT : AI_RESULT;
     await page.evaluate((result) => {
       const { session } = window.pitchLab;
       session.capture.aiResult = result;
       session.data.ai = { status: 'done', error: null, model: result.model };
       session.emit('change');
-    }, AI_RESULT);
-    for (const p of [0, 2, 3, 4]) { await dispatch(page, 'SET_PAGE', { page: p }); await snap(page, `${id} · devolución ${p + 1} con IA`); }
+    }, result);
+    for (const p of [0, 2, 3, 4]) { await dispatch(page, 'SET_PAGE', { page: p }); await snap(page, `${id} · devolución ${p + 1} con IA${stayFree ? ' (pitch libre)' : ''}`); }
   }
   await dispatch(page, 'CHANGE_SCENARIO');
   await page.waitForFunction(() => ['select', 'home'].includes(window.pitchLab.session.state), null, { timeout: 8000 });

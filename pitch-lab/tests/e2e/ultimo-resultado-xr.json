@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-20T14:05:47.502Z",
+  "fecha": "2026-11-27T12:29:21.433Z",
   "nota": "Emulación con IWER (Meta Quest 3 simulado). No reemplaza una prueba en casco físico.",
   "resultados": [
     {
@@ -44,7 +44,8 @@
     },
     {
       "name": "X11. «Mantené presionado» para finalizar: un toque corto no termina y avisa dentro del casco; mantener sí termina",
-      "status": "ok"
+      "status": "FALLÓ",
+      "detail": "un toque corto no termina la presentación\n+ actual - expected\n\n+ 'feedback'\n- 'presenting'\n"
     },
     {
       "name": "X12. Salir de VR: la sesión termina y vuelve la interfaz de escritorio",

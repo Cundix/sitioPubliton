@@ -492,6 +492,119 @@ await test('IA 10. El navegador solo deja conectar con el propio sitio y con la 
   assert.match(csp, /connect-src 'self' https:\/\/generativelanguage\.googleapis\.com/);
 }, { browser, allow: [/Content Security Policy|Refused to connect|requestfailed/] });
 
+// ---------------------------------------------------------------------------
+// Pitch libre: sin brief; la IA califica la idea y cómo se la vende (1 a 5 por criterio; el promedio lo calcula la aplicación).
+const FREE_ANALYSIS = {
+  audible: true,
+  rated: true,
+  transcript: 'Hoy les vendo una aplicación para dividir gastos entre amigos.',
+  summary: 'Presenta una aplicación para dividir gastos entre amigos.',
+  topic: 'Una aplicación para dividir gastos entre amigos',
+  idea: {
+    problem: { rating: 4, quote: 'dividir gastos entre amigos', note: 'Se entiende el problema.' },
+    proposal: { rating: 5, quote: '', note: 'Queda claro qué se vende.' }, // un 5 sin cita textual baja a 3
+    audience: { rating: 3, quote: '', note: 'Habla de amigos en general.' },
+    value: { rating: 3, quote: '', note: 'El beneficio es general.' },
+    close: { rating: 2, quote: '', note: 'No hay un siguiente paso.' },
+    rationale: 'La propuesta se entiende; falta el cierre.',
+  },
+  selling: {
+    structure: { rating: 3, note: 'Tiene principio y desarrollo.' },
+    persuasion: { rating: 2, note: 'No usa ejemplos.' },
+    pace: { rating: 4, note: 'Se percibe un ritmo parejo.' },
+    clarity: { rating: 4, note: 'Se entiende casi todo.' },
+    voice: { rating: 3, note: 'La entonación varía poco.' },
+    pauses: { rating: 3, note: 'Hay pausas cortas.' },
+    rationale: 'Se entiende, pero faltan ejemplos.',
+  },
+  strengths: ['Se entiende qué se vende'],
+  improvements: [{ advice: 'Sumá un ejemplo concreto.', why: 'Hace creíble el beneficio.' }],
+  limitations: [],
+};
+
+await test('IA 11. Pitch libre: sin brief, el pedido lo dice y la IA devuelve calificaciones de 1 a 5 con el promedio calculado por la aplicación', async ({ page, context }) => {
+  const calls = await mockGemini(context, () => ok(FREE_ANALYSIS));
+  await setKey(page);
+  await dispatch(page, 'START');
+  if ((await state(page)) === 'tutorial') await dispatch(page, 'SKIP');
+  await dispatch(page, 'PICK_SCENARIO', { id: 'sala' });
+  await dispatch(page, 'ENTER');
+  await waitState(page, 'brief');
+  await resetView(page);
+  assert.match(await page.evaluate(() => window.pitchLab.hub.model.lectern.actions.find((a) => a.id === 'free-pitch').label), /Pitch libre: NO/);
+  await click3D(page, 'free-pitch'); // el botón del atril, con clic 3D real
+  assert.equal(await page.evaluate(() => window.pitchLab.session.isFreePitch), true);
+  assert.match(await page.evaluate(() => window.pitchLab.hub.model.panel.title.join(' ')), /PITCH LIBRE/);
+  assert.match(await page.evaluate(() => window.pitchLab.hub.model.lectern.actions.find((a) => a.id === 'free-pitch').label), /Pitch libre: SÍ/);
+  await dispatch(page, 'PREPARE');
+  await resetView(page);
+  await configureAi(page);
+  await click3D(page, 'begin');
+  await waitState(page, 'presenting');
+  await wait(5200);
+  await click3D(page, 'finish');
+  await waitState(page, 'feedback');
+  await waitAi(page, 'done');
+
+  const gen = calls.generate();
+  assert.equal(gen.length, 1);
+  const body = gen[0].body;
+  const text = body.contents[0].parts[0].text;
+  assert.match(text, /PITCH LIBRE/);
+  assert.doesNotMatch(text, /Marca ficticia|Restricción creativa/, 'no se manda ningún brief');
+  assert.match(body.systemInstruction.parts[0].text, /PITCH LIBRE/);
+  assert.match(body.systemInstruction.parts[0].text, /NO evalúes ni infieras emociones/, 'siguen las reglas de no evaluar emociones');
+  const schema = body.generationConfig.responseSchema;
+  assert.equal(schema.properties.idea.properties.problem.properties.rating.type, 'integer');
+  assert.match(schema.properties.idea.properties.problem.properties.rating.description, /1 a 5/);
+  assert.ok(schema.properties.selling.properties.pace);
+
+  const tabs = await page.evaluate(() => window.pitchLab.hub.model.panel.options.filter((o) => o.kind === 'tab').map((o) => o.label));
+  assert.deepEqual(tabs, ['1 · Qué se midió', '2 · Autoevaluación', '3 · Consejos', '4 · IA: tu idea', '5 · IA: cómo la vendiste']);
+  await click3D(page, 'tab-3');
+  assert.equal(await page.evaluate(() => window.pitchLab.hub.model.panel.title.join(' ')), 'IA: TU IDEA');
+  // promedio: 4 + 3 (el 5 sin cita baja a 3) + 3 + 3 + 2 = 15 / 5 = 3
+  const idea = await page.evaluate(() => window.pitchLab.hub.model.panel.blocks.find((b) => b.t === 'measures' && b.only3D).rows.map((r) => `${r.label}: ${r.display}`));
+  assert.equal(idea[0], 'Tu idea (promedio): 3 / 5');
+  assert.equal(idea[2], 'Propuesta: 3 / 5');
+  await page.keyboard.press('t');
+  await wait(250);
+  const drawer = await page.evaluate(() => document.getElementById('drawer-body').innerText);
+  assert.match(drawer, /tu idea: 3 \/ 5/i);
+  assert.match(drawer, /calificación orientativa/i);
+  assert.match(drawer, /no una medición ni una nota oficial/);
+  assert.match(drawer, /lo que vendiste/i); // los títulos se muestran en mayúsculas
+  await dispatch(page, 'SET_PAGE', { page: 4 });
+  assert.equal(await page.evaluate(() => window.pitchLab.hub.model.panel.title.join(' ')), 'IA: CÓMO LA VENDISTE');
+  assert.match(await page.evaluate(() => document.getElementById('drawer-body').innerText), /cómo la vendiste: 3,2 \/ 5/i); // (3+2+4+4+3+3) / 6
+  assert.equal(await modelOf(page), 'gemini-3.5-flash-lite');
+}, { browser, opts: { init: MOCK_SPEECH_ABSENT } });
+
+// ---------------------------------------------------------------------------
+await test('IA 12. Pitch libre sin IA: se practica igual y la devolución avisa que la calificación necesita la IA (opcional)', async ({ page, context }) => {
+  const calls = await mockGemini(context);
+  await dispatch(page, 'START');
+  if ((await state(page)) === 'tutorial') await dispatch(page, 'SKIP');
+  await dispatch(page, 'PICK_SCENARIO', { id: 'sala' });
+  await dispatch(page, 'ENTER');
+  await dispatch(page, 'TOGGLE_FREE_PITCH');
+  await dispatch(page, 'PREPARE');
+  await dispatch(page, 'SET_INPUT_MODE', { mode: 'timer' });
+  const prep = await page.evaluate(() => window.pitchLab.hub.model.panel.blocks.map((b) => b.label || '').filter(Boolean));
+  assert.ok(prep.includes('PITCH LIBRE'), 'la preparación avisa que la calificación necesita la IA');
+  await dispatch(page, 'BEGIN');
+  await waitState(page, 'presenting');
+  await wait(1200);
+  await dispatch(page, 'FINISH');
+  await waitState(page, 'feedback');
+  const tabs = await page.evaluate(() => window.pitchLab.hub.model.panel.options.filter((o) => o.kind === 'tab').map((o) => o.id));
+  assert.deepEqual(tabs, ['tab-0', 'tab-1', 'tab-2'], 'sin IA no hay pestañas de calificación');
+  await dispatch(page, 'SET_PAGE', { page: 2 });
+  const notice = await page.evaluate(() => window.pitchLab.hub.model.panel.blocks.find((b) => b.label === 'SIN IA')?.text || '');
+  assert.match(notice, /calificación de la idea y de cómo la vendiste necesita la IA/);
+  assert.equal(calls.length, 0, 'no se contactó a Google');
+}, { browser, opts: { init: MOCK_SPEECH_ABSENT } });
+
 await browser.close();
 const failed = results.filter((r) => r.status !== 'ok');
 const resultFile = path.join(here, 'ultimo-resultado-ia.json');

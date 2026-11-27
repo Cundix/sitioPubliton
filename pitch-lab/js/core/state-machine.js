@@ -51,6 +51,7 @@ export function createInitialData(overrides = {}) {
     aiReturn: S.PREP,
     scenarioId: null,
     briefIndex: overrides.briefIndex ?? 0,   // la app lo sortea al cargar; las pruebas parten del primero
+    freePitch: false,                        // pitch libre: sin brief; la persona elige qué vender (ver FREE_BRIEF)
     options: {
       inputMode: overrides.capabilities?.speech ? 'voice' : 'timer',
       unlimited: false,
@@ -126,7 +127,9 @@ export const FLOW = {
 
   [S.BRIEF]: {
     PREPARE: { to: S.PREP },
-    NEXT_BRIEF: { run: (d) => { d.briefIndex = (d.briefIndex + 1) % BRIEFS.length; } },
+    // Pasar a otro brief también sale del pitch libre; «Pitch libre» se activa y se desactiva aparte.
+    NEXT_BRIEF: { run: (d) => { d.briefIndex = (d.briefIndex + 1) % BRIEFS.length; d.freePitch = false; } },
+    TOGGLE_FREE_PITCH: { run: (d) => { d.freePitch = !d.freePitch; } },
     CHANGE_SCENARIO: { to: S.SELECT },
     OPEN_SETTINGS: { to: S.SETTINGS, run: (d) => { d.settingsReturn = S.BRIEF; } },
   },

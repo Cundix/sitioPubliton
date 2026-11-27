@@ -12,7 +12,7 @@
 import { Emitter } from './emitter.js';
 import { APP_CONFIG, DEMO_TRANSCRIPT } from '../config/app-config.js';
 import { getScenario } from '../config/scenarios.js';
-import { BRIEFS } from '../config/briefs.js';
+import { BRIEFS, FREE_BRIEF } from '../config/briefs.js';
 import { FLOW, S, ACTIVE_STATES, createInitialData, usesSpeech } from './state-machine.js';
 import { SOURCES } from './metrics.js';
 import { getTimeWarning } from './time-warnings.js';
@@ -81,7 +81,9 @@ export class Session extends Emitter {
   // ---------- Lectura ----------
 
   get scenario() { return getScenario(this.data.scenarioId); }
-  get brief() { return BRIEFS[this.data.briefIndex % BRIEFS.length]; }
+  get brief() { return this.data.freePitch ? FREE_BRIEF : BRIEFS[this.data.briefIndex % BRIEFS.length]; }
+  /** ¿Es un pitch libre (sin brief)? */
+  get isFreePitch() { return !!this.data.freePitch; }
   get isActive() { return ACTIVE_STATES.includes(this.state); }
   /** ¿Se está grabando audio para la IA ahora? */
   get aiRecording() { return this._aiAudioActive; }
@@ -143,7 +145,7 @@ export class Session extends Emitter {
   /** Devolución calculada con los datos reales de la captura. */
   getFeedback() {
     const t = this.getTranscript();
-    const key = JSON.stringify([t.text, t.source, this.capture.activeMs, this.capture.audio, this.data.rubric, this.totalSec, this.data.ai, this.capture.gestures, this.capture.aiResult?.model]);
+    const key = JSON.stringify([t.text, t.source, this.capture.activeMs, this.capture.audio, this.data.rubric, this.totalSec, this.data.ai, this.capture.gestures, this.capture.aiResult?.model, this.isFreePitch]);
     if (this._feedbackCache?.key === key) return this._feedbackCache.value;
     const value = buildFeedback(
       {
@@ -151,7 +153,7 @@ export class Session extends Emitter {
         gestures: this.capture.gestures,
         ai: { status: this.data.ai.status, error: this.data.ai.error, result: this.capture.aiResult },
       },
-      { targetSec: this.totalSec, rubric: this.data.rubric },
+      { targetSec: this.totalSec, rubric: this.data.rubric, free: this.isFreePitch },
       this.config,
     );
     this._feedbackCache = { key, value };

@@ -8,7 +8,7 @@
 //  - La clave la aporta la persona (no está en el código). Se envía solo a generativelanguage.googleapis.com.
 
 import { APP_CONFIG } from '../config/app-config.js';
-import { SYSTEM_INSTRUCTION, RESPONSE_SCHEMA, buildUserText, normalizeAnalysis } from './analysis-prompt.js';
+import { buildUserText, normalizeAnalysis, analysisSetupFor } from './analysis-prompt.js';
 
 export const AI_ERRORS = {
   'no-key': 'Falta la clave de la API de Gemini.',
@@ -103,8 +103,9 @@ export class GeminiClient {
     const approxMB = (audioBase64.length * 3) / 4 / 1048576;
     if (approxMB > this.config.maxRequestMB) throw new AiError('too-large');
 
+    const setup = analysisSetupFor(context.brief); // con brief o pitch libre: cambian la instrucción, el esquema y el saneamiento
     const body = {
-      systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      systemInstruction: { parts: [{ text: setup.systemInstruction }] },
       contents: [{
         role: 'user',
         parts: [
@@ -115,7 +116,7 @@ export class GeminiClient {
       generationConfig: {
         temperature: this.config.temperature,
         responseMimeType: 'application/json',
-        responseSchema: RESPONSE_SCHEMA,
+        responseSchema: setup.schema,
       },
     };
     const payload = JSON.stringify(body);
@@ -125,7 +126,7 @@ export class GeminiClient {
     for (const model of this.config.models) {
       onModel?.(model);
       try {
-        return { ...(await this._callOnce(model, payload, signal)), attempts };
+        return { ...(await this._callOnce(model, payload, signal, setup.normalize)), attempts };
       } catch (error) {
         lastError = error;
         attempts.push({ model, code: error.code });
@@ -137,7 +138,7 @@ export class GeminiClient {
     throw lastError || new AiError('unknown');
   }
 
-  async _callOnce(model, payload, externalSignal) {
+  async _callOnce(model, payload, externalSignal, normalize = normalizeAnalysis) {
     const controller = new AbortController();
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, this.config.timeoutMs);
@@ -178,7 +179,7 @@ export class GeminiClient {
       }
       let analysis;
       try {
-        analysis = normalizeAnalysis(parsed);
+        analysis = normalize(parsed);
       } catch (error) {
         throw new AiError('bad-response', error.message);
       }

@@ -32,7 +32,7 @@ Detalle completo en [`analisis-con-ia.md`](analisis-con-ia.md).
 | D16 | **`generateContent` en vez del endpoint nuevo `/interactions`** | `/interactions` exige la cabecera `Api-Revision`, que el navegador no puede enviar por CORS; `generateContent` sigue soportado y acepta CORS | `js/ai/gemini-client.js` |
 | D17 | **WAV mono de 16 kHz** como formato de envío | Formato soportado por la API, independiente del navegador (cada uno graba en un formato distinto) y de tamaño predecible | `js/ai/audio-capture.js` |
 | D18 | **La IA es opcional y nunca bloquea**: corre en segundo plano, con reintento y degradación a la devolución sin IA | Un fallo de red, cuota o clave no puede romper una práctica | `core/session.js` |
-| D19 | **Lo que dice la IA se rotula siempre como «interpretación»**, sin puntajes numéricos ni emociones; el indicador técnico no la usa | Requisito de transparencia del encargo: no inventar métricas de confianza, ansiedad o emociones | `core/feedback.js` (`AI_DISCLAIMER`), `ai/analysis-prompt.js` |
+| D19 | **Lo que dice la IA se rotula siempre como «interpretación»**, sin puntajes numéricos (**salvo en el pitch libre: ver D49**) ni emociones; el indicador técnico no la usa | Requisito de transparencia del encargo: no inventar métricas de confianza, ansiedad o emociones | `core/feedback.js` (`AI_DISCLAIMER`), `ai/analysis-prompt.js` |
 | D20 | **Gestos con MediaPipe en el dispositivo** (CPU, carga diferida, ≈22 MB incluidos en `vendor/`); solo salen cifras | El video nunca debe salir del dispositivo; sin CDN | `js/ai/gesture-tracker.js` |
 | D21 | **Se modificó el `vision_bundle.mjs` de MediaPipe** para desactivar su telemetría hacia `odml.pa.googleapis.com` | Una prueba de red mostró un host externo no previsto; contradecía «nada sale del dispositivo». Es el único cambio y consta en el archivo y en su README (Apache-2.0) | `vendor/mediapipe/README-mediapipe.md` |
 | D22 | **Política CSP `connect-src`** que limita las conexiones a sí mismo y a `generativelanguage.googleapis.com` | Defensa en profundidad: aunque una dependencia intentara enviar datos a otro lado, el navegador lo bloquea | `index.html` |
@@ -80,6 +80,20 @@ Detalle y datos técnicos: [`../assets/personas/LEEME.md`](../assets/personas/LE
 | D45 | **Se cargan una sola vez al abrir la página y sin bloquear**; si no cargaron al armar un espacio, ese público queda con figuras genéricas | La carga son ~2 MB; bloquear el inicio por algo decorativo no se justifica y un fallo de red no debe romper la práctica (prueba 2c) | `loadPersonas()` en `personas.js` |
 | D46 | **Nombres neutros** (`persona-01.glb`…) y el original no se sube; **el permiso de los docentes lo informó la persona usuaria (27/11), sin constancia escrita; la licencia queda pendiente** | Son modelos de docentes reales del colegio (hechos por la persona usuaria para otro proyecto): no se publican sus nombres, y conviene dejar asentado el permiso y confirmar con qué licencia se generaron | `assets/personas/LEEME.md` |
 | D47 | **Son decorativas, como el resto del público**: balanceo y respiración apenas perceptibles, se detienen con «movimiento reducido»; no giran la cabeza ni reaccionan | Son mallas fijas (D42). Mantiene la regla de que el público no reacciona a lo dicho ni al puntaje | `poseCameos` en `audience.js` |
+
+## Decisiones del pitch libre (2026-11-27)
+
+Detalle: [`analisis-con-ia.md`](analisis-con-ia.md), sección «Pitch libre».
+
+| # | Decisión | Motivo | Cómo cambiarla |
+|---|---|---|---|
+| D48 | **Modo «Pitch libre»**: sin brief, la persona vende lo que quiera; la IA (opcional) califica la idea y cómo la vende | Pedido de la persona usuaria («que vos vendés lo que quieras y la IA te gradúe en la idea y la forma de venderlo») | `FREE_BRIEF` en `config/briefs.js` |
+| D49 | **En el pitch libre la IA SÍ califica** (escala de 1 a 5); con un brief sigue sin haber puntajes (D19) | Lo pidió la persona usuaria. Se compensa con las reglas D50 a D52 y con el aviso «calificación orientativa, no una medición ni una nota oficial». Es un cambio de criterio respecto de lo que se había decidido el 2026-11-13: lo que el informe decía de «sin puntajes» ahora vale solo para el modo con brief | `analysisSetupFor()` en `ai/analysis-prompt.js` |
+| D50 | **El promedio de cada dimensión lo calcula la aplicación**, con la fórmula visible; la IA no da un puntaje total | Un total inventado por el modelo es opaco; el promedio de criterios con cita se puede revisar | `averageRating()` |
+| D51 | **Sin cita textual no hay 4 ni 5** en los criterios de la idea; si la IA no puede calificar (poca voz, inaudible, contenido dañino) no se muestra ninguna nota | Evita notas altas sin evidencia y notas inventadas | `normalizeFreeAnalysis()` |
+| D52 | **Se califica cómo está planteada y explicada la idea, no si funcionaría**; las observaciones de la voz siguen sin hablar de emociones | Un modelo no puede predecir el éxito de una idea; mantiene la regla de no evaluar emociones ni personalidad | `FREE_SYSTEM_INSTRUCTION`, `EMOTION_PATTERN` |
+| D53 | **El botón «Pitch libre» está en el atril, en el lugar de «Ajustes»** del paso del brief | Como opción del panel, el brief ya no entraba con la letra mínima (la auditoría de legibilidad lo detectó); el atril admite 4 botones. «Ajustes» sigue en el inicio y en la elección de escenario | `case S.BRIEF` en `core/screens.js` |
+| D54 | **Sin IA se puede practicar el pitch libre**, pero la calificación no existe: la preparación y la devolución lo avisan | La IA es opcional y con clave propia; no se simula ninguna nota | `buildScreen` (PREP y FEEDBACK) |
 
 ## Decisiones de diseño y alcance
 

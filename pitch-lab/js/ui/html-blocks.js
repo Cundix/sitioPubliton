@@ -70,6 +70,8 @@ function renderAiFull({ ai, part, gestures }) {
   const before = ai.failedBefore?.length ? ` Antes se intentó con ${ai.failedBefore.join('; ')}.` : '';
   const foot = `<p class="muted small-text ai-model">Modelo: ${esc(ai.model || 'desconocido')}.${esc(before)} ${esc(ai.disclaimer)}</p>`;
 
+  if (ai.mode === 'free') return renderFreeAi({ ai, part, gestures, foot });
+
   if (part === 'content') {
     const rubric = ai.rubricRows.map((r) => `
       <div class="ai-item"><dt>${esc(r.label)}: <strong>${esc(r.display)}</strong></dt>
@@ -94,6 +96,44 @@ function renderAiFull({ ai, part, gestures }) {
       <div class="ai-item"><dt>Pausas</dt><dd>${esc(a.delivery.pauses.observation)}</dd></div>
       <div class="ai-item"><dt>Muletillas</dt><dd>${esc(a.delivery.fillers.observation)}</dd></div>
     </dl>
+    ${g}
+    ${a.limitations.length ? `<h3>Límites de este análisis</h3>${li(a.limitations)}` : ''}
+    ${foot}</section>`;
+}
+
+/**
+ * Detalle del pitch libre: calificaciones de 1 a 5 por criterio, el promedio que calcula la aplicación y el motivo.
+ * Todo el texto viene de la IA y se escapa.
+ */
+function renderFreeAi({ ai, part, gestures, foot }) {
+  const a = ai.analysis;
+  const f = ai.free;
+  const notRated = !f.rated
+    ? `<p class="notice notice-warn" role="note"><strong>SIN CALIFICAR</strong> La IA no pudo calificar esta presentación (poca voz, no se entendió o el contenido no se puede calificar). ${a.limitations.length ? esc(a.limitations.join(' ')) : ''}</p>`
+    : '';
+  const item = (r) => `<div class="ai-item"><dt>${esc(r.label)}: <strong>${esc(r.display)}</strong>${r.level ? ` <span class="muted">· ${esc(r.level)}</span>` : ''}</dt>
+      <dd><span class="muted">${esc(r.question)}</span> ${esc(r.note)}${r.quote ? `<blockquote class="quote">«${esc(r.quote)}»</blockquote>` : ''}</dd></div>`;
+
+  if (part === 'content') {
+    return `<section class="ai-report" aria-label="Calificación de la idea">
+      ${notRated}
+      ${f.topic ? `<h3>Lo que vendiste</h3><p>${esc(f.topic)}</p>` : ''}
+      <p class="indicator-line"><strong>Tu idea: ${esc(f.idea.display)}</strong> <span class="muted">(promedio de 5 criterios, calculado por la aplicación)</span></p>
+      ${f.idea.rationale ? `<p>${esc(f.idea.rationale)}</p>` : ''}
+      <h3>Por criterio (con cita textual)</h3><dl class="ai-list">${f.idea.rows.map(item).join('')}</dl>
+      ${a.strengths.length ? `<h3>Lo que funcionó</h3>${li(a.strengths)}` : ''}
+      ${a.improvements.length ? `<h3>Para mejorar</h3><ol class="tips">${a.improvements.map((i) => `<li>${esc(i.advice)}${i.why ? `<small>Por qué: ${esc(i.why)}</small>` : ''}</li>`).join('')}</ol>` : ''}
+      ${foot}</section>`;
+  }
+  const g = gestures?.measured
+    ? `<h3>Gestos (cámara, medido en tu dispositivo)</h3><p>Manos a la vista el ${Math.round(gestures.handsVisibleShare * 100)} % del tiempo; dos manos el ${Math.round(gestures.twoHandsShare * 100)} %; movimiento ${esc(gestures.movementLabel)}. Es una medida aproximada del movimiento de las manos: no evalúa si el gesto fue adecuado.</p>`
+    : '';
+  return `<section class="ai-report" aria-label="Calificación de cómo la vendiste">
+    ${notRated}
+    <p class="indicator-line"><strong>Cómo la vendiste: ${esc(f.selling.display)}</strong> <span class="muted">(promedio de 6 aspectos, calculado por la aplicación)</span></p>
+    ${f.selling.rationale ? `<p>${esc(f.selling.rationale)}</p>` : ''}
+    <dl class="ai-list">${f.selling.rows.map(item).join('')}</dl>
+    <p class="muted small-text">Ritmo, claridad, entonación y pausas describen cómo se oye la voz; no evalúan emociones ni personalidad.</p>
     ${g}
     ${a.limitations.length ? `<h3>Límites de este análisis</h3>${li(a.limitations)}` : ''}
     ${foot}</section>`;

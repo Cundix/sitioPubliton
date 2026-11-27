@@ -504,11 +504,11 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
   ctx.textBaseline = 'alphabetic';
   ctx.font = `700 40px ${FONT.body}`;
   ctx.fillStyle = COLORS.yellow;
-  drawSpaced(ctx, `BRIEF · ${(scenarioName || '').toUpperCase()}`, m, 100, 6);
+  drawSpaced(ctx, `${brief.free ? 'PITCH LIBRE' : 'BRIEF'} · ${(scenarioName || '').toUpperCase()}`, m, 100, 6);
 
-  // Etiqueta de marca ficticia
+  // Etiqueta de marca ficticia (o «sin brief» en el pitch libre)
   ctx.font = `700 42px ${FONT.body}`;
-  const label = 'MARCA FICTICIA';
+  const label = brief.free ? 'SIN BRIEF' : 'MARCA FICTICIA';
   const lw = ctx.measureText(label).width + 100;
   roundRect(ctx, W - m - lw, 48, lw, 76, 38);
   ctx.fillStyle = COLORS.pink;
@@ -526,12 +526,12 @@ export function drawBriefScreen(ctx, W, H, brief, scenarioName) {
   ctx.fillText(brief.brand.toUpperCase(), m, 300);
   ctx.font = `400 40px ${FONT.body}`;
   ctx.fillStyle = COLORS.muted;
-  ctx.fillText(brief.brandNote.replace('Marca ficticia · ', '').toUpperCase(), m, 360);
+  ctx.fillText(brief.brandNote.replace(/^(Marca ficticia|Sin brief) · /i, '').toUpperCase(), m, 360);
 
   // Campos 2 × 2
   const fields = [
-    ['Problema', brief.problem], ['Público', brief.audience],
-    ['Objetivo', brief.objective], ['Restricción creativa', brief.constraint],
+    [brief.free ? 'Qué vendés' : 'Problema', brief.problem], ['Público', brief.audience],
+    ['Objetivo', brief.objective], [brief.free ? 'Restricción' : 'Restricción creativa', brief.constraint],
   ];
   const colW = (W - m * 2 - 70) / 2;
   fields.forEach(([k, v], i) => {
@@ -574,7 +574,7 @@ export function drawBriefCompact(ctx, W, H, brief) {
 
   ctx.textBaseline = 'alphabetic';
   ctx.font = `700 104px ${FONT.body}`;
-  const label = 'MARCA FICTICIA';
+  const label = brief.free ? 'SIN BRIEF' : 'MARCA FICTICIA';
   const lw = ctx.measureText(label).width + 90;
   roundRect(ctx, 40, 34, lw, 140, 70);
   ctx.fillStyle = COLORS.pink;

@@ -115,3 +115,20 @@ export const BRIEFS = [
     guide: 'Contá qué frena a la gente, tu idea para animarla, cómo se siente el encuentro y el primer paso.',
   },
 ];
+
+/**
+ * Pitch libre: no hay brief. La persona elige qué vender (un producto, un servicio, un proyecto o una idea, real o inventado) y la IA
+ * —solo si está activada— califica la idea y la forma de venderla. Tiene la misma forma que un brief para que el resto de la
+ * experiencia (panel, pantallas del espacio) lo muestre igual, y respeta los mismos límites de largo. `free: true` lo distingue.
+ */
+export const FREE_BRIEF = {
+  id: 'libre',
+  free: true,
+  brand: 'Pitch libre',
+  brandNote: 'Sin brief · vendés lo que quieras',
+  problem: 'Lo elegís vos: un producto, un servicio, un proyecto o una idea. Decí al empezar qué vendés.',
+  audience: 'Quien vos quieras: decí a quién le hablás.',
+  objective: 'Convencer a la audiencia de que tu idea merece una oportunidad.',
+  constraint: 'Ninguna: es libre. Puede ser real o inventado, serio o divertido.',
+  guide: 'Decí qué vendés, para quién es, qué problema resuelve y cómo conseguirlo.',
+};

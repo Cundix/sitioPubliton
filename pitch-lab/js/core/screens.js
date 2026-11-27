@@ -14,7 +14,9 @@ import { SCENARIOS } from '../config/scenarios.js';
 import { BRIEFS } from '../config/briefs.js';
 import { APP_CONFIG } from '../config/app-config.js';
 import { RUBRIC_QUESTIONS, answerInfo } from './rubric.js';
-import { formatClock, firstSentence, AI_DISCLAIMER, AI_DISCLAIMER_3D, HUMAN_REVIEW_3D } from './feedback.js';
+import {
+  formatClock, firstSentence, AI_DISCLAIMER, AI_DISCLAIMER_3D, HUMAN_REVIEW_3D, AI_DISCLAIMER_FREE, AI_DISCLAIMER_FREE_3D, HUMAN_REVIEW_FREE_3D,
+} from './feedback.js';
 import { SOURCES, SOURCE_LABELS } from './metrics.js';
 import { WARNING_LABELS } from './time-warnings.js';
 import { snapTurnLabel, heightLabel } from './settings.js';
@@ -46,7 +48,7 @@ const TUTORIAL = [
     eyebrow: 'TUTORIAL 3 DE 3',
     title: ['CÓMO SE', 'PRESENTA'],
     bullets: [
-      'Elegís un espacio y recibís un brief ficticio.',
+      'Elegís un espacio y recibís un brief ficticio, o activás «Pitch libre» y vendés lo que quieras.',
       'Te preparás y empezás cuando quieras. Podés pausar o terminar antes.',
       'Hablás con micrófono o practicás solo con el temporizador. Al final hay una devolución y podés reintentar.',
     ],
@@ -116,7 +118,7 @@ function aiStatusPage(session, ai, panel) {
   if (ai.status === 'off') {
     panel.title = ['IA NO', 'ACTIVADA'];
     panel.blocks = [
-      { t: 'p', text: 'Activala en la preparación, en «IA y cámara», para recibir un análisis del audio: contenido frente al brief, entrega y consejos.' },
+      { t: 'p', text: session.isFreePitch ? 'Activala en la preparación, en «IA y cámara», para que la IA califique tu idea y cómo la vendiste.' : 'Activala en la preparación, en «IA y cámara», para recibir un análisis del audio: contenido frente al brief, entrega y consejos.' },
       { t: 'notice', kind: 'info', label: 'OPCIONAL', text: 'Hace falta tu propia clave de Gemini. Sin ella todo lo demás funciona igual.' },
     ];
     return true;
@@ -213,7 +215,7 @@ export function buildScreen(session, settings, env = {}) {
       panel.eyebrow = 'PUBLITÓN · PITCH LAB';
       panel.title = ['TU IDEA MERECE', 'UN BUEN PITCH.'];
       panel.blocks = [
-        { t: 'p', text: 'Elegí un espacio, recibí un brief ficticio y presentá tu propuesta frente a una audiencia virtual.' },
+        { t: 'p', text: 'Elegí un espacio, recibí un brief ficticio (o elegí «Pitch libre» y vendé lo que quieras) y presentá frente a una audiencia virtual.' },
         { t: 'p', tone: 'muted', text: 'Al terminar, una devolución te muestra lo que se pudo medir y podés volver a intentarlo.' },
       ];
       lectern.status = 'INICIO';
@@ -303,24 +305,27 @@ export function buildScreen(session, settings, env = {}) {
     }
 
     case S.BRIEF:
-      panel.eyebrow = `${sc.name.toUpperCase()} · BRIEF`;
+      panel.eyebrow = `${sc.name.toUpperCase()} · ${brief.free ? 'PITCH LIBRE' : 'BRIEF'}`;
       panel.title = [brief.brand.toUpperCase()];
       panel.blocks = [
-        { t: 'notice', kind: 'info', label: 'MARCA FICTICIA', text: brief.brandNote.replace(/^Marca ficticia · /i, '').replace(/^./, (c) => c.toUpperCase()) },
+        { t: 'notice', kind: 'info', label: brief.free ? 'SIN BRIEF' : 'MARCA FICTICIA', text: brief.brandNote.replace(/^(Marca ficticia|Sin brief) · /i, '').replace(/^./, (c) => c.toUpperCase()) },
         { t: 'fields', rows: [
-          { k: 'Problema', v: brief.problem },
+          { k: brief.free ? 'Qué vendés' : 'Problema', v: brief.problem },
           { k: 'Público', v: brief.audience },
           { k: 'Objetivo', v: brief.objective },
-          { k: 'Restricción creativa', v: brief.constraint },
+          { k: brief.free ? 'Restricción' : 'Restricción creativa', v: brief.constraint },
         ] },
       ];
-      lectern.status = 'BRIEF';
+      // «Pitch libre»: sin brief, vendés lo que quieras; si la IA está activada, califica la idea y cómo la vendés.
+      // El botón va en el atril y no en el panel: con opciones, el panel reserva una columna y el brief ya no entra con la letra mínima.
+      // El atril admite 4 botones: «Pitch libre» ocupa el lugar de «Ajustes», que sigue en el inicio y en la elección de escenario.
+      lectern.status = brief.free ? 'PITCH LIBRE' : 'BRIEF';
       lectern.hint = brief.guide;
       lectern.actions = [
         act('prepare', 'Preparar presentación', 'primary', ev('PREPARE')),
-        act('other-brief', `Otro brief ${(data.briefIndex % BRIEFS.length) + 1}/${BRIEFS.length}`, 'secondary', ev('NEXT_BRIEF')),
+        act('other-brief', brief.free ? 'Usar un brief' : `Otro brief ${(data.briefIndex % BRIEFS.length) + 1}/${BRIEFS.length}`, 'secondary', ev('NEXT_BRIEF')),
+        act('free-pitch', `Pitch libre: ${data.freePitch ? 'SÍ' : 'NO'}`, 'secondary', { ...ev('TOGGLE_FREE_PITCH'), on: !!data.freePitch }),
         act('change-scenario', 'Cambiar escenario', 'secondary', ev('CHANGE_SCENARIO')),
-        act('settings', 'Ajustes', 'secondary', ev('OPEN_SETTINGS')),
       ];
       break;
 
@@ -332,8 +337,11 @@ export function buildScreen(session, settings, env = {}) {
       panel.blocks = [
         { t: 'p', text: `Dura ${options.unlimited ? 'lo que necesites' : formatClock(sc.durationSec)}. Pensá en este orden:` },
         { t: 'bullets', items: ['1. El problema', '2. Tu idea', '3. El beneficio', '4. Un cierre con propuesta clara'] },
+        ...(brief.free && !options.aiAnalysis
+          ? [{ t: 'notice', kind: 'info', label: 'PITCH LIBRE', optional3D: true, text: 'La IA califica tu idea y cómo la vendés. Es opcional: activala en «IA y cámara». Sin IA, igual podés practicar con el temporizador.', text3D: 'La calificación necesita la IA (opcional).' }]
+          : []),
         options.aiAnalysis
-          ? { t: 'notice', kind: 'privacy', label: 'IA ACTIVADA · QUÉ SE ENVÍA', text: AI_DISCLOSURE, text3D: AI_DISCLOSURE_3D }
+          ? { t: 'notice', kind: 'privacy', label: 'IA ACTIVADA · QUÉ SE ENVÍA', text: brief.free ? AI_DISCLOSURE.replace('junto con el brief', 'avisando que es un pitch libre') : AI_DISCLOSURE, text3D: AI_DISCLOSURE_3D }
           : voice
             ? { t: 'notice', kind: 'privacy', label: 'MICRÓFONO', text: MIC_DISCLOSURE, text3D: MIC_DISCLOSURE_3D }
             : { t: 'notice', kind: 'info', label: options.gestures ? 'TEMPORIZADOR Y CÁMARA' : 'SOLO TEMPORIZADOR', text: options.gestures ? 'No se usa el micrófono. La cámara mide tus manos en este dispositivo y no sale ningún video.' : 'No se usa el micrófono. Al terminar hacés una autoevaluación.' },
@@ -429,8 +437,8 @@ export function buildScreen(session, settings, env = {}) {
         { t: 'kv', rows: [{ k: 'Tiempo usado', v: formatClock(session.getTimeView().elapsedSec) }] },
         // Reconocer en vez de recordar: en la pausa se puede volver a leer el brief (en la presentación el panel no tapa al público).
         { t: 'fields', small: true, optional3D: true, rows: [
-          { k: 'Tu brief · marca ficticia', v: brief.brand },
-          { k: 'Restricción creativa', v: brief.constraint },
+          { k: brief.free ? 'Tu pitch' : 'Tu brief · marca ficticia', v: brief.brand },
+          { k: brief.free ? 'Restricción' : 'Restricción creativa', v: brief.constraint },
         ] },
       ];
       lectern.status = 'EN PAUSA';
@@ -494,8 +502,8 @@ export function buildScreen(session, settings, env = {}) {
         act('tab-1', '2 · Autoevaluación', 'tab', { ...ev('SET_PAGE', { page: 1 }), on: page === 1 }),
         act('tab-2', '3 · Consejos', 'tab', { ...ev('SET_PAGE', { page: 2 }), on: page === 2 }),
         ...(fb.ai.status !== 'off' ? [
-          act('tab-3', '4 · IA: contenido', 'tab', { ...ev('SET_PAGE', { page: 3 }), on: page === 3 }),
-          act('tab-4', '5 · IA: entrega', 'tab', { ...ev('SET_PAGE', { page: 4 }), on: page === 4 }),
+          act('tab-3', fb.free ? '4 · IA: tu idea' : '4 · IA: contenido', 'tab', { ...ev('SET_PAGE', { page: 3 }), on: page === 3 }),
+          act('tab-4', fb.free ? '5 · IA: cómo la vendiste' : '5 · IA: entrega', 'tab', { ...ev('SET_PAGE', { page: 4 }), on: page === 4 }),
         ] : []),
       ];
       if (page === 0) {
@@ -528,15 +536,37 @@ export function buildScreen(session, settings, env = {}) {
             ? [{ t: 'bullets', heading: 'De la IA (puede equivocarse)', items: fb.ai.analysis.improvements.map((i) => i.advice), max3D: 1, optional3D: true }]
             : []),
           { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, htmlOnly: true },
-          { t: 'bullets', heading: 'Requiere revisión humana', items: [HUMAN_REVIEW_3D], only3D: true },
+          { t: 'bullets', heading: 'Requiere revisión humana', items: [fb.free ? HUMAN_REVIEW_FREE_3D : HUMAN_REVIEW_3D], only3D: true },
           ...(fb.ai.status === 'off'
-            ? [{ t: 'notice', kind: 'info', label: 'SIN IA', optional3D: true, text: 'La evaluación con IA es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a una persona del equipo.', text3D: 'La IA es opcional: se activa en la preparación, en «IA y cámara».' }]
+            ? [{ t: 'notice', kind: 'info', label: 'SIN IA', optional3D: true, text: fb.free ? 'La calificación de la idea y de cómo la vendiste necesita la IA, que es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a otra persona.' : 'La evaluación con IA es opcional: activala en la preparación, en «IA y cámara». Mientras tanto, pedí una opinión a una persona del equipo.', text3D: 'La IA es opcional: se activa en la preparación, en «IA y cámara».' }]
             : []),
           { t: 'bullets', heading: 'Preguntas de práctica (predefinidas; no responden a lo que dijiste)', items: fb.questions, htmlOnly: true },
         ];
       } else if (!aiStatusPage(session, fb.ai, panel)) {
         const { analysis } = fb.ai;
-        if (page === 3) {
+        if (fb.ai.mode === 'free') {
+          const f = fb.ai.free;
+          const row = (label, display, available) => ({ label, display, available });
+          const rowsOf = (list) => list.map((r) => row(r.label, r.display, r.rating != null));
+          const g = fb.gestures;
+          if (page === 3) {
+            panel.title = ['IA: TU IDEA'];
+            panel.blocks = [
+              { t: 'notice', kind: 'info', label: 'CALIFICACIÓN ORIENTATIVA', text: AI_DISCLAIMER_FREE, text3D: AI_DISCLAIMER_FREE_3D },
+              ...(f.topic ? [{ t: 'fields', small: true, only3D: true, optional3D: true, rows: [{ k: 'Vendiste', v: firstSentence(f.topic, 78) }] }] : []),
+              { t: 'measures', only3D: true, rows: [row('Tu idea (promedio)', f.idea.display, f.idea.average != null), ...rowsOf(f.idea.rows)] },
+              { t: 'aifull', ai: fb.ai, part: 'content', htmlOnly: true },
+            ];
+          } else {
+            panel.title = ['IA: CÓMO LA VENDISTE'];
+            panel.blocks = [
+              { t: 'notice', kind: 'info', label: 'CALIFICACIÓN ORIENTATIVA', text: AI_DISCLAIMER_FREE, text3D: 'Orientativa. No evalúa emociones ni personalidad.' },
+              { t: 'measures', only3D: true, rows: [row('Cómo la vendiste (promedio)', f.selling.display, f.selling.average != null), ...rowsOf(f.selling.rows.filter((r) => ['structure', 'persuasion', 'clarity'].includes(r.id)))] },
+              { t: 'measures', only3D: true, optional3D: true, rows: rowsOf(f.selling.rows.filter((r) => ['pace', 'voice', 'pauses'].includes(r.id))) },
+              { t: 'aifull', ai: fb.ai, part: 'selling', gestures: g, htmlOnly: true },
+            ];
+          }
+        } else if (page === 3) {
           panel.title = ['IA: CONTENIDO'];
           panel.blocks = [
             { t: 'notice', kind: 'info', label: 'EVALUACIÓN ASISTIDA POR IA', text: AI_DISCLAIMER, text3D: AI_DISCLAIMER_3D },

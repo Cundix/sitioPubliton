@@ -82,6 +82,7 @@ Son dos fuentes **opcionales** que se muestran aparte y **no entran en el «Indi
 | Rúbrica de contenido (claro / parcial / falta) con cita | **Interpretación** de la IA | Gemini analiza el audio frente al brief | Puede equivocarse; revisar con una persona |
 | Ritmo, claridad, entonación y volumen, pausas, muletillas «percibidos» | **Interpretación** de la IA | Gemini, a partir del audio | No es medición; no hay números ni puntajes |
 | Transcripción de la IA | **Interpretación** | Solo si el navegador no ofrece reconocimiento de voz | Puede tener errores; se rotula «Transcripción de la IA» |
+| **Calificación de 1 a 5** de la idea y de cómo se vendió (solo en el **pitch libre**) | **Interpretación** orientativa de la IA; el **promedio lo calcula la aplicación** | Gemini califica cada criterio con una cita; la aplicación promedia | No es una medición ni una nota oficial; no se validó ni se calibró; califica cómo está explicada la idea, no si funcionaría |
 
 Las palabras por minuto y las muletillas de la IA **no** se mezclan con las del reconocimiento del navegador: si
 hay reconocimiento, manda ese texto; la IA se usa solo como respaldo cuando no lo hay.
