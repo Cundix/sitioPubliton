@@ -546,6 +546,9 @@ export class Session extends Emitter {
         durationSec: payload.durationSec,
         targetSec: this.totalSec,
         gestures: payload.gestures,
+        // Lo que ya midió la aplicación (duración, uso del tiempo, ritmo, muletillas, audio): la IA lo comenta sin contradecirlo.
+        measures: (this.getFeedback().measurements || []).filter((m) => m.available).map((m) => ({ label: m.label, display: m.display, note: m.note || '' })),
+        listeners: this.scenario.audience?.seats?.length || null,
       },
     })).then(
       (result) => {

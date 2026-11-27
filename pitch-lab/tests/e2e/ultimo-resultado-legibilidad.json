@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-11-27T13:46:27.053Z",
+  "fecha": "2026-11-27T14:05:21.740Z",
   "nota": "Medición con la geometría real en un navegador de pruebas. No reemplaza una prueba en casco físico.",
   "minimoGrados": 0.8,
   "comodoGrados": 1.2,
@@ -78,7 +78,7 @@
     },
     {
       "pantalla": "sala · brief",
-      "textos": 184,
+      "textos": 185,
       "peor": {
         "kind": "brief (pared)",
         "text": "Q",
@@ -270,7 +270,7 @@
     },
     {
       "pantalla": "cliente · brief (pitch libre)",
-      "textos": 194,
+      "textos": 195,
       "peor": {
         "kind": "brief (recordatorio)",
         "text": "MARCA FICTICIA",
@@ -438,7 +438,7 @@
     },
     {
       "pantalla": "auditorio · brief (pitch libre)",
-      "textos": 180,
+      "textos": 181,
       "peor": {
         "kind": "brief (pared)",
         "text": "B",

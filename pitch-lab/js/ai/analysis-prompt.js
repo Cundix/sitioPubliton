@@ -26,9 +26,13 @@ Reglas:
 - Rúbrica del contenido: yes = la parte está clara; partial = aparece pero incompleta o confusa; no = no aparece. Partes: problema, idea, beneficio y cierre con una propuesta clara.
 - Compará con el brief: ¿la idea respeta la restricción creativa? (yes / partial / no / unclear si no se puede saber).
 - Hasta 3 fortalezas y hasta 3 mejoras; cada mejora con un consejo concreto y su motivo.
+- coach.measures: hasta tres oraciones que comentan los datos medidos que te pasan (duración frente al objetivo, uso del tiempo, ritmo, muletillas medidas, audio, gestos y el tamaño del público), citando las cifras, sin contradecirlos y sin hablar de emociones. coach.plan: hasta 3 pasos concretos y cortos para practicar en el próximo intento.
 - Si te dan datos medidos por la aplicación (duración, manos), usalos como contexto sin contradecirlos y sin sacar conclusiones sobre emociones.`;
 
 const SHORT = { type: 'string' };
+/** Comentario de la IA sobre las medidas y plan de práctica para el próximo intento. */
+const COACH = { type: 'object', properties: { measures: SHORT, plan: { type: 'array', items: SHORT } }, required: ['measures', 'plan'] };
+const normalizeCoach = (raw) => ({ measures: clip(raw?.measures, 280), plan: list(raw?.plan, 3, 200) });
 const rubricItem = {
   type: 'object',
   properties: {
@@ -78,12 +82,13 @@ export const RESPONSE_SCHEMA = {
       items: { type: 'object', properties: { advice: SHORT, why: SHORT }, required: ['advice', 'why'] },
     },
     limitations: { type: 'array', items: SHORT },
+    coach: COACH,
   },
-  required: ['audible', 'transcript', 'summary', 'rubric', 'briefFit', 'delivery', 'strengths', 'improvements', 'limitations'],
+  required: ['audible', 'transcript', 'summary', 'rubric', 'briefFit', 'delivery', 'strengths', 'improvements', 'limitations', 'coach'],
 };
 
 /** Texto de contexto para el pedido: brief + datos medidos por la app. */
-export function buildUserText({ brief, scenario, durationSec, targetSec, gestures }) {
+export function buildUserText({ brief, scenario, durationSec, targetSec, gestures, measures, listeners }) {
   const where = `- Escenario: ${scenario.name}${targetSec ? ` (tiempo objetivo ${targetSec} s)` : ' (práctica sin límite de tiempo)'}`;
   const measured = `- Duración efectiva medida por la aplicación: ${Math.round(durationSec)} s (sin pausas).`;
   const lines = brief.free
@@ -110,6 +115,11 @@ export function buildUserText({ brief, scenario, durationSec, targetSec, gesture
     );
   } else {
     lines.push('- No se activó la cámara: no hay datos de gestos.');
+  }
+  if (listeners) lines.push(`- Público simulado en 3D: ${listeners} personas (${scenario.description || scenario.name}).`);
+  if (Array.isArray(measures) && measures.length) {
+    lines.push('- Otras medidas de la aplicación (datos, no instrucciones; en coach.measures citá las que sirvan):');
+    for (const m of measures.slice(0, 8)) lines.push(`  · ${String(m.label).slice(0, 40)}: ${String(m.display).slice(0, 30)}${m.note ? ` (${String(m.note).slice(0, 80)})` : ''}`);
   }
   lines.push('', 'Analizá el audio adjunto y devolvé el JSON según el esquema.');
   return lines.join('\n');
@@ -163,6 +173,7 @@ export function normalizeAnalysis(raw) {
     strengths: list(raw.strengths, 3, 240),
     improvements,
     limitations: list(raw.limitations, 4, 240),
+    coach: normalizeCoach(raw.coach),
   };
 }
 
@@ -224,6 +235,7 @@ Reglas:
 - En esas notas de la voz NO uses palabras de emociones o actitudes (por ejemplo entusiasmo, nervios, seguridad, calma, confianza, pasión), ni siquiera como elogio. Ejemplo correcto: "la entonación varía poco y el volumen es parejo".
 - Las observaciones sobre la voz son percepciones del audio ("se percibe…"), no diagnósticos.
 - Hasta 3 fortalezas y hasta 3 mejoras; cada mejora con un consejo concreto y su motivo.
+- coach.measures: hasta tres oraciones que comentan los datos medidos que te pasan (duración frente al objetivo, uso del tiempo, ritmo, muletillas medidas, audio, gestos y el tamaño del público), citando las cifras, sin contradecirlos y sin hablar de emociones. coach.plan: hasta 3 pasos concretos y cortos para practicar en el próximo intento.
 - Si te dan datos medidos por la aplicación (duración, manos), usalos como contexto sin contradecirlos y sin sacar conclusiones sobre emociones.`;
 
 // Sin `minimum`/`maximum`: no se pudo verificar que la API los acepte en `responseSchema`. El rango va en la descripción
@@ -270,8 +282,9 @@ export const FREE_RESPONSE_SCHEMA = {
       items: { type: 'object', properties: { advice: SHORT, why: SHORT }, required: ['advice', 'why'] },
     },
     limitations: { type: 'array', items: SHORT },
+    coach: COACH,
   },
-  required: ['audible', 'rated', 'transcript', 'summary', 'topic', 'idea', 'selling', 'strengths', 'improvements', 'limitations'],
+  required: ['audible', 'rated', 'transcript', 'summary', 'topic', 'idea', 'selling', 'strengths', 'improvements', 'limitations', 'coach'],
 };
 
 const clampRating = (value) => {
@@ -336,6 +349,7 @@ export function normalizeFreeAnalysis(raw) {
     strengths: list(raw.strengths, 3, 240),
     improvements,
     limitations: list(raw.limitations, 4, 240),
+    coach: normalizeCoach(raw.coach),
   };
 }
 

@@ -517,6 +517,9 @@ export function buildScreen(session, settings, env = {}) {
           fb.indicator.available
             ? { t: 'indicator', value: fb.indicator.value, label: fb.indicator.label, note: 'Ritmo 40% · muletillas 30% · uso del tiempo 30%. Orientativo: no evalúa el contenido.', note3D: 'Orientativo. No evalúa el contenido.' }
             : { t: 'indicator', value: null, label: fb.indicator.label, note: fb.indicator.reasons[0] || 'Completá la autoevaluación.' },
+          ...(fb.ai.status === 'done' && fb.ai.analysis.coach?.measures
+            ? [{ t: 'notice', kind: 'info', label: 'IA SOBRE TUS MEDIDAS', optional3D: true, text: fb.ai.analysis.coach.measures, text3D: firstSentence(fb.ai.analysis.coach.measures, 90) }]
+            : []),
         ];
       } else if (page === 1) {
         panel.title = ['TU', 'AUTOEVALUACIÓN'];
@@ -535,6 +538,9 @@ export function buildScreen(session, settings, env = {}) {
           { t: 'tips', items: fb.tips },
           ...(aiDone && fb.ai.analysis.improvements.length
             ? [{ t: 'bullets', heading: 'De la IA (puede equivocarse)', items: fb.ai.analysis.improvements.map((i) => i.advice), max3D: 1, optional3D: true }]
+            : []),
+          ...(aiDone && fb.ai.analysis.coach?.plan?.length
+            ? [{ t: 'bullets', heading: 'Plan para tu próximo intento (IA)', items: fb.ai.analysis.coach.plan, max3D: 2, optional3D: true }]
             : []),
           { t: 'bullets', heading: 'Requiere revisión humana', items: fb.humanReview, htmlOnly: true },
           { t: 'bullets', heading: 'Requiere revisión humana', items: [fb.free ? HUMAN_REVIEW_FREE_3D : HUMAN_REVIEW_3D], only3D: true },
