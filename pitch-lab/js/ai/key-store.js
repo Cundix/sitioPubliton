@@ -38,6 +38,14 @@ export class AiKeyStore extends Emitter {
     this.emit('change', { hasKey: true });
   }
 
+  /** Clave incluida en el sitio publicado: se usa sin pedirle nada a la persona y no se guarda en el navegador. */
+  useEmbeddedKey(key) {
+    this._key = key;
+    this._server = true;
+    this._remembered = false;
+    this.emit('change', { hasKey: true });
+  }
+
   get serverKey() { return !!this._server; }
   get hasKey() { return this._key.length > 0; }
   get remembered() { return this._remembered; }

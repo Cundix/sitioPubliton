@@ -11,6 +11,7 @@ import { Settings } from './core/settings.js';
 import { Session } from './core/session.js';
 import { S, allowedEvents } from './core/state-machine.js';
 import { APP_CONFIG } from './config/app-config.js';
+import { IA_PUBLICA } from './config/ia-publica.js';
 import { BRIEFS } from './config/briefs.js';
 import { UIHub } from './ui/ui-hub.js';
 import { HtmlOverlay } from './ui/html-overlay.js';
@@ -88,6 +89,8 @@ async function main() {
       keyStore.useServerKey();
     }
   } catch { /* sin proxy: la IA usa la clave de la persona */ }
+  // Sitio publicado: la IA viene lista con la clave incluida (ver config/ia-publica.js). En localhost no, para no gastarla en las pruebas.
+  if (!keyStore.hasKey && IA_PUBLICA && !['localhost', '127.0.0.1'].includes(location.hostname)) keyStore.useEmbeddedKey(IA_PUBLICA);
   const ai = new AnalysisService({ keyStore, config: aiConfig, getVideoEl: () => document.getElementById('cam-preview') });
   // Cada visita empieza con un brief distinto (con «Otro brief» se recorren todos).
   const briefStart = Math.floor(Math.random() * BRIEFS.length);

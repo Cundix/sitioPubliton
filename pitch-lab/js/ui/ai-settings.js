@@ -50,7 +50,7 @@ export class AiSettingsUI {
   renderKeyState() {
     const { recorder } = this.service.support;
     if (!recorder) this.setStatus('Este navegador no puede grabar audio: el análisis con IA no está disponible.', 'bad');
-    else if (this.keyStore.serverKey) this.setStatus('IA lista: la clave está en el servidor.', 'ok');
+    else if (this.keyStore.serverKey) this.setStatus('IA lista: ya viene incluida, no hace falta cargar nada.', 'ok');
     else if (this.keyStore.hasKey) this.setStatus(`Clave cargada (${this.keyStore.masked}${this.keyStore.remembered ? ', recordada en este dispositivo' : ', solo en esta pestaña'}).`, 'ok');
     else this.setStatus('Todavía no cargaste una clave.', '');
     this.input.value = '';
