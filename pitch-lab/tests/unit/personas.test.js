@@ -1,4 +1,4 @@
-// Pruebas de la elección de las personas del equipo en el público (js/scenes/personas.js, parte pura).
+// Pruebas de la elección de los docentes en 3D en el público (js/scenes/personas.js, parte pura).
 // La carga de los modelos y el dibujo se prueban en el navegador (tests/e2e/run.mjs, prueba 2b).
 
 import test from 'node:test';
@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { pickCameos, CAMEO_PROBABILITY, PERSONA_FILES } from '../../js/scenes/personas.js';
 import { mulberry32 } from '../../js/core/layouts.js';
 
-test('cada persona del público tiene un 30 % de ser una del equipo', () => {
+test('cada persona del público tiene un 30 % de ser uno de los docentes en 3D', () => {
   assert.equal(CAMEO_PROBABILITY, 0.3);
   const n = 30000;
   const picks = pickCameos(n, { random: mulberry32(2026) });
@@ -16,7 +16,7 @@ test('cada persona del público tiene un 30 % de ser una del equipo', () => {
 
 test('la decisión de una persona no depende de la de las anteriores (sin rachas raras)', () => {
   const picks = pickCameos(30000, { random: mulberry32(7) }).map((m) => m >= 0);
-  // Probabilidad de ser del equipo justo después de una persona del equipo y justo después de una genérica: las dos ≈ 0,3
+  // Probabilidad de ser docente en 3D justo después de un docente en 3D y justo después de una genérica: las dos ≈ 0,3
   let afterCameo = 0; let afterCameoYes = 0; let afterGeneric = 0; let afterGenericYes = 0;
   for (let i = 1; i < picks.length; i += 1) {
     if (picks[i - 1]) { afterCameo += 1; if (picks[i]) afterCameoYes += 1; } else { afterGeneric += 1; if (picks[i]) afterGenericYes += 1; }
@@ -48,7 +48,7 @@ test('casos límite: sin modelos, probabilidad 0, probabilidad 1 y público vac�
   assert.ok(pickCameos(5, { probability: 1 }).every((m) => m >= 0));
   assert.deepEqual(pickCameos(0), []);
   assert.deepEqual(pickCameos(-3), []);
-  // azar fijo en 0 → todos del equipo; azar fijo en 0,99 → ninguno
+  // azar fijo en 0 → todos docentes en 3D; azar fijo en 0,99 → ninguno
   assert.ok(pickCameos(8, { random: () => 0 }).every((m) => m >= 0));
   assert.ok(pickCameos(8, { random: () => 0.99 }).every((m) => m === -1));
 });

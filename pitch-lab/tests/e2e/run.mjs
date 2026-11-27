@@ -119,7 +119,7 @@ await test('2. Acceso a los tres escenarios y sus espacios', async ({ page }) =>
   }
 }, { browser });
 
-await test('2b. Personas del equipo en el público: cargan, se eligen al azar (30 %), se dibujan instanciadas y se liberan', async ({ page }) => {
+await test('2b. Docentes en 3D en el público: cargan, se eligen al azar (30 %), se dibujan instanciadas y se liberan', async ({ page }) => {
   const models = await page.evaluate(async () => (await window.pitchLab.personas.ready()).length);
   assert.equal(models, 6, 'los seis modelos cargaron');
   await dispatch(page, 'START'); await dispatch(page, 'SKIP');
@@ -132,11 +132,11 @@ await test('2b. Personas del equipo en el público: cargan, se eligen al azar (3
     return { count: a.count, cameos: a.cameos, porModelo: a.cameoModels, lejos: a.cameosLejos, meshes };
   });
 
-  // Azar fijo en 0: todas las personas del público son del equipo
+  // Azar fijo en 0: todas las personas del público son docentes en 3D
   await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0));
   await enter('auditorio');
   const all = await stats();
-  assert.equal(all.cameos, all.count, 'con el azar en 0 todas son del equipo');
+  assert.equal(all.cameos, all.count, 'con el azar en 0 todas son docentes en 3D');
   assert.equal(all.porModelo.reduce((a, b) => a + b, 0), all.cameos);
   assert.ok(Math.max(...all.porModelo) - Math.min(...all.porModelo) <= 1, `reparto parejo entre los modelos: ${all.porModelo}`);
   assert.ok(all.lejos > 0 && all.lejos < all.cameos, `hay butacas cercanas y lejanas: ${all.lejos}/${all.cameos}`);
@@ -147,10 +147,10 @@ await test('2b. Personas del equipo en el público: cargan, se eligen al azar (3
   assert.ok(far.every((m) => !m.map && m.colors), 'las lejanas llevan color por vértice');
   assert.ok(Math.max(...far.map((m) => m.tris)) < Math.min(...near.map((m) => m.tris)), 'la versión lejana tiene menos triángulos');
   assert.ok(all.meshes.length <= 12, `como mucho una malla por modelo y nivel de detalle: ${all.meshes.length}`);
-  assert.equal(all.meshes.reduce((a, m) => a + m.count, 0), all.cameos, 'cada persona del equipo es una instancia');
+  assert.equal(all.meshes.reduce((a, m) => a + m.count, 0), all.cameos, 'cada docente en 3D es una instancia');
   await leave();
 
-  // Azar fijo en 0,99: ninguna es del equipo y el público queda como antes
+  // Azar fijo en 0,99: ninguna es docente en 3D y el público queda como antes
   await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0.99));
   await enter('sala');
   const none = await stats();
@@ -159,7 +159,7 @@ await test('2b. Personas del equipo en el público: cargan, se eligen al azar (3
   assert.equal(none.count, 3);
   await leave();
 
-  // Azar de verdad: el público mezcla figuras genéricas y personas del equipo (proporción amplia para no depender del azar)
+  // Azar de verdad: el público mezcla figuras genéricas y docentes en 3D (proporción amplia para no depender del azar)
   await page.evaluate(() => { let a = 20261120; window.pitchLab.personas.setRandom(() => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }); });
   await enter('auditorio');
   const mixed = await stats();
@@ -175,7 +175,7 @@ await test('2b. Personas del equipo en el público: cargan, se eligen al azar (3
     a.pose(5.0, 1); const moving = Array.from(m[0].instanceMatrix.array);
     return { still: JSON.stringify(first) === JSON.stringify(second), moves: JSON.stringify(second) !== JSON.stringify(moving) };
   });
-  assert.ok(same.still, 'con movimiento reducido las personas del equipo quedan quietas');
+  assert.ok(same.still, 'con movimiento reducido los docentes en 3D quedan quietas');
   assert.ok(same.moves, 'con movimiento normal se balancean apenas');
   await leave();
 }, { browser });
@@ -630,7 +630,7 @@ await test('14. Pausa automática si la pestaña pasa a segundo plano', async ({
 await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader)', async ({ page }) => {
   const info = {};
   await dispatch(page, 'START'); await dispatch(page, 'SKIP');
-  // Las personas del equipo del público se eligen al azar (30 %): se fija el azar para que la medición sea repetible
+  // Los docentes en 3D del público se eligen al azar (30 %): se fija el azar para que la medición sea repetible
   await page.evaluate(async () => {
     await window.pitchLab.personas.ready();
     let a = 20261120;
@@ -652,7 +652,7 @@ await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader
     await dispatch(page, 'CHANGE_SCENARIO');
   }
   await snap('hub-de-nuevo', 'hub');
-  // Caso extremo SOLO informativo: todo el auditorio son personas del equipo (con el 30 % por persona es prácticamente imposible).
+  // Caso extremo SOLO informativo: todo el auditorio son docentes en 3D (con el 30 % por persona es prácticamente imposible).
   // No entra en el presupuesto de abajo; se registra para saber cuánto costaría.
   await page.evaluate(() => window.pitchLab.personas.setRandom(() => 0));
   await dispatch(page, 'PICK_SCENARIO', { id: 'auditorio' }); await dispatch(page, 'ENTER');
@@ -660,7 +660,7 @@ await test('15. Medición de recursos 3D por escenario (informativa, SwiftShader
   const extreme = info['auditorio-todo-del-equipo (extremo)'];
   delete info['auditorio-todo-del-equipo (extremo)'];
   await dispatch(page, 'CHANGE_SCENARIO');
-  console.log('    recursos:', JSON.stringify(info), '· extremo (todo el auditorio del equipo):', JSON.stringify(extreme));
+  console.log('    recursos:', JSON.stringify(info), '· extremo (todo el auditorio, docentes en 3D):', JSON.stringify(extreme));
   info.extremo = { auditorioTodoDelEquipo: extreme };
   await fs.writeFile(path.join(here, 'recursos-3d.json'), JSON.stringify(info, null, 2));
   // Presupuesto de geometría (decidido el 2026-11-13 al mejorar los modelos): que un cambio visual futuro no lo infle sin que se note.

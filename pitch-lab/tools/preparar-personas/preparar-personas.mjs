@@ -1,4 +1,4 @@
-// Herramienta de UNA SOLA VEZ (no forma parte de la página): convierte los modelos de personas que aportó el equipo
+// Herramienta de UNA SOLA VEZ (no forma parte de la página): convierte los modelos 3D de docentes del colegio (hechos por la persona usuaria para otro proyecto)
 // (carpeta por persona con un .fbx y su textura .png, personajes con esqueleto Mixamo) en figuras SENTADAS y livianas
 // que el público del Pitch Lab puede dibujar muchas veces con pocas llamadas de dibujo.
 //

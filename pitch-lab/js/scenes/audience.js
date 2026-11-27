@@ -6,7 +6,7 @@
 // Costo: ≈ 17 llamadas de dibujo por espacio y ≈ 560 triángulos por persona cercana (≈ 450 si está lejos del atril).
 // Material difuso (Lambert): más barato que el PBR estándar y suficiente para figuras de colores planos.
 //
-// Personas del equipo: cada persona del público tiene un 30 % de ser, en vez de esta figura genérica, un modelo 3D con textura
+// Docentes en 3D: cada persona del público tiene un 30 % de ser, en vez de esta figura genérica, un modelo 3D con textura
 // (personas.js, ≈ 4 500 triángulos). Se dibujan instanciados: hasta 6 llamadas de dibujo más por espacio, una por modelo.
 //
 // IMPORTANTE (honestidad de diseño): las animaciones son un movimiento ambiental suave
@@ -41,15 +41,15 @@ function radialShadowTexture(T) {
  * @param {Kit} kit
  * @param {Array} seats  resultado de resolveScenario().seats
  * @param {object} opts  { seatColor, accent, style: 'chair' | 'theater', personas, random }
- *   `personas`: modelos de las personas del equipo ya cargados (personas.js); sin ellos todo el público son figuras genéricas.
- *   `random`: origen de azar con el que cada persona decide si es una del equipo (30 %).
+ *   `personas`: modelos de los docentes en 3D ya cargados (personas.js); sin ellos todo el público son figuras genéricas.
+ *   `random`: origen de azar con el que cada persona decide si es un docente en 3D (30 %).
  */
 export function buildAudience(kit, seats, {
   seatColor = '#2A3225', accent = '#0047FF', style = 'chair', personas = getLoadedPersonas(), random = personasRandom(),
 } = {}) {
   const T = kit.T;
   const occupied = seats.filter((s) => s.occupied);
-  // Cada persona del público tiene un 30 % de ser una de las personas del equipo (modelo 3D) en vez de una figura genérica.
+  // Cada persona del público tiene un 30 % de ser uno de los docentes en 3D (modelo 3D) en vez de una figura genérica.
   const cameoOf = pickCameos(occupied.length, { models: personas ? personas.length : 0, random });
   const people = occupied.filter((_, i) => cameoOf[i] < 0); // figuras genéricas
   const cameos = occupied.map((seat, i) => ({ seat, model: cameoOf[i] })).filter((c) => c.model >= 0);
@@ -278,7 +278,7 @@ export function buildAudience(kit, seats, {
   [thighs, shins, shoes, uppers, lowers, hands].forEach((m) => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
   [torsos, yokes, necks, heads, hairs, hairBacks].forEach((m) => { if (m.instanceColor) m.instanceColor.needsUpdate = true; });
 
-  // --- Personas del equipo (modelos 3D ya sentados) -----------------------------------------------------------------
+  // --- Docentes en 3D (modelos 3D ya sentados) -----------------------------------------------------------------
   // Una malla instanciada por modelo y por nivel de detalle (≤ 12 llamadas de dibujo en total). Las butacas a más de NEAR_DIST del
   // atril usan la versión liviana (~800 triángulos, con color por vértice); las cercanas, la versión con textura (~3 000 a 4 400).
   // Se mueven apenas: balanceo y respiración.
@@ -368,7 +368,7 @@ export function buildAudience(kit, seats, {
       mats.forEach((m) => m.dispose());
       shadowTex.dispose();
       meshes.forEach((m) => m.dispose());
-      // Las geometrías y texturas de las personas del equipo se comparten entre espacios (se cargan una sola vez), así que no se
+      // Las geometrías y texturas de los docentes en 3D se comparten entre espacios (se cargan una sola vez), así que no se
       // destruyen: solo se libera su copia en la tarjeta gráfica; si se vuelven a usar, se vuelven a subir solas.
       (personas || []).forEach((persona) => { persona.near.dispose(); persona.far?.dispose(); persona.map.dispose(); });
     },
@@ -377,8 +377,8 @@ export function buildAudience(kit, seats, {
 
   return {
     pose,
-    count: occupied.length,           // todas las personas del público (genéricas + del equipo)
-    cameos: cameos.length,            // cuántas son personas del equipo
+    count: occupied.length,           // todas las personas del público (genéricas + docentes en 3D)
+    cameos: cameos.length,            // cuántas son docentes en 3D
     cameoModels: (personas || []).map((_, m) => cameos.filter((c) => c.model === m).length), // cuántas veces aparece cada modelo
     cameosLejos: cameos.filter((c) => Math.hypot(c.seat.x, c.seat.z) > NEAR_DIST).length, // cuántas usan la versión liviana
     group,

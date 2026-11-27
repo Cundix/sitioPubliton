@@ -33,18 +33,18 @@ real**. Si se usan en el informe o en la exposición hay que rotularlas así.
 
 Navegador de pruebas con WebGL por software; sirven para revisar composición y legibilidad, no para medir comodidad en un casco.
 
-### Capturas de las personas del equipo en el público (`64` a `67`)
+### Capturas de los docentes en 3D en el público (`64` a `67`)
 
 Se sacaron con un **azar fijo** (para poder repetirlas), con el navegador de pruebas y sin paneles de interfaz encima. En cada una, algunas personas
-del público son modelos 3D con textura (las seis personas del equipo) y el resto son las figuras genéricas; en el uso normal el azar cambia en cada visita
+del público son modelos 3D con textura (los seis docentes en 3D) y el resto son las figuras genéricas; en el uso normal el azar cambia en cada visita
 (30 % por persona).
 
 | Archivo | Qué muestra |
 |---|---|
-| `64-publico-con-personas-del-equipo-sala` | Sala de ensayo: una persona del equipo entre dos figuras genéricas (vista cercana) |
-| `65-publico-con-personas-del-equipo-reunion` | Reunión con cliente: dos personas del equipo en la mesa (una al fondo, otra en primer plano) |
-| `66-publico-con-personas-del-equipo-auditorio-platea` | Auditorio visto desde la platea: unas veinte personas del equipo mezcladas con las genéricas |
-| `67-publico-con-personas-del-equipo-auditorio-general` | Auditorio desde un costado: las butacas lejanas usan la versión liviana (color por vértice) |
+| `64-publico-con-docentes-sala` | Sala de ensayo: un docente en 3D entre dos figuras genéricas (vista cercana) |
+| `65-publico-con-docentes-reunion` | Reunión con cliente: dos docentes en 3D en la mesa (una al fondo, otra en primer plano) |
+| `66-publico-con-docentes-auditorio-platea` | Auditorio visto desde la platea: unas veinte docentes en 3D mezcladas con las genéricas |
+| `67-publico-con-docentes-auditorio-general` | Auditorio desde un costado: las butacas lejanas usan la versión liviana (color por vértice) |
 
 ### Comparación de modelos 3D (`3d/`)
 

@@ -67,7 +67,7 @@ Detalle en [`auditoria-ux-xr.md`](auditoria-ux-xr.md). Afectan a lo que se **lee
 - **Recordatorio de la marca** más grande en la sala (escala 1,1) y la reunión (1,5), y **nuevo en el auditorio**: colgado bajo el reloj, con su
   marco y dos varillas (suma un marco y dos cilindros; el presupuesto de la prueba 15 sigue cumpliéndose).
 
-## Personas del equipo en el público (2026-11-20)
+## Docentes en 3D en el público (2026-11-20)
 
 La persona usuaria aportó seis modelos 3D de personas (un `.zip` con un `.fbx` con esqueleto y una textura de 2048 × 2048 por persona) y pidió que
 **cada persona del público tenga un 30 % de probabilidad de ser una de ellas** (el resto sigue siendo la figura genérica de siempre). Origen, licencia y
@@ -90,12 +90,12 @@ consentimiento: [`../assets/personas/LEEME.md`](../assets/personas/LEEME.md). De
 
 **Costo** (navegador de pruebas, lo que se dibuja con un azar fijo; `tests/e2e/run.mjs`, prueba 15; **no es rendimiento en casco**):
 
-| Espacio | Llamadas de dibujo | Triángulos | Sin las personas del equipo |
+| Espacio | Llamadas de dibujo | Triángulos | Sin los docentes en 3D |
 |---|---|---|---|
 | Sala de ensayo (3 personas) | 102 | 3,8 mil | 3,8 mil |
-| Reunión con cliente (5 personas, 2 del equipo en esta medición) | 126 | 12,2 mil | 6,4 mil |
-| Auditorio (64 personas, 13 del equipo en esta medición) | 148 | 62,0 mil | 42,5 mil |
-| *Extremo, solo informativo: las 64 del auditorio son del equipo* | 136 | 107,3 mil | — |
+| Reunión con cliente (5 personas, 2 docentes en 3D en esta medición) | 126 | 12,2 mil | 6,4 mil |
+| Auditorio (64 personas, 13 docentes en 3D en esta medición) | 148 | 62,0 mil | 42,5 mil |
+| *Extremo, solo informativo: las 64 del auditorio son docentes en 3D* | 136 | 107,3 mil | — |
 
 - El presupuesto de la prueba 15 (< 200 llamadas y < 80 000 triángulos por espacio) se cumple con el azar fijo. Con el 30 % por persona, el auditorio
   llega al límite solo si salen muchas más de las esperadas (unas 30 de 64 o más, cuando lo esperable son ~19: alrededor de 1 en mil). El caso extremo (todas) **supera** el presupuesto: no ocurre con el 30 %.

@@ -1,6 +1,6 @@
 # STATUS — Publitón Pitch Lab
 
-_Última actualización: 2026-11-20 (personas del equipo en el público, además de la revisión con «UX for XR» y los modelos 3D)._
+_Última actualización: 2026-11-27 (informe del TP4 armado en Figma; antes: docentes en 3D en el público, revisión «UX for XR» y modelos 3D)._
 
 ## Publicación
 
@@ -10,7 +10,7 @@ _Última actualización: 2026-11-20 (personas del equipo en el público, además
 | Enlace público | <https://cundix.github.io/sitioPubliton/pitch-lab/> — **publicado y verificado el 2026-11-04** (HTTP 200 en los recursos, 8/8 pruebas e2e contra el enlace real, sitio anterior intacto) |
 | **Versión con IA y cámara (2026-11-13)** | **Publicada** (push a `main` sin `--force`, commit `05013f3`; Pages «built»). Verificado: HTTP 200 con el tipo correcto en los archivos nuevos (incluidos `hand_landmarker.task` y `vision_wasm_internal.wasm`) y 3 pruebas de navegador real contra el enlace publicado (recorrido de grabación y análisis con API simulada, cámara con MediaPipe servido desde Pages, política de conexiones). **No** se probó la API real desde el dominio publicado (la clave temporal ya se borró); el CORS desde `cundix.github.io` se había verificado antes con llamadas reales |
 | **Modelos 3D, 11 briefs y revisión UX for XR (2026-11-20)** | **Publicados** (avance rápido de `main`, `2eec995..94126c2`, sin `--force`; Pages «built»). Verificado contra el enlace real: archivos nuevos con HTTP 200, **22/22** pruebas de navegador y **13/13** con el emulador WebXR (resultados en `tests/e2e/ultimo-resultado-publicado-2026-11-20.json` y `ultimo-resultado-xr-publicado-2026-11-20.json`). No se repitieron en vivo las pruebas de IA ni la auditoría de legibilidad (pasaron en local sobre el mismo código) |
-| **Personas del equipo en el público (2026-11-20)** | **Publicadas** (`2ba9f1e..84b62f6` en `main`, sin `--force`; Pages «built»). Verificado contra el enlace real: los GLB y `personas.js` con HTTP 200 y 4 pruebas de navegador (1, 2b, 2c y 4b) correctas. No se repitió en vivo la suite completa (pasó en local: 24/24, 13/13 WebXR, 10/10 IA) |
+| **Docentes en 3D en el público (2026-11-20)** | **Publicadas** (`2ba9f1e..84b62f6` en `main`, sin `--force`; Pages «built»). Verificado contra el enlace real: los GLB y `personas.js` con HTTP 200 y 4 pruebas de navegador (1, 2b, 2c y 4b) correctas. No se repitió en vivo la suite completa (pasó en local: 24/24, 13/13 WebXR, 10/10 IA) |
 | Qué NO está verificado | Uso en un casco físico y voz real (ver «Falta») |
 
 ## Terminado (y cómo se comprobó)
@@ -25,7 +25,8 @@ _Última actualización: 2026-11-20 (personas del equipo en el público, además
 - **Análisis con IA y cámara (2026-11-13, opcional)**: la IA (Gemini, `gemini-3.5-flash-lite` con respaldo `gemini-3.1-flash-lite`) analiza el **audio** frente al brief y describe la entrega; la cámara mide **gestos de manos en el dispositivo** (MediaPipe). Clave **propia de cada persona**, nunca en el repositorio; audio solo en memoria; solo cifras de la cámara; política CSP. → 158 pruebas de unidad (al 2026-11-19), 10 recorridos en navegador real con la API **simulada**, y **3 corridas con la API real** (audio sintético). Ver `docs/analisis-con-ia.md`.
 - **Modelos 3D mejorados y más temáticas (2026-11-19; **publicado el 2026-11-20** junto con la revisión de UX for XR)**: público con figuras humanas (pelo, brazos, manos, piernas), salas con pisos con textura, zócalos, ventanas y puertas con marco, afiches, techo con luz indirecta, atril con logotipo y micrófono, parlantes y haces de luz en el auditorio, vestíbulo con piso radial; **11 briefs** de temáticas distintas (uno al azar al empezar). → 158 pruebas de unidad, 21/21 e2e, 8/8 WebXR, 10/10 IA. **Costo en casco: no medido** (ver `docs/modelos-3d.md`).
 - **Revisión con la guía «UX for XR» (2026-11-19; **publicada el 2026-11-20**)**: texto del espacio 3D medido y corregido (nada por debajo de 0,8° de altura de mayúsculas), reloj en el atril, giro por tramos con el joystick, vibración de los controles, altura de la vista, «mantené presionado» para finalizar, avisos visibles dentro del casco. → 183 pruebas de unidad, 22 de navegador real, 13 con emulador WebXR, 10 de IA y la auditoría de legibilidad. **Los valores de comodidad son estimaciones sin probar en un casco** (ver `docs/auditoria-ux-xr.md`).
-- **Personas del equipo en el público (2026-11-20)**: cada persona del público tiene un 30 % de probabilidad de ser una de seis personas del equipo (modelos 3D con textura, sentadas, con versión cercana y lejana). Costo en el navegador de pruebas: auditorio ≈ 62 mil triángulos (presupuesto 80 mil). → 190 pruebas de unidad, 24 de navegador real, 13 con emulador WebXR y 10 de IA. **Costo en casco no medido; consentimiento de las personas representadas y licencia de los modelos pendientes del equipo** (ver `assets/personas/LEEME.md` y `docs/modelos-3d.md`).
+- **Docentes en 3D en el público (2026-11-20)**: cada persona del público tiene un 30 % de probabilidad de ser uno de seis docentes del colegio en modelo 3D (hechos por la persona usuaria para otro proyecto; con versión cercana y lejana). Costo en el navegador de pruebas: auditorio ≈ 62 mil triángulos (presupuesto 80 mil). → 190 pruebas de unidad, 24 de navegador real, 13 con emulador WebXR y 10 de IA. **Costo en casco no medido. Permiso de los docentes: lo informó la persona usuaria (27/11), sin constancia escrita; licencia de los modelos pendiente** (ver `assets/personas/LEEME.md` y `docs/modelos-3d.md`).
+- **Informe del TP4 en Figma (2026-11-27)**: 30 láminas 16:9 en la página «11 · TP4 · INFORME» del archivo del equipo (interactivo, con navegación y enlaces) y PDF estático `informe/informe-tp4-figma.pdf`. Detalle y pendientes en `informe/figma/LEEME-figma.md`. **Pendiente del equipo**: intervención manual del código (antes/después), User Personas, exposición oral con soporte visual, licencia de los modelos (y constancia escrita del permiso de los docentes), y revisar el permiso de visualización del archivo.
 - Se descartó el tope de 5 minutos de preparación (pedido de la persona usuaria): sigue de 0 a 300 s.
 
 ## En curso
@@ -39,8 +40,8 @@ Nada abierto en el código. Ver «Falta» para lo que no puede cerrar la herrami
 0. **Probar el análisis con voz humana real** y con personas expertas que comparen la devolución; probar **manos reales** ante la cámara (solo se verificó con una cámara de prueba sin manos). Ver `docs/evaluacion-semantica-futura.md`.
 1. **Probar en un casco físico** y anotar comodidad, legibilidad y altura (modo sentado). No se afirma rendimiento ni cuadros por segundo. **Ajustar con personas** la vibración, el tiempo de «mantené presionado» (0,7 s) y el giro (30°); ver el protocolo de `docs/auditoria-ux-xr.md`. Comprobar si los permisos de micrófono y cámara se pueden dar estando en VR (conviene darlos antes de entrar).
 2. **Intervención manual del equipo** (antes/después reales): guía en `docs/intervencion-manual.md`.
-3. **Informe interactivo en Figma**: armarlo con `informe/figma/` (el plugin oficial de Figma no estaba habilitado en la cuenta; está preparado `informe/figma/slides-spec.json`). El informe HTML/PDF ya refleja la función de IA (21 diapositivas).
-4. **Imágenes de los referentes** para el informe (una captura por referente, con cita).
+3. **Informe en Figma**: ya está armado (2026-11-27, página 11 del archivo del equipo, 30 láminas) y hay PDF estático; falta completar lo marcado PENDIENTE (intervención manual, User Personas) y revisar el permiso de visualización. Ver `informe/figma/LEEME-figma.md`.
+4. ~~Imágenes de los referentes~~: ya están (capturas de las páginas citadas, 27/11/2026); el equipo puede reemplazarlas si prefiere otras.
 5. **Validar el público** (hoy es una hipótesis de diseño) con entrevistas o pruebas de uso.
 6. **Voz real** en Chrome/Edge y pruebas en Firefox, Safari y celulares.
 7. Bitácora de prompts: sumar los de los TPs anteriores y los que el equipo use (los de esta sesión están en `docs/bitacora-prompts.md`).
@@ -49,14 +50,13 @@ Nada abierto en el código. Ver «Falta» para lo que no puede cerrar la herrami
 ## Bloqueos
 
 - **Casco físico**: no disponible en este entorno (bloqueo externo; queda pendiente explícito).
-- **Figma**: sin acceso desde este entorno (falta instalar y autorizar el plugin oficial de Figma).
 - Ningún bloqueo técnico abierto.
 
 ## Próximos pasos concretos
 
 1. Abrir el enlace publicado en un casco y recorrer una sesión completa; registrar lo observado en `docs/pruebas.md`.
 2. Hacer la intervención manual (elegir A, B o C) y completar la plantilla de `docs/intervencion-manual.md`.
-3. Armar el informe en Figma desde `informe/figma/` y completar las diapositivas marcadas «pendiente».
+3. En Figma (página 11): completar la intervención manual (lámina 27) y los User Personas (lámina 5); armar la exposición oral de 5 minutos.
 4. Ensayar la exposición con `docs/guion-exposicion.md` (plan B incluido).
 
 ## Comandos para retomar

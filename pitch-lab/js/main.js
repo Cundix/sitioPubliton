@@ -199,7 +199,7 @@ async function main() {
     return;
   }
 
-  // Las personas del equipo del público (modelos 3D) se cargan al abrir la página, sin bloquear nada: si todavía no están
+  // Los docentes en 3D del público (modelos 3D) se cargan al abrir la página, sin bloquear nada: si todavía no están
   // listas cuando se arma un espacio, ese público queda con figuras genéricas.
   loadPersonas();
   await waitForFonts();

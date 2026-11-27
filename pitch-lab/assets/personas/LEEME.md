@@ -1,30 +1,31 @@
-# Personas del equipo (modelos 3D del público)
+# Docentes en 3D (modelos 3D del público)
 
-Seis modelos 3D de personas sentadas (`persona-01.glb` … `persona-06.glb`) que aparecen en el público de los tres espacios:
-**cada persona del público tiene un 30 % de probabilidad de ser una de estas seis** (el resto son las figuras genéricas de siempre).
+Seis modelos 3D de **docentes del colegio del equipo**, sentados (`persona-01.glb` … `persona-06.glb`), que aparecen en el público de los tres espacios:
+**cada persona del público tiene un 30 % de probabilidad de ser uno de estos seis** (el resto son las figuras genéricas de siempre).
 Cómo se eligen y se dibujan: [`../../js/scenes/personas.js`](../../js/scenes/personas.js) y [`../../js/scenes/audience.js`](../../js/scenes/audience.js).
 
 ## De dónde salen
 
-- Los modelos originales los **aportó la persona usuaria** de la sesión (un `.zip` con una carpeta por persona: modelo `.fbx` con esqueleto
-  tipo Mixamo y su textura `.png` de 2048 × 2048), el 2026-11-20.
+- Los modelos originales **los hizo la persona usuaria de la sesión para otro proyecto** (no son del equipo de Publitón ni representan a sus integrantes): un
+  `.zip` con una carpeta por persona, con un modelo `.fbx` con esqueleto tipo Mixamo y su textura `.png` de 2048 × 2048. Los trajo el 2026-11-20.
 - Los nombres internos de las mallas del original (`Meshy_AI_…`) indican que se **generaron con Meshy AI**. La herramienta no pudo comprobar
   con qué cuenta o plan, ni de qué imágenes o descripciones.
 - Estos archivos **no son los originales**: se convirtieron con [`../../tools/preparar-personas/`](../../tools/preparar-personas/) (se sentó
   cada figura con su esqueleto, se bajó la cantidad de triángulos y se redujo la textura). El original no está en el repositorio.
 - Los nombres de las carpetas del zip **no se copiaron** al repositorio ni al sitio: los archivos tienen nombres neutros.
 
-## Qué hay que confirmar antes de mostrarlos en público (pendiente del equipo)
+## Permiso y licencia
 
-1. **Consentimiento**: si los modelos están basados en personas reales, que cada una esté de acuerdo en aparecer en un sitio público.
-   La herramienta no puede saberlo.
-2. **Licencia / atribución**: Meshy da condiciones distintas según el plan con que se generó cada modelo (según su documentación, el gratuito
+1. **Permiso de las personas representadas**: son docentes reales. El 2026-11-27 la persona usuaria informó que **los docentes ya le dieron permiso**. La
+   herramienta no puede verificarlo y **no hay constancia escrita en el repositorio**: conviene guardar un mensaje o una nota que lo deje asentado.
+   Si alguno cambia de opinión, se saca su modelo borrando su archivo (o con `CAMEO_PROBABILITY = 0` en `js/scenes/personas.js` para sacarlos a todos).
+2. **Licencia / atribución** (pendiente): Meshy da condiciones distintas según el plan con que se generó cada modelo (según su documentación, el gratuito
    puede exigir atribución). Verificarlo y, si corresponde, agregar la atribución en el sitio.
 
 ## Qué son (y qué no) dentro de la experiencia
 
 Son figuras **decorativas**, igual que el resto del público: se mueven apenas (un balanceo y una respiración ambientales) y **no reaccionan
-a lo que se dice ni al puntaje**. No representan asistentes reales ni opiniones de nadie.
+a lo que se dice ni al puntaje**. No representan opiniones de las personas reales a las que se parecen.
 
 ## Datos técnicos
 

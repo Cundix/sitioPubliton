@@ -37,9 +37,10 @@ Los tres escenarios comparten la lógica y se diferencian en el **espacio**:
 La audiencia tiene movimiento ambiental suave (respiración, giro leve de cabeza). **No depende de lo que se
 diga ni del puntaje y no es una evaluación del argumento.**
 
-**Personas del equipo en el público (desde 2026-11-20):** cada persona del público tiene un **30 % de probabilidad** de ser, en vez de una figura
-genérica, una de **seis personas del equipo** (modelos 3D con textura, sentadas en la butaca). Salen distintas en cada visita. También son decorativas:
-solo se balancean apenas (no giran la cabeza). Origen, licencia y consentimiento pendientes: [`assets/personas/LEEME.md`](assets/personas/LEEME.md).
+**Docentes en 3D en el público (desde 2026-11-20):** cada persona del público tiene un **30 % de probabilidad** de ser, en vez de una figura
+genérica, uno de **seis docentes del colegio del equipo** (modelos 3D con textura, sentados en la butaca, hechos por la persona usuaria para otro proyecto y usados con permiso
+de los docentes). Salen distintos en cada visita. También son decorativos: solo se balancean apenas (no giran la cabeza). Permiso y licencia:
+[`assets/personas/LEEME.md`](assets/personas/LEEME.md).
 
 ## Controles
 
@@ -210,9 +211,9 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
 - **No se probó en un casco físico.** No se afirma ninguna tasa de cuadros ni comodidad en VR. Las opciones de comodidad (giro, vibración, altura,
   mantener presionado) se verificaron con un emulador y sus valores son **estimaciones** a ajustar con personas ([`docs/auditoria-ux-xr.md`](docs/auditoria-ux-xr.md)). Los modelos 3D mejorados (2026-11-19) dibujan
   más geometría que los anteriores (ver [`docs/modelos-3d.md`](docs/modelos-3d.md)): **no se midió su costo en un casco**.
-- **Personas del equipo del público**: son figuras fijas sentadas (una sola pose por modelo, sin girar la cabeza); con el 30 % por persona, en un
+- **Docentes en 3D del público**: son figuras fijas sentadas (una sola pose por modelo, sin girar la cabeza); con el 30 % por persona, en un
   auditorio se repite cada modelo 3 o 4 veces. Su costo en casco **no se midió** (en el navegador de pruebas el auditorio quedó en ~62 mil triángulos,
-  dentro del presupuesto de 80 mil). **Falta confirmar el consentimiento de las personas representadas y la licencia de los modelos**
+  dentro del presupuesto de 80 mil). El permiso de los docentes lo informó la persona usuaria (**sin constancia escrita en el repositorio**) y **falta confirmar la licencia de los modelos**
   ([`assets/personas/LEEME.md`](assets/personas/LEEME.md)).
 - El reconocimiento de voz depende del navegador y de un servicio externo; puede equivocarse y omitir muletillas.
 - Los silencios solo se informan si se activó la medición de nivel de audio (y miden nivel de sonido, no habla).
@@ -233,7 +234,7 @@ Resultados observados y lo que sigue pendiente: [`docs/pruebas.md`](docs/pruebas
 - **MediaPipe Tasks Vision 1.2.3** y el modelo *Hand Landmarker* (Apache-2.0, Google) en `vendor/mediapipe/`; se
   descargan solo si se activa la cámara. **Se modificó un archivo** para desactivar su envío de registros de uso
   (aviso en el propio archivo y en `vendor/mediapipe/README-mediapipe.md`).
-- **Modelos 3D de las seis personas del equipo** (`assets/personas/`): aportados por la persona usuaria; los nombres internos de las mallas indican que se generaron con
+- **Modelos 3D de seis docentes del colegio** (`assets/personas/`): hechos por la persona usuaria para otro proyecto y usados con permiso de los docentes; los nombres internos de las mallas indican que se generaron con
   Meshy AI (licencia y atribución por confirmar, ver `assets/personas/LEEME.md`). Se convirtieron con `tools/preparar-personas/` (assimpjs, meshoptimizer, sharp y three.js, solo como herramienta).
 - Las marcas de los briefs (Yerbita Sol, Pedal Vecino, Páginas al Paso, Gota Justa, Remendar, Feria Cerquita, Casa Memoria, Click Abuelo,
   Plaza Viva, Cable a Tierra y Charla Tándem) son **ficticias**; los datos de cada brief son inventados para practicar.

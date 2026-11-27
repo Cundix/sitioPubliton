@@ -1,7 +1,7 @@
-// Personas del equipo en el público.
+// Docentes en 3D en el público.
 //
 // El público del Pitch Lab son figuras genéricas de piezas simples (ver audience.js). Además, cada persona del público tiene
-// un 30 % de probabilidad de ser, en lugar de eso, una de las SEIS personas del equipo: modelos 3D con textura (assets/personas/),
+// un 30 % de probabilidad de ser, en lugar de eso, una de las SEIS docentes en 3D: modelos 3D con textura (assets/personas/),
 // ya sentados y simplificados con tools/preparar-personas/ para que se dibujen instanciados (una llamada de dibujo por persona).
 //
 // Honestidad de diseño: son figuras decorativas, igual que el resto del público. Se mueven apenas (balanceo y respiración
@@ -24,7 +24,7 @@ function shuffle(list, random) {
 }
 
 /**
- * Decide, para cada persona del público, si es una de las personas del equipo y cuál.
+ * Decide, para cada persona del público, si es uno de los docentes en 3D y cuál.
  * Cada persona tiene `probability` de serlo. Las elegidas reparten los modelos «de a bolsa»: se mezclan los seis y se van
  * sacando, así ninguno se repite hasta haber salido todos (con ~20 elegidas en el auditorio, cada modelo aparece 3 o 4 veces).
  *
@@ -49,7 +49,7 @@ export function pickCameos(count, { models = PERSONA_FILES.length, probability =
 
 let randomSource = Math.random;
 
-/** Para las pruebas y las capturas: fija el origen de azar con el que se elige quién es una persona del equipo. */
+/** Para las pruebas y las capturas: fija el origen de azar con el que se elige quién es un docente en 3D. */
 export function setPersonasRandom(random) {
   randomSource = typeof random === 'function' ? random : Math.random;
 }

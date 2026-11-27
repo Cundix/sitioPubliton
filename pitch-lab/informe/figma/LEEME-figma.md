@@ -1,44 +1,48 @@
-# Material para llevar el informe a Figma
+# Informe del TP4 en Figma
 
-> **Estado: el informe NO fue publicado en Figma.** No hubo acceso a Figma desde este entorno. Lo que hay acá es el
-> material ordenado para que el equipo arme la versión interactiva. El PDF 16:9 ya está generado
-> (`../informe-pitch-lab.pdf`), pero **la versión interactiva de Figma la tiene que armar el equipo**.
+> **Estado (2026-11-27): el informe está armado en Figma**, en el archivo del equipo `Figma Publitón`, página
+> **«11 · TP4 · INFORME · Experiencia VR (WebXR)»** (las páginas del TP3 no se tocaron).
+>
+> - Archivo: <https://www.figma.com/design/H9adKG4bkKJ6yMFKyqOxW8/Figma-Publit%C3%B3n?node-id=561-13>
+> - Versión interactiva (prototipo, primera lámina): <https://www.figma.com/proto/H9adKG4bkKJ6yMFKyqOxW8/Figma-Publit%C3%B3n?node-id=561-13&starting-point-node-id=561-13&scaling=scale-down>
+> - Versión estática: [`../informe-tp4-figma.pdf`](../informe-tp4-figma.pdf) (30 páginas, 16:9, generada a partir de las mismas láminas).
+>
+> **Qué tiene que revisar el equipo antes de entregar**: que el archivo tenga el permiso de visualización que pide la entrega (la herramienta
+> no puede ver ni cambiar los permisos de uso compartido) y todo lo marcado como PENDIENTE (abajo).
 
-## Qué hay en esta carpeta
+## Qué hay en la página
 
-| Archivo | Para qué sirve |
+30 láminas de 1920 × 1080 (16:9) con el mismo estilo que el informe del TP3 de este archivo (etiqueta amarilla, título en Anton, pie con
+«Anterior / n / 30 / Siguiente»). Usan las variables de color «Publitón / Foundations» y estilos de texto nuevos «Informe TP4 / …».
+
+| Láminas | Contenido |
 |---|---|
-| `../informe-pitch-lab.pdf` | Informe completo, 21 páginas, horizontal 16:9 (1920 × 1080) |
-| `../slides/slide-01.png … slide-21.png` | Cada diapositiva como imagen: **referencia visual** para reproducir el diseño en Figma |
-| `contenido-diapositivas.md` | Texto de cada diapositiva, listo para copiar |
-| `tokens.json` | Colores, tipografías y medidas del diseño |
-| `assets/` | Capturas reales usadas en el informe (PNG) |
-| `../informe-pitch-lab.html` | Fuente del informe (HTML/CSS); sirve para ajustar y volver a exportar con `node tools/build-informe.mjs` |
+| 1 – 2 | Portada con enlaces e índice con saltos a cada sección |
+| 3 – 6 | Problema y oportunidad, la idea, Publitón y a quién se dirige, por qué VR |
+| 7 – 10 | Tres referentes (VirtualSpeech, Ovation según Road to VR, PowerPoint Speaker Coach) con captura, enlace y análisis, y hallazgos |
+| 11 – 19 | Recorrido, los tres espacios, el público con los docentes en 3D, mecánica central, devolución, identidad y accesibilidad, comodidad en VR |
+| 20 – 23 | IA y cámara opcionales, requisitos de la consigna, cómo se construyó y bitácora de prompts |
+| 24 – 27 | Tres problemas resueltos (con gráficos) y la intervención manual (pendiente) |
+| 28 – 30 | Pruebas y límites, enlace con QR, próximos pasos y créditos |
 
-## Cómo armarlo en Figma (propuesta)
+**Interacción**: «Anterior» y «Siguiente» (y las flechas del teclado) pasan de lámina; el contador lleva al índice; las tarjetas del índice saltan a su
+sección; el punto de inicio del prototipo es la portada. Los enlaces (la experiencia, el repositorio, las fuentes de los referentes) son hipervínculos.
 
-1. **Crear el archivo** y un marco de **1920 × 1080** por diapositiva (21 marcos). Nombrarlos con el número y el título (ver `contenido-diapositivas.md`).
-2. **Estilos**: crear estilos de color y de texto con `tokens.json` (Anton para títulos, Barlow para el resto). Si Figma no tiene las
-   fuentes, instalarlas desde `../../../assets/Anton-Regular.ttf` y `Barlow-*.ttf` (licencia SIL OFL).
-3. **Imágenes**: arrastrar los PNG de `assets/` o de `../../capturas/` en cada marco. Dejar visible el pie de foto que dice
-   «captura real» o «simulador de pruebas».
-4. **Texto**: copiar desde `contenido-diapositivas.md`. Mantener las marcas de **«PENDIENTE»** donde figuren.
-5. **Interacción (prototipo)**:
-   - Conectar los marcos en orden con «Al hacer clic → navegar a el siguiente marco» (o con las flechas del teclado).
-   - Agregar un vínculo de la diapositiva 20 al enlace publicado (cuando esté verificado).
-   - Los enlaces de las diapositivas de referentes deben abrir las fuentes citadas en `../../docs/referentes.md`.
-6. **Exportar a PDF** desde Figma para la entrega y comparar con `informe-pitch-lab.pdf`.
+## Lo que el equipo debe completar (no se inventó)
 
-## Lo que el equipo debe completar (no inventar)
+- **Intervención manual** (lámina 27): el antes y el después reales del código, con archivo, líneas, motivo y cómo se comprobó. Guía: `docs/intervencion-manual.md`.
+- **User Personas** (lámina 5): no están documentadas en este archivo ni en el repositorio. Vincular las del TP1/TP2 o hacer 3 a 5 pruebas de uso.
+- **Exposición oral de 5 minutos con soporte visual**: no está armada (el informe no la reemplaza).
+- **Licencia de los modelos de los docentes y constancia escrita de su permiso** (láminas 15 y 30): ver `assets/personas/LEEME.md`. Los docentes ya dieron permiso, según informó la persona usuaria.
+- **Bitácora** (lámina 23): los prompts de los TPs 1 a 3 y los que el equipo use para la intervención manual.
+- Las capturas de los referentes son de las páginas citadas (27/11/2026); si el equipo prefiere otras imágenes, se reemplaza el relleno de cada recuadro `IMG / …`.
 
-- **Imágenes de los referentes** (diapositivas 5 y 6): una captura por referente con cita y enlace (ver `../../docs/referentes.md`).
-- **Intervención manual** (diapositiva 18): el antes/después real, cuando exista.
-- **Bitácora de prompts** (diapositiva 16): prompts de los TPs anteriores y los que use el equipo.
-- **Enlace y QR** (diapositiva 20): ya se agregan automáticamente solo si la publicación fue verificada; revisar que coincida.
-- **Entrevistas o pruebas de uso**, si el equipo las hace: hoy el público es una hipótesis de diseño.
+## Para actualizar
 
-## Notas de diseño
+Las imágenes son rellenos de los rectángulos `IMG / …`; las capturas del juego están en `../../capturas/`. Para volver a exportar el PDF: seleccionar las
+30 láminas en Figma y usar *Archivo → Exportar marcos a PDF*.
 
-- Marco: 1920 × 1080 px · márgenes 110 px laterales, 84 px arriba y 124 px abajo (pie con «PUBLITÓN® · PITCH LAB · TP4» y número).
-- Portada sobre azul `#0047FF`; resto sobre `#181D16`; tarjetas `#20261C` con borde `#596151`; énfasis `#FFC94A`; acento `#FF006E`.
-- Los avisos de pendiente usan borde rosa **punteado** (no depende solo del color).
+## Material anterior de esta carpeta
+
+`contenido-diapositivas.md`, `slides-spec.json`, `tokens.json` y `assets/` corresponden a la **versión anterior de 21 láminas** (generada en HTML, del 2026-11-20). Se
+conservan como referencia, pero **ya no son el informe vigente**: lo vigente es la página 11 del archivo de Figma.
